@@ -170,17 +170,15 @@ export async function renderToday() {
             <div class="card-title" style="color: #7c3aed; font-size: 1.5rem; margin: 0;">하루 성찰</div>
           </div>
           <button id="toggle-reflection" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-            <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #7c3aed;"></i>
+            <i data-lucide="chevron-up" style="width: 20px; height: 20px; color: #7c3aed;"></i>
           </button>
         </div>
+        <button id="open-reflection-form" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3); font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="pen-square" style="width: 18px; height: 18px;"></i>
+          성찰 작성하기
+        </button>
       </div>
-      <div id="reflection-content" style="display: block;">
-        <div id="reflection-button-container" style="text-align: center; margin-bottom: 1rem;">
-          <button id="open-reflection-form" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3); font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="pen-square" style="width: 20px; height: 20px;"></i>
-            하루 성찰 작성하기
-          </button>
-        </div>
+      <div id="reflection-content" style="display: none;">
         <div id="reflection-form-container" style="display: none;">
           <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             <!-- 감사한 일 -->
@@ -722,13 +720,32 @@ function setupEventHandlers(date, profile, timezone) {
   // 하루 성찰 폼 열기
   const openReflectionForm = document.getElementById('open-reflection-form');
   if (openReflectionForm) {
-    openReflectionForm.addEventListener('click', () => {
-      const buttonContainer = document.getElementById('reflection-button-container');
+    // 기존 이벤트 리스너 제거를 위한 클론
+    const newOpenReflectionForm = openReflectionForm.cloneNode(true);
+    openReflectionForm.parentNode?.replaceChild(newOpenReflectionForm, openReflectionForm);
+    
+    newOpenReflectionForm.addEventListener('click', () => {
+      const content = document.getElementById('reflection-content');
       const formContainer = document.getElementById('reflection-form-container');
-      if (buttonContainer && formContainer) {
-        buttonContainer.style.display = 'none';
+      const toggleBtn = document.getElementById('toggle-reflection');
+      
+      if (content && formContainer) {
+        // 섹션 펼치기
+        content.style.display = 'block';
+        // 폼 표시
         formContainer.style.display = 'block';
-        localStorage.setItem('reflection-form-open', 'true');
+        // 토글 아이콘 업데이트
+        if (toggleBtn) {
+          const icon = toggleBtn.querySelector('svg') || 
+                       toggleBtn.querySelector('[data-lucide]') || 
+                       toggleBtn.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'chevron-down');
+            if (window.lucide?.createIcons) {
+              setTimeout(() => window.lucide.createIcons(), 10);
+            }
+          }
+        }
       }
     });
   }
@@ -1123,41 +1140,33 @@ function renderReflection(reflection) {
   const wellDoneEl = document.getElementById('reflection-well-done');
   const regretEl = document.getElementById('reflection-regret');
   const tomorrowPromiseEl = document.getElementById('reflection-tomorrow-promise');
-  const buttonContainer = document.getElementById('reflection-button-container');
   const formContainer = document.getElementById('reflection-form-container');
 
   if (!gratefulEl || !wellDoneEl || !regretEl || !tomorrowPromiseEl) return;
 
   if (reflection) {
-    // 데이터가 있으면 폼에 채우고 폼 표시
+    // 데이터가 있으면 폼에만 채우기 (섹션은 접혀있음)
     gratefulEl.value = reflection.grateful || '';
     wellDoneEl.value = reflection.well_done || '';
     regretEl.value = reflection.regret || '';
     tomorrowPromiseEl.value = reflection.tomorrow_promise || '';
-    
-    // 폼 표시, 버튼 숨김
-    buttonContainer.style.display = 'none';
-    formContainer.style.display = 'block';
   } else {
     // 데이터가 없으면 폼 초기화
     gratefulEl.value = '';
     wellDoneEl.value = '';
     regretEl.value = '';
     tomorrowPromiseEl.value = '';
-    
-    // localStorage에서 토글 상태 확인
-    const isFormOpen = localStorage.getItem('reflection-form-open') === 'true';
-    if (isFormOpen) {
-      buttonContainer.style.display = 'none';
-      formContainer.style.display = 'block';
-    } else {
-      buttonContainer.style.display = 'block';
-      formContainer.style.display = 'none';
-    }
+  }
+  
+  // 폼은 기본적으로 숨김 (사용자가 "성찰 작성하기" 버튼을 눌렀을 때만 표시)
+  if (formContainer) {
+    formContainer.style.display = 'none';
   }
 
   // Lucide 아이콘 업데이트
-  if (window.lucide?.createIcons) window.lucide.createIcons();
+  if (window.lucide?.createIcons) {
+    setTimeout(() => window.lucide.createIcons(), 10);
+  }
 }
 
 // ============================================
@@ -1540,8 +1549,33 @@ async function saveReflection(date, profile) {
     if (error) throw error;
 
     alert('성찰이 저장되었습니다.');
-    // 저장 후 폼은 열린 상태 유지
-    localStorage.setItem('reflection-form-open', 'true');
+    
+    // ✅ 저장 후 섹션 접기
+    const content = document.getElementById('reflection-content');
+    const formContainer = document.getElementById('reflection-form-container');
+    const toggleBtn = document.getElementById('toggle-reflection');
+    
+    if (content) {
+      content.style.display = 'none';
+    }
+    if (formContainer) {
+      formContainer.style.display = 'none';
+    }
+    // 토글 아이콘 업데이트
+    if (toggleBtn) {
+      const icon = toggleBtn.querySelector('svg') || 
+                   toggleBtn.querySelector('[data-lucide]') || 
+                   toggleBtn.querySelector('i');
+      if (icon) {
+        icon.setAttribute('data-lucide', 'chevron-up');
+        if (window.lucide?.createIcons) {
+          setTimeout(() => window.lucide.createIcons(), 10);
+        }
+      }
+    }
+    
+    // 데이터 다시 로드 (폼에 저장된 데이터 채우기)
+    await loadReflection(date, profile);
   } catch (error) {
     console.error('Error saving reflection:', error);
     alert('성찰 저장 중 오류가 발생했습니다.');
