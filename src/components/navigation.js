@@ -10,7 +10,7 @@ import { formatSelectedDate } from '../state/dateState.js';
 export async function renderNavigation(currentRoute, profile) {
   const routes = [
     { path: '/today', label: '오늘', icon: 'sun' },
-    { path: '/weekly', label: '주간', icon: 'calendar' },
+    { path: '/weekly', label: '주간', icon: 'calendar-days' },
     { path: '/monthly', label: '월간', icon: 'calendar' },
     { path: '/goals', label: '목표', icon: 'target' }
   ];
