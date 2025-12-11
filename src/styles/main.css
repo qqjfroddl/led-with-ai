@@ -1,0 +1,658 @@
+/* 기본 스타일 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --border-color: #e5e7eb;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  /* padding-top 제거 - 헤더가 fixed가 아니므로 불필요 */
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem; /* 헤더와 정확히 동일한 좌우 패딩 */
+  /* margin-top 제거 - 헤더가 일반 흐름이므로 불필요 */
+  box-sizing: border-box; /* 패딩 포함 너비 계산 */
+}
+
+/* 카드 스타일 */
+.card {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 1.5rem; /* 상하좌우 모두 1.5rem */
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%; /* 좌우 크기 동일하게 */
+  box-sizing: border-box; /* padding 포함 전체 너비 계산 */
+}
+
+.card-header {
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+
+/* 버튼 스타일 */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 인증 컨테이너 */
+.auth-container {
+  max-width: 400px;
+  margin: 4rem auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.auth-container h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.auth-container p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+/* 앱 헤더 컨테이너 (통합) */
+.app-header-container {
+  /* position: fixed 제거 - 일반 흐름으로 변경하여 스크롤 시 사라지도록 */
+  background: linear-gradient(135deg, #f4f4f5 0%, #fafafa 100%); /* 현재 배경색 유지 */
+  border-radius: 12px; /* 카드와 동일한 둥근 모서리 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* 카드 기본 스타일과 동일 */
+  z-index: 1000;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 0.5rem; /* 상단 여백 */
+  margin-bottom: 1.5rem; /* 헤더와 콘텐츠 사이 간격 */
+  padding: 1rem; /* #app과 정확히 동일한 좌우 패딩 */
+  box-sizing: border-box; /* 패딩 포함 너비 계산 */
+}
+
+/* 헤더 상단 (브랜드 + 사용자 정보) */
+.app-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  color: #6366f1;
+  stroke-width: 2.5;
+}
+
+.brand-text {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+/* 네비게이션 탭 (컨테이너 내부) */
+.top-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+}
+
+.nav-item {
+  flex: 1;
+  max-width: 150px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #1f2937;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #e5e7eb;
+  transition: all 0.2s;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.nav-item:hover {
+  background: #d1d5db;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: transparent;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.nav-item i {
+  width: 20px;
+  height: 20px;
+}
+
+/* 사용자 정보 박스 */
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: row; /* 가로 배치: 프로필 이미지 + 이름 */
+  align-items: center;
+  gap: 0.75rem; /* 이미지와 이름 사이 간격 */
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  white-space: nowrap; /* 이름이 길어도 한 줄로 */
+}
+
+.user-email {
+  display: none; /* 이메일 숨김 */
+}
+
+/* 날짜 바 (컨테이너 내부) */
+.date-bar-container {
+  padding: 0;
+  margin: 0;
+  padding-bottom: 0.5rem;
+}
+
+.date-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.date-nav-btn {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.date-nav-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.date-nav-btn i {
+  width: 20px;
+  height: 20px;
+}
+
+.date-display-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.date-display-btn:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.date-display-btn i {
+  width: 18px;
+  height: 18px;
+}
+
+.date-bar-footer {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0 0;
+  margin-top: 0.5rem;
+}
+
+.date-today-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+  background: #e0e7ff;
+  color: #1f2937;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.date-today-btn:hover {
+  background: #c7d2fe;
+  transform: translateY(-1px);
+}
+
+.date-today-btn i {
+  width: 16px;
+  height: 16px;
+}
+
+/* 날짜 선택 오버레이 */
+.date-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.date-overlay.hidden {
+  display: none;
+}
+
+.date-modal {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  width: min(400px, 90vw);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.date-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.date-modal-header span {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #111827;
+}
+
+.date-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.date-close-btn:hover {
+  background: #f3f4f6;
+}
+
+.date-close-btn i {
+  width: 20px;
+  height: 20px;
+}
+
+.date-modal-body {
+  padding: 1.25rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.date-modal-body input {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.date-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* 반응형: 모바일 */
+@media (max-width: 768px) {
+  /* body padding-top 제거 - 헤더가 fixed가 아니므로 불필요 */
+
+  #app {
+    /* margin-top 제거 - 헤더가 일반 흐름이므로 불필요 */
+  }
+
+  .app-header-container {
+    margin-top: 0.5rem; /* 모바일에서도 상단 여백 유지 */
+    padding: 0.75rem 1rem;
+  }
+
+  .app-header-top {
+    flex-direction: row;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .brand {
+    flex-shrink: 0;
+  }
+
+  .brand-text {
+    font-size: 1.25rem;
+  }
+
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+  }
+
+  .top-navigation {
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .nav-item {
+    flex: 1 1 calc(50% - 0.5rem); /* 2열 배치 */
+    max-width: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .date-bar-container {
+    padding: 0;
+  }
+
+  .date-bar {
+    padding: 0.5rem 0;
+    gap: 0.5rem;
+  }
+
+  .date-display-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .user-box {
+    flex-direction: row; /* 모바일에서도 가로 배치 유지 */
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .user-info {
+    align-items: center; /* 중앙 정렬 */
+    gap: 0.5rem; /* 모바일에서 간격 조정 */
+  }
+
+  .user-avatar,
+  .user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .user-name {
+    font-size: 0.875rem;
+  }
+
+  #logout-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* 카테고리 탭 */
+.category-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #e5e7eb;
+  color: #1f2937;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-tab:hover {
+  background: #d1d5db;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+/* Work 활성 상태 */
+.category-tab[data-category="work"].active {
+  background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);
+}
+
+/* Job 활성 상태 */
+.category-tab[data-category="job"].active {
+  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(34, 211, 238, 0.3);
+}
+
+/* Growth 활성 상태 */
+.category-tab[data-category="self_dev"].active {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+}
+
+/* Personal 활성 상태 */
+.category-tab[data-category="personal"].active {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(244, 114, 182, 0.3);
+}
+
+/* 입력 필드 */
+input[type="text"],
+input[type="date"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+/* 에러 메시지 */
+.error {
+  background: #fee2e2;
+  border: 2px solid #ef4444;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* 로딩 */
+#loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  #app {
+    padding: 0.75rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .bottom-navigation {
+    flex-wrap: wrap;
+  }
+
+  .nav-item {
+    flex: 1 1 calc(50% - 0.5rem);
+    max-width: none;
+  }
+
+  .category-tabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .category-tab {
+    flex: 1 1 calc(50% - 0.25rem);
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+  }
+}

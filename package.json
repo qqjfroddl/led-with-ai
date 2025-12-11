@@ -1,0 +1,21 @@
+{
+  "name": "led-system",
+  "version": "1.1.0",
+  "description": "할일/루틴/성찰 관리 시스템",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "luxon": "^3.4.4"
+  },
+  "devDependencies": {
+    "vite": "^5.0.11"
+  }
+}
+
+
+

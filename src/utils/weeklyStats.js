@@ -1,0 +1,438 @@
+// 주간 통계 계산 유틸리티
+import { supabase } from '../config/supabase.js';
+import { getWeekStart, getWeekEnd } from './date.js';
+
+/**
+ * 주간 통계 조회
+ * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
+ * @param {string} timezone - 타임존 (기본: Asia/Seoul)
+ * @returns {Promise<Object>} 주간 통계 객체
+ */
+export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul') {
+  const weekEnd = getWeekEnd(weekStart, timezone);
+  const userId = (await supabase.auth.getUser()).data?.user?.id;
+  
+  if (!userId) {
+    throw new Error('사용자가 로그인하지 않았습니다.');
+  }
+  
+  // 병렬로 모든 데이터 조회
+  const [todosStats, routinesStats, reflectionsStats, prevWeekStats] = await Promise.all([
+    getTodosStats(userId, weekStart, weekEnd),
+    getRoutinesStats(userId, weekStart, weekEnd),
+    getReflectionsStats(userId, weekStart, weekEnd),
+    getPrevWeekStats(userId, weekStart, timezone) // 전주 통계 (비교용)
+  ]);
+  
+  // 종합 통계 계산
+  const stats = {
+    weekStart,
+    weekEnd,
+    todos: todosStats,
+    routines: routinesStats,
+    reflections: reflectionsStats,
+    comparison: calculateComparison(todosStats, routinesStats, reflectionsStats, prevWeekStats),
+    insights: generateInsights(todosStats, routinesStats, reflectionsStats, prevWeekStats)
+  };
+  
+  return stats;
+}
+
+/**
+ * 할일 통계
+ */
+async function getTodosStats(userId, weekStart, weekEnd) {
+  const { data: todos, error } = await supabase
+    .from('todos')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('date', weekStart)
+    .lte('date', weekEnd)
+    .is('deleted_at', null);
+  
+  if (error) {
+    console.error('Error fetching todos:', error);
+    return getEmptyTodosStats();
+  }
+  
+  const total = todos.length;
+  const completed = todos.filter(t => t.is_done).length;
+  const completionRate = total > 0 ? (completed / total) * 100 : 0;
+  
+  // 카테고리별 통계
+  const byCategory = {
+    work: { total: 0, completed: 0 },
+    job: { total: 0, completed: 0 },
+    self_dev: { total: 0, completed: 0 },
+    personal: { total: 0, completed: 0 }
+  };
+  
+  todos.forEach(todo => {
+    if (byCategory[todo.category]) {
+      byCategory[todo.category].total++;
+      if (todo.is_done) {
+        byCategory[todo.category].completed++;
+      }
+    }
+  });
+  
+  // 카테고리별 완료율 계산
+  Object.keys(byCategory).forEach(cat => {
+    const catStats = byCategory[cat];
+    catStats.completionRate = catStats.total > 0 
+      ? (catStats.completed / catStats.total) * 100 
+      : 0;
+  });
+  
+  // 이월/포기 통계
+  const carriedOver = todos.filter(t => t.carried_over_at).length;
+  const skipped = todos.filter(t => t.skipped_at).length;
+  
+  // 일별 통계
+  const dailyStats = {};
+  for (let d = new Date(weekStart); d <= new Date(weekEnd); d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    const dayTodos = todos.filter(t => t.date === dateStr);
+    dailyStats[dateStr] = {
+      total: dayTodos.length,
+      completed: dayTodos.filter(t => t.is_done).length
+    };
+  }
+  
+  // 평균 일일 할일 수
+  const avgDailyTodos = total / 7;
+  
+  return {
+    total,
+    completed,
+    completionRate: Math.round(completionRate * 10) / 10,
+    byCategory,
+    carriedOver,
+    skipped,
+    dailyStats,
+    avgDailyTodos: Math.round(avgDailyTodos * 10) / 10
+  };
+}
+
+/**
+ * 루틴 통계
+ */
+async function getRoutinesStats(userId, weekStart, weekEnd) {
+  // 활성 루틴 조회
+  const { data: routines, error: routinesError } = await supabase
+    .from('routines')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .is('deleted_at', null);
+  
+  if (routinesError) {
+    console.error('Error fetching routines:', routinesError);
+    return getEmptyRoutinesStats();
+  }
+  
+  // 주간 루틴 로그 조회
+  const { data: logs, error: logsError } = await supabase
+    .from('routine_logs')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('date', weekStart)
+    .lte('date', weekEnd)
+    .eq('checked', true);
+  
+  if (logsError) {
+    console.error('Error fetching routine logs:', logsError);
+    return getEmptyRoutinesStats();
+  }
+  
+  // 루틴별 체크 수 계산
+  const routineCheckCounts = {};
+  logs.forEach(log => {
+    routineCheckCounts[log.routine_id] = (routineCheckCounts[log.routine_id] || 0) + 1;
+  });
+  
+  // 모닝/나이트 구분
+  const morningRoutines = [];
+  const nightRoutines = [];
+  
+  routines.forEach(routine => {
+    const schedule = routine.schedule;
+    if (schedule?.type === 'monthly' && schedule?.category === 'morning') {
+      morningRoutines.push(routine);
+    } else if (schedule?.type === 'monthly' && schedule?.category === 'night') {
+      nightRoutines.push(routine);
+    } else {
+      // daily/weekly는 기본적으로 모닝으로 분류 (또는 별도 처리)
+      morningRoutines.push(routine);
+    }
+  });
+  
+  // 전체 루틴 실천율 계산
+  const totalPossibleChecks = routines.length * 7; // 루틴 수 × 7일
+  const totalChecks = logs.length;
+  const practiceRate = totalPossibleChecks > 0 
+    ? (totalChecks / totalPossibleChecks) * 100 
+    : 0;
+  
+  // 모닝/나이트 개별 실천율
+  const morningPossible = morningRoutines.length * 7;
+  const morningChecks = logs.filter(log => {
+    const routine = routines.find(r => r.id === log.routine_id);
+    return routine && routine.schedule?.category === 'morning';
+  }).length;
+  const morningRate = morningPossible > 0 ? (morningChecks / morningPossible) * 100 : 0;
+  
+  const nightPossible = nightRoutines.length * 7;
+  const nightChecks = logs.filter(log => {
+    const routine = routines.find(r => r.id === log.routine_id);
+    return routine && routine.schedule?.category === 'night';
+  }).length;
+  const nightRate = nightPossible > 0 ? (nightChecks / nightPossible) * 100 : 0;
+  
+  // 일별 체크 수
+  const dailyChecks = {};
+  for (let d = new Date(weekStart); d <= new Date(weekEnd); d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    dailyChecks[dateStr] = logs.filter(l => l.date === dateStr).length;
+  }
+  
+  // 루틴별 실천율
+  const routineRates = routines.map(routine => ({
+    id: routine.id,
+    title: routine.title,
+    totalChecks: routineCheckCounts[routine.id] || 0,
+    rate: 7 > 0 ? Math.round(((routineCheckCounts[routine.id] || 0) / 7) * 100) : 0
+  }));
+  
+  return {
+    totalRoutines: routines.length,
+    morningRoutines: morningRoutines.length,
+    nightRoutines: nightRoutines.length,
+    totalChecks,
+    totalPossibleChecks,
+    practiceRate: Math.round(practiceRate * 10) / 10,
+    morningRate: Math.round(morningRate * 10) / 10,
+    nightRate: Math.round(nightRate * 10) / 10,
+    dailyChecks,
+    routineRates
+  };
+}
+
+/**
+ * 성찰 통계
+ */
+async function getReflectionsStats(userId, weekStart, weekEnd) {
+  const { data: reflections, error } = await supabase
+    .from('daily_reflections')
+    .select('date')
+    .eq('user_id', userId)
+    .gte('date', weekStart)
+    .lte('date', weekEnd);
+  
+  if (error) {
+    console.error('Error fetching reflections:', error);
+    return getEmptyReflectionsStats();
+  }
+  
+  const writtenDays = reflections.length;
+  const totalDays = 7;
+  const writingRate = (writtenDays / totalDays) * 100;
+  
+  return {
+    writtenDays,
+    totalDays,
+    writingRate: Math.round(writingRate * 10) / 10
+  };
+}
+
+/**
+ * 전주 통계 (비교용)
+ */
+async function getPrevWeekStats(userId, weekStart, timezone) {
+  // 전주 시작일 계산
+  const prevWeekStart = new Date(weekStart);
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const prevWeekStartStr = prevWeekStart.toISOString().split('T')[0];
+  const prevWeekEnd = new Date(prevWeekStartStr);
+  prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
+  const prevWeekEndStr = prevWeekEnd.toISOString().split('T')[0];
+  
+  const [todosStats, routinesStats, reflectionsStats] = await Promise.all([
+    getTodosStats(userId, prevWeekStartStr, prevWeekEndStr),
+    getRoutinesStats(userId, prevWeekStartStr, prevWeekEndStr),
+    getReflectionsStats(userId, prevWeekStartStr, prevWeekEndStr)
+  ]);
+  
+  return {
+    todos: todosStats,
+    routines: routinesStats,
+    reflections: reflectionsStats
+  };
+}
+
+/**
+ * 전주 대비 변화율 계산
+ */
+function calculateComparison(currentTodos, currentRoutines, currentReflections, prevWeekStats) {
+  if (!prevWeekStats) {
+    return null;
+  }
+  
+  const prevTodos = prevWeekStats.todos;
+  const prevRoutines = prevWeekStats.routines;
+  const prevReflections = prevWeekStats.reflections;
+  
+  return {
+    todos: {
+      completionRate: currentTodos.completionRate - prevTodos.completionRate,
+      total: currentTodos.total - prevTodos.total
+    },
+    routines: {
+      practiceRate: currentRoutines.practiceRate - prevRoutines.practiceRate,
+      totalChecks: currentRoutines.totalChecks - prevRoutines.totalChecks
+    },
+    reflections: {
+      writingRate: currentReflections.writingRate - prevReflections.writingRate,
+      writtenDays: currentReflections.writtenDays - prevReflections.writtenDays
+    }
+  };
+}
+
+/**
+ * 규칙 기반 인사이트 생성
+ */
+function generateInsights(todos, routines, reflections, prevWeekStats) {
+  const insights = [];
+  
+  // 루틴 실천율 인사이트 (먼저)
+  if (routines.practiceRate >= 70) {
+    insights.push({
+      type: 'positive',
+      category: 'routines',
+      message: `루틴 실천율이 ${routines.practiceRate}%로 훌륭합니다! 꾸준함이 인생을 바꿉니다. 💪`
+    });
+  } else if (routines.practiceRate >= 50) {
+    insights.push({
+      type: 'neutral',
+      category: 'routines',
+      message: `루틴 실천율이 ${routines.practiceRate}%입니다. 다음 주에는 5%p 더 올려보세요!`
+    });
+  } else {
+    insights.push({
+      type: 'suggestion',
+      category: 'routines',
+      message: `루틴 실천율이 ${routines.practiceRate}%입니다. 루틴을 조금씩 줄이거나 더 쉬운 것부터 시작해보세요.`
+    });
+  }
+  
+  // 할일 완료율 인사이트
+  if (todos.completionRate >= 80) {
+    insights.push({
+      type: 'positive',
+      category: 'todos',
+      message: `이번 주 할일 완료율이 ${todos.completionRate}%로 매우 우수합니다! 🎉`
+    });
+  } else if (todos.completionRate >= 60) {
+    insights.push({
+      type: 'neutral',
+      category: 'todos',
+      message: `이번 주 할일 완료율이 ${todos.completionRate}%로 양호합니다. 다음 주는 80%를 목표로 해보세요!`
+    });
+  } else {
+    insights.push({
+      type: 'suggestion',
+      category: 'todos',
+      message: `이번 주 할일 완료율이 ${todos.completionRate}%입니다. 할일을 더 작은 단위로 나누거나 우선순위를 정해보세요.`
+    });
+  }
+  
+  // 성찰 작성 인사이트
+  if (reflections.writingRate >= 85) {
+    insights.push({
+      type: 'positive',
+      category: 'reflections',
+      message: `성찰을 ${reflections.writtenDays}일 작성하셨네요! 자기 성찰이 성장의 기반입니다. ✨`
+    });
+  } else if (reflections.writingRate >= 50) {
+    insights.push({
+      type: 'neutral',
+      category: 'reflections',
+      message: `성찰을 ${reflections.writtenDays}일 작성하셨습니다. 매일 조금씩 기록하는 습관을 만들어보세요.`
+    });
+  } else {
+    insights.push({
+      type: 'suggestion',
+      category: 'reflections',
+      message: `성찰을 ${reflections.writtenDays}일 작성하셨습니다. 하루 5분만 투자해도 큰 변화가 있습니다.`
+    });
+  }
+  
+  // 전주 대비 변화 (순서: 루틴 → 할일)
+  if (prevWeekStats) {
+    const comparison = calculateComparison(todos, routines, reflections, prevWeekStats);
+    if (comparison) {
+      // 루틴 변화 먼저
+      if (comparison.routines.practiceRate > 5) {
+        insights.push({
+          type: 'improvement',
+          category: 'routines',
+          message: `전주 대비 루틴 실천율이 ${comparison.routines.practiceRate > 0 ? '+' : ''}${comparison.routines.practiceRate.toFixed(1)}%p 향상되었습니다! 🚀`
+        });
+      }
+      
+      // 할일 변화
+      if (comparison.todos.completionRate > 5) {
+        insights.push({
+          type: 'improvement',
+          category: 'todos',
+          message: `전주 대비 할일 완료율이 ${comparison.todos.completionRate > 0 ? '+' : ''}${comparison.todos.completionRate.toFixed(1)}%p 향상되었습니다! 📈`
+        });
+      }
+    }
+  }
+  
+  return insights;
+}
+
+// 빈 통계 객체 반환 함수들
+function getEmptyTodosStats() {
+  return {
+    total: 0,
+    completed: 0,
+    completionRate: 0,
+    byCategory: {
+      work: { total: 0, completed: 0, completionRate: 0 },
+      job: { total: 0, completed: 0, completionRate: 0 },
+      self_dev: { total: 0, completed: 0, completionRate: 0 },
+      personal: { total: 0, completed: 0, completionRate: 0 }
+    },
+    carriedOver: 0,
+    skipped: 0,
+    dailyStats: {},
+    avgDailyTodos: 0
+  };
+}
+
+function getEmptyRoutinesStats() {
+  return {
+    totalRoutines: 0,
+    morningRoutines: 0,
+    nightRoutines: 0,
+    totalChecks: 0,
+    totalPossibleChecks: 0,
+    practiceRate: 0,
+    morningRate: 0,
+    nightRate: 0,
+    dailyChecks: {},
+    routineRates: []
+  };
+}
+
+function getEmptyReflectionsStats() {
+  return {
+    writtenDays: 0,
+    totalDays: 7,
+    writingRate: 0
+  };
+}
+

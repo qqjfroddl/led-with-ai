@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>인생관리</title>
+  <!-- 체크마크 파비콘 (SVG Data URI) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✅</text></svg>">
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <!-- flatpickr (date picker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js" defer></script>
+  <!-- Lucide 아이콘 (전역) -->
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+</head>
+<body>
+  <div id="app">
+    <!-- 라우팅에 따라 동적으로 로드됨 -->
+    <div id="loading">로딩 중...</div>
+  </div>
+  
+  <!-- 설정 파일 -->
+  <script src="/config.js"></script>
+  
+  <!-- CDN 스크립트 (defer로 병렬 로드) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js" defer onload="window.SUPABASE_LOADED=true"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js" defer onload="window.LUXON_LOADED=true"></script>
+  
+  <!-- 메인 스크립트 -->
+  <script type="module">
+    // CDN 로드 대기 후 실행
+    function checkLibs() {
+      if ((window.Supabase || window.supabase) && window.luxon) {
+        import('/src/main.js');
+      } else {
+        // 아직 로드 안 됐으면 50ms마다 확인 (매우 빠른 재확인)
+        setTimeout(checkLibs, 50);
+      }
+    }
+    checkLibs();
+  </script>
+  
+  <script>
+    // 1. 서비스 워커 강제 제거 (이전 앱 캐시 문제 해결)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          console.log('Unregistering service worker:', registration);
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+</body>
+</html>
