@@ -1,13 +1,18 @@
 import { supabase } from './config/supabase.js';
 import { getCurrentProfile, isAdmin, signOut } from './utils/auth.js';
 import { createIcons, icons } from 'https://unpkg.com/lucide@latest?module';
+import { getTodosStats, getRoutinesStats, getReflectionsStats } from './utils/weeklyStats.js';
+import { getWeekStart, getWeekEnd, getToday } from './utils/date.js';
 
 let currentProfile = null;
 let pendingUsers = [];
 let approvedUsers = [];
+let challengeParticipants = []; // 챌린지 참가자 목록
 let allUsers = []; // 전체 사용자 목록 저장
 let selectedPendingIds = new Set();
 let selectedApprovedIds = new Set();
+let selectedChallengeIds = new Set(); // 챌린지 참가자 선택 관리
+let userStatsCache = new Map(); // 사용자별 통계 캐시 (userId -> stats)
 
 // 초기화
 async function init() {
@@ -187,6 +192,7 @@ async function loadUsers() {
   
   pendingUsers = usersByStatus.pending;
   approvedUsers = usersByStatus.approved;
+  challengeParticipants = data.filter(u => u.status === 'approved' && u.is_challenge_participant === true);
   
   console.log('[Admin] Pending users:', pendingUsers.length);
   console.log('[Admin] Approved users:', approvedUsers.length);
@@ -272,6 +278,9 @@ function render() {
         <button class="tab" onclick="showTab('approved')">
           승인된 사용자 (${approvedUsers.length})
         </button>
+        <button class="tab" onclick="showTab('challenge')">
+          챌린지 참가자 (${challengeParticipants.length})
+        </button>
       </div>
 
       <!-- 승인 대기 목록 -->
@@ -297,9 +306,22 @@ function render() {
           <div style="display: flex; align-items: center; gap: 1rem;">
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
             <button id="bulk-expiry" class="btn btn-primary btn-sm" disabled>일괄 기한 설정</button>
+            <button id="bulk-add-challenge" class="btn btn-primary btn-sm" disabled>챌린지 참가자 추가</button>
           </div>
         </div>
         ${renderUserTable(approvedUsers, 'approved')}
+      </div>
+
+      <!-- 챌린지 참가자 목록 -->
+      <div id="challenge-section" class="tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2>🏆 챌린지 참가자</h2>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
+            <button id="bulk-remove-challenge" class="btn btn-primary btn-sm" disabled>일괄 제외</button>
+          </div>
+        </div>
+        ${renderUserTable(challengeParticipants, 'challenge')}
       </div>
 
       <!-- 재신청 대기 목록 (rejected 상태) -->
@@ -322,6 +344,17 @@ function render() {
 
   // Lucide 아이콘 렌더링
   createIcons({ icons });
+  
+  // 승인된 사용자 통계 로드
+  if (approvedUsers.length > 0) {
+    loadUserStats(approvedUsers);
+  }
+  
+  // 챌린지 참가자 통계 로드 (챌린지 탭이 활성화된 경우)
+  const challengeSection = document.getElementById('challenge-section');
+  if (challengeSection && challengeSection.style.display !== 'none' && challengeParticipants.length > 0) {
+    loadUserStats(challengeParticipants);
+  }
 }
 
 // 사용자 테이블 렌더링
@@ -330,7 +363,9 @@ function renderUserTable(users, type) {
     return `
       <div class="card" style="text-align: center; padding: 3rem;">
         <p style="color: var(--text-secondary); font-size: 1.1rem;">
-          ${type === 'pending' ? '승인 대기 중인 사용자가 없습니다. 🎉' : '승인된 사용자가 없습니다.'}
+            ${type === 'pending' ? '승인 대기 중인 사용자가 없습니다. 🎉' 
+              : type === 'challenge' ? '챌린지 참가자가 없습니다.' 
+              : '승인된 사용자가 없습니다.'}
         </p>
       </div>
     `;
@@ -341,12 +376,13 @@ function renderUserTable(users, type) {
       <table class="admin-table">
         <thead>
           <tr>
-            ${type === 'pending' || type === 'approved' 
+            ${type === 'pending' || type === 'approved' || type === 'challenge'
               ? `<th style="width:40px; text-align:center;"><input type="checkbox" id="select-all-${type}"></th>` 
               : '<th style="width:40px;"></th>'}
             <th>프로필</th>
             <th>이름</th>
             <th>이메일</th>
+            ${type === 'approved' || type === 'challenge' ? '<th>사용 현황</th>' : ''}
             <th>요청일시</th>
             <th>사용 기한</th>
             <th>작업</th>
@@ -360,6 +396,8 @@ function renderUserTable(users, type) {
                   ? `<input type="checkbox" class="pending-select" data-id="${user.id}" ${selectedPendingIds.has(user.id) ? 'checked' : ''}>`
                   : type === 'approved'
                   ? `<input type="checkbox" class="approved-select" data-id="${user.id}" ${selectedApprovedIds.has(user.id) ? 'checked' : ''}>`
+                  : type === 'challenge'
+                  ? `<input type="checkbox" class="challenge-select" data-id="${user.id}" ${selectedChallengeIds.has(user.id) ? 'checked' : ''}>`
                   : ''}
               </td>
               <td>
@@ -370,6 +408,13 @@ function renderUserTable(users, type) {
               </td>
               <td>${user.name || '-'}</td>
               <td>${user.email || '-'}</td>
+              ${type === 'approved' || type === 'challenge' ? `
+              <td>
+                <div class="user-stats" data-user-id="${user.id}" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                  <span class="stats-loading" style="color: #6b7280;">로딩 중...</span>
+                </div>
+              </td>
+              ` : ''}
               <td>${new Date(user.created_at).toLocaleString('ko-KR')}</td>
               <td>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -397,6 +442,10 @@ function renderUserTable(users, type) {
                     ? `
                       <button onclick="updateUserStatus('${user.id}', 'rejected')" class="btn btn-danger btn-sm">삭제</button>
                     `
+                    : type === 'challenge'
+                    ? `
+                      <button onclick="removeFromChallenge('${user.id}')" class="btn btn-warning btn-sm">챌린지에서 제외</button>
+                    `
                     : type === 'reapplied'
                     ? `
                       <button onclick="updateUserStatus('${user.id}', 'pending')" class="btn btn-primary btn-sm">대기로 변경</button>
@@ -422,21 +471,31 @@ window.showTab = function(tab) {
   // 모든 섹션 숨기기
   document.getElementById('pending-section').style.display = 'none';
   document.getElementById('approved-section').style.display = 'none';
+  const challengeSection = document.getElementById('challenge-section');
+  if (challengeSection) challengeSection.style.display = 'none';
   
   // 선택된 탭의 섹션만 표시
   if (tab === 'pending') {
     document.getElementById('pending-section').style.display = 'block';
   } else if (tab === 'approved') {
     document.getElementById('approved-section').style.display = 'block';
+  } else if (tab === 'challenge' && challengeSection) {
+    challengeSection.style.display = 'block';
   }
   
   // 활성 탭 표시
   const activeTab = Array.from(document.querySelectorAll('.tab')).find(t => {
     if (tab === 'pending') return t.textContent.includes('승인 대기');
     if (tab === 'approved') return t.textContent.includes('승인된 사용자');
+    if (tab === 'challenge') return t.textContent.includes('챌린지 참가자');
     return false;
   });
   if (activeTab) activeTab.classList.add('active');
+  
+  // 챌린지 참가자 탭일 때 통계 로드
+  if (tab === 'challenge' && challengeParticipants.length > 0) {
+    loadUserStats(challengeParticipants);
+  }
 };
 
 // 사용자 상태 업데이트
@@ -683,12 +742,54 @@ function bindSelectionEvents() {
       const allChecked = approvedUsers.length > 0 && approvedUsers.every(u => selectedApprovedIds.has(u.id));
       if (selectAllApproved) selectAllApproved.checked = allChecked;
       if (bulkExpiry) bulkExpiry.disabled = selectedApprovedIds.size === 0;
+      const bulkAddChallenge = document.getElementById('bulk-add-challenge');
+      if (bulkAddChallenge) bulkAddChallenge.disabled = selectedApprovedIds.size === 0;
     });
   });
 
   if (bulkExpiry) {
     bulkExpiry.disabled = selectedApprovedIds.size === 0;
     bulkExpiry.onclick = () => openBulkExpiryModal();
+  }
+  
+  // 챌린지 참가자 추가 버튼
+  const bulkAddChallenge = document.getElementById('bulk-add-challenge');
+  if (bulkAddChallenge) {
+    bulkAddChallenge.disabled = selectedApprovedIds.size === 0;
+    bulkAddChallenge.onclick = () => addToChallenge(Array.from(selectedApprovedIds));
+  }
+  
+  // 챌린지 참가자 체크박스
+  const selectAllChallenge = document.getElementById('select-all-challenge');
+  const rowChecksChallenge = document.querySelectorAll('.challenge-select');
+  const bulkRemoveChallenge = document.getElementById('bulk-remove-challenge');
+  
+  if (selectAllChallenge) {
+    selectAllChallenge.checked = challengeParticipants.length > 0 && challengeParticipants.every(u => selectedChallengeIds.has(u.id));
+    selectAllChallenge.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        challengeParticipants.forEach(u => selectedChallengeIds.add(u.id));
+      } else {
+        selectedChallengeIds.clear();
+      }
+      render(); // 선택 상태 반영 위해 재렌더
+    });
+  }
+  
+  rowChecksChallenge.forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.checked) selectedChallengeIds.add(id);
+      else selectedChallengeIds.delete(id);
+      const allChecked = challengeParticipants.length > 0 && challengeParticipants.every(u => selectedChallengeIds.has(u.id));
+      if (selectAllChallenge) selectAllChallenge.checked = allChecked;
+      if (bulkRemoveChallenge) bulkRemoveChallenge.disabled = selectedChallengeIds.size === 0;
+    });
+  });
+  
+  if (bulkRemoveChallenge) {
+    bulkRemoveChallenge.disabled = selectedChallengeIds.size === 0;
+    bulkRemoveChallenge.onclick = () => removeFromChallengeBulk(Array.from(selectedChallengeIds));
   }
 }
 
@@ -947,6 +1048,179 @@ window.saveBulkExpiryDate = async function() {
   render();
   alert(`선택한 ${selectedIds.length}명의 사용 기한이 설정되었습니다.`);
 };
+
+// 사용자별 주간 통계 조회 함수
+async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul') {
+  try {
+    const today = getToday(timezone);
+    const weekStart = getWeekStart(today, timezone);
+    const weekEnd = getWeekEnd(today, timezone);
+    
+    // 병렬로 통계 조회
+    const [todosStats, routinesStats, reflectionsStats] = await Promise.all([
+      getTodosStats(userId, weekStart, weekEnd),
+      getRoutinesStats(userId, weekStart, weekEnd),
+      getReflectionsStats(userId, weekStart, weekEnd)
+    ]);
+    
+    return {
+      routines: {
+        practiceRate: routinesStats.practiceRate || 0
+      },
+      todos: {
+        completionRate: todosStats.completionRate || 0
+      },
+      reflections: {
+        writtenDays: reflectionsStats.writtenDays || 0
+      }
+    };
+  } catch (error) {
+    console.error(`[Admin] Error loading stats for user ${userId}:`, error);
+    return null;
+  }
+}
+
+// 여러 사용자의 통계를 병렬로 로드
+async function loadUserStats(users) {
+  const timezone = currentProfile?.timezone || 'Asia/Seoul';
+  
+  // 통계 조회 (병렬 처리)
+  const statsPromises = users.map(async (user) => {
+    // 캐시 확인
+    if (userStatsCache.has(user.id)) {
+      return { userId: user.id, stats: userStatsCache.get(user.id) };
+    }
+    
+    const stats = await getUserWeeklyStats(user.id, timezone);
+    if (stats) {
+      userStatsCache.set(user.id, stats);
+    }
+    return { userId: user.id, stats };
+  });
+  
+  const results = await Promise.all(statsPromises);
+  
+  // 각 사용자의 통계를 DOM에 업데이트
+  results.forEach(({ userId, stats }) => {
+    const statsElement = document.querySelector(`.user-stats[data-user-id="${userId}"]`);
+    if (!statsElement) return;
+    
+    if (!stats) {
+      statsElement.innerHTML = '<span style="color: #6b7280;">-</span>';
+      return;
+    }
+    
+    const routineRate = stats.routines?.practiceRate || 0;
+    const todoRate = stats.todos?.completionRate || 0;
+    const reflectionDays = stats.reflections?.writtenDays || 0;
+    
+    statsElement.innerHTML = `
+      <span style="color: #10b981; font-weight: 600;">🎯 ${routineRate.toFixed(1)}%</span>
+      <span style="color: #6366f1; font-weight: 600;">✅ ${todoRate.toFixed(1)}%</span>
+      <span style="color: #a78bfa; font-weight: 600;">📝 ${reflectionDays}일</span>
+    `;
+  });
+}
+
+// 챌린지 참가자 추가
+async function addToChallenge(userIds) {
+  if (!userIds || userIds.length === 0) return;
+  
+  if (!confirm(`선택한 ${userIds.length}명을 챌린지 참가자로 추가하시겠습니까?`)) {
+    return;
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_challenge_participant: true })
+      .in('id', userIds)
+      .eq('status', 'approved'); // 승인된 사용자만 추가 가능
+    
+    if (error) {
+      console.error('[Admin] Error adding to challenge:', error);
+      alert('챌린지 참가자 추가 실패: ' + error.message);
+      return;
+    }
+    
+    console.log('[Admin] Added to challenge:', userIds.length, 'users');
+    selectedApprovedIds.clear();
+    
+    // 목록 즉시 새로고침
+    await loadUsers();
+    render();
+    
+    alert(`선택한 ${userIds.length}명이 챌린지 참가자로 추가되었습니다.`);
+  } catch (err) {
+    console.error('[Admin] Add to challenge exception:', err);
+    alert('챌린지 참가자 추가 중 예외가 발생했습니다: ' + err.message);
+  }
+}
+
+// 챌린지에서 제외 (개별)
+window.removeFromChallenge = async function(userId) {
+  if (!confirm('이 사용자를 챌린지에서 제외하시겠습니까?')) {
+    return;
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_challenge_participant: false })
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('[Admin] Error removing from challenge:', error);
+      alert('챌린지에서 제외 실패: ' + error.message);
+      return;
+    }
+    
+    console.log('[Admin] Removed from challenge:', userId);
+    
+    // 목록 즉시 새로고침
+    await loadUsers();
+    render();
+    
+    alert('챌린지에서 제외되었습니다.');
+  } catch (err) {
+    console.error('[Admin] Remove from challenge exception:', err);
+    alert('챌린지에서 제외 중 예외가 발생했습니다: ' + err.message);
+  }
+};
+
+// 챌린지에서 일괄 제외
+async function removeFromChallengeBulk(userIds) {
+  if (!userIds || userIds.length === 0) return;
+  
+  if (!confirm(`선택한 ${userIds.length}명을 챌린지에서 제외하시겠습니까?`)) {
+    return;
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_challenge_participant: false })
+      .in('id', userIds);
+    
+    if (error) {
+      console.error('[Admin] Error bulk removing from challenge:', error);
+      alert('챌린지에서 제외 실패: ' + error.message);
+      return;
+    }
+    
+    console.log('[Admin] Bulk removed from challenge:', userIds.length, 'users');
+    selectedChallengeIds.clear();
+    
+    // 목록 즉시 새로고침
+    await loadUsers();
+    render();
+    
+    alert(`선택한 ${userIds.length}명이 챌린지에서 제외되었습니다.`);
+  } catch (err) {
+    console.error('[Admin] Bulk remove from challenge exception:', err);
+    alert('챌린지에서 제외 중 예외가 발생했습니다: ' + err.message);
+  }
+}
 
 // 초기화 실행
 init();
