@@ -274,6 +274,60 @@ serve(async (req) => {
 });
 
 /**
+ * 날짜 기준 루틴 필터링 함수 (PRD FR-C5 준수)
+ */
+function isRoutineDue(routine: any, selectedDate: string): boolean {
+  const schedule = typeof routine.schedule === 'string' 
+    ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
+    : routine.schedule;
+  
+  if (!schedule) return false;
+
+  // 적용 시작일 확인
+  let activeFromDate: string;
+  if (schedule.active_from_date) {
+    activeFromDate = schedule.active_from_date;
+  } else if (routine.created_at) {
+    // active_from_date가 없으면 created_at의 날짜 부분 사용
+    activeFromDate = routine.created_at.substring(0, 10);
+  } else {
+    return false; // 시작일을 알 수 없으면 제외
+  }
+
+  // 비활성화일 확인
+  let deletedAtDate: string | null = null;
+  if (routine.deleted_at) {
+    deletedAtDate = routine.deleted_at.substring(0, 10);
+  }
+
+  // 날짜 범위 체크: 적용 시작일 <= 선택 날짜 < 비활성화일
+  if (selectedDate < activeFromDate) {
+    return false; // 아직 적용 시작 전
+  }
+  if (deletedAtDate && selectedDate >= deletedAtDate) {
+    return false; // 이미 비활성화됨
+  }
+
+  // 타입별 필터링
+  if (schedule.type === 'daily') return true;
+  
+  if (schedule.type === 'weekly') {
+    const today = new Date(selectedDate);
+    const dayOfWeek = today.getDay(); // 0=일요일, 1=월요일...
+    const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 일요일을 7로 변환
+    return schedule.days?.includes(adjustedDay);
+  }
+  
+  if (schedule.type === 'monthly') {
+    const monthStart = schedule.month;
+    const currentMonth = selectedDate.substring(0, 7) + '-01';
+    return monthStart === currentMonth;
+  }
+  
+  return false;
+}
+
+/**
  * 주간 통계 수집
  */
 async function collectWeeklyStats(
@@ -295,13 +349,13 @@ async function collectWeeklyStats(
   const completedTodos = todos?.filter((t: any) => t.is_done).length || 0;
   const completionRate = totalTodos > 0 ? (completedTodos / totalTodos) * 100 : 0;
 
-  // 루틴 통계
+  // ✅ PRD 요구사항: is_active 조건 없이 모든 루틴 조회 (비활성화된 루틴 포함)
   const { data: routines } = await supabase
     .from('routines')
     .select('*')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .is('deleted_at', null);
+    .eq('user_id', userId);
+    // is_active 조건 제거
+    // deleted_at 조건 제거 (날짜 기준으로 필터링)
 
   const { data: routineLogs } = await supabase
     .from('routine_logs')
@@ -311,7 +365,19 @@ async function collectWeeklyStats(
     .lte('date', weekEnd)
     .eq('checked', true);
 
-  const totalPossibleChecks = (routines?.length || 0) * 7;
+  // ✅ 날짜별로 활성 루틴 수 계산 (루틴 변경 반영)
+  let totalPossibleChecks = 0;
+  const weekStartDate = new Date(weekStart + 'T00:00:00');
+  const weekEndDate = new Date(weekEnd + 'T00:00:00');
+  
+  for (let d = new Date(weekStartDate); d <= weekEndDate; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    
+    // 해당 날짜에 활성인 루틴 필터링
+    const activeRoutines = routines?.filter((r: any) => isRoutineDue(r, dateStr)) || [];
+    totalPossibleChecks += activeRoutines.length;
+  }
+
   const totalChecks = routineLogs?.length || 0;
   const practiceRate =
     totalPossibleChecks > 0 ? (totalChecks / totalPossibleChecks) * 100 : 0;
@@ -327,6 +393,9 @@ async function collectWeeklyStats(
   const writtenDays = reflections?.length || 0;
   const writingRate = (writtenDays / 7) * 100;
 
+  // 전체 루틴 수는 주간 평균으로 계산 (표시용)
+  const avgRoutinesPerDay = totalPossibleChecks / 7;
+
   return {
     todos: {
       total: totalTodos,
@@ -334,7 +403,7 @@ async function collectWeeklyStats(
       completionRate: Math.round(completionRate * 10) / 10,
     },
     routines: {
-      totalRoutines: routines?.length || 0,
+      totalRoutines: Math.round(avgRoutinesPerDay * 10) / 10, // 평균 루틴 수 (소수점 첫째 자리)
       totalChecks,
       practiceRate: Math.round(practiceRate * 10) / 10,
     },

@@ -40,8 +40,12 @@ export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul') {
 
 /**
  * 할일 통계
+ * @param {string} userId - 사용자 ID
+ * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
+ * @param {string} weekEnd - 주 종료일 (YYYY-MM-DD)
+ * @returns {Promise<Object>} 할일 통계 객체
  */
-async function getTodosStats(userId, weekStart, weekEnd) {
+export async function getTodosStats(userId, weekStart, weekEnd) {
   const { data: todos, error } = await supabase
     .from('todos')
     .select('*')
@@ -115,16 +119,77 @@ async function getTodosStats(userId, weekStart, weekEnd) {
 }
 
 /**
- * 루틴 통계
+ * 날짜 기준 루틴 필터링 함수 (PRD FR-C5 준수)
+ * @param {Object} routine - 루틴 객체
+ * @param {string} selectedDate - 선택 날짜 (YYYY-MM-DD)
+ * @returns {boolean} 해당 날짜에 루틴이 활성 상태인지 여부
  */
-async function getRoutinesStats(userId, weekStart, weekEnd) {
-  // 활성 루틴 조회
+function isRoutineDue(routine, selectedDate) {
+  const schedule = typeof routine.schedule === 'string' 
+    ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
+    : routine.schedule;
+  
+  if (!schedule) return false;
+
+  // 적용 시작일 확인
+  let activeFromDate;
+  if (schedule.active_from_date) {
+    activeFromDate = schedule.active_from_date;
+  } else if (routine.created_at) {
+    // active_from_date가 없으면 created_at의 날짜 부분 사용
+    activeFromDate = routine.created_at.substring(0, 10);
+  } else {
+    return false; // 시작일을 알 수 없으면 제외
+  }
+
+  // 비활성화일 확인
+  let deletedAtDate = null;
+  if (routine.deleted_at) {
+    deletedAtDate = routine.deleted_at.substring(0, 10);
+  }
+
+  // 날짜 범위 체크: 적용 시작일 <= 선택 날짜 < 비활성화일
+  if (selectedDate < activeFromDate) {
+    return false; // 아직 적용 시작 전
+  }
+  if (deletedAtDate && selectedDate >= deletedAtDate) {
+    return false; // 이미 비활성화됨
+  }
+
+  // 타입별 필터링
+  if (schedule.type === 'daily') return true;
+  
+  if (schedule.type === 'weekly') {
+    const today = new Date(selectedDate);
+    const dayOfWeek = today.getDay(); // 0=일요일, 1=월요일...
+    const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 일요일을 7로 변환
+    return schedule.days?.includes(adjustedDay);
+  }
+  
+  if (schedule.type === 'monthly') {
+    const monthStart = schedule.month;
+    const currentMonth = selectedDate.substring(0, 7) + '-01';
+    return monthStart === currentMonth;
+  }
+  
+  return false;
+}
+
+/**
+ * 루틴 통계
+ * @param {string} userId - 사용자 ID
+ * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
+ * @param {string} weekEnd - 주 종료일 (YYYY-MM-DD)
+ * @returns {Promise<Object>} 루틴 통계 객체
+ */
+export async function getRoutinesStats(userId, weekStart, weekEnd) {
+  // ✅ PRD 요구사항: is_active 조건 없이 모든 루틴 조회 (비활성화된 루틴 포함)
   const { data: routines, error: routinesError } = await supabase
     .from('routines')
     .select('*')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .is('deleted_at', null);
+    .eq('user_id', userId);
+    // is_active 조건 제거
+    // deleted_at 조건 제거 (날짜 기준으로 필터링)
   
   if (routinesError) {
     console.error('Error fetching routines:', routinesError);
@@ -151,41 +216,75 @@ async function getRoutinesStats(userId, weekStart, weekEnd) {
     routineCheckCounts[log.routine_id] = (routineCheckCounts[log.routine_id] || 0) + 1;
   });
   
-  // 모닝/나이트 구분
-  const morningRoutines = [];
-  const nightRoutines = [];
+  // ✅ 날짜별로 활성 루틴 수 계산 (루틴 변경 반영)
+  let totalPossibleChecks = 0;
+  let morningPossible = 0;
+  let nightPossible = 0;
+  const dailyActiveRoutines = {}; // 날짜별 활성 루틴 수
+  const dailyMorningRoutines = {}; // 날짜별 모닝 루틴 수
+  const dailyNightRoutines = {}; // 날짜별 나이트 루틴 수
+  const routineActiveDays = {}; // 루틴별 활성 일수
   
-  routines.forEach(routine => {
-    const schedule = routine.schedule;
-    if (schedule?.type === 'monthly' && schedule?.category === 'morning') {
-      morningRoutines.push(routine);
-    } else if (schedule?.type === 'monthly' && schedule?.category === 'night') {
-      nightRoutines.push(routine);
-    } else {
-      // daily/weekly는 기본적으로 모닝으로 분류 (또는 별도 처리)
-      morningRoutines.push(routine);
-    }
-  });
+  for (let d = new Date(weekStart); d <= new Date(weekEnd); d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    
+    // 해당 날짜에 활성인 루틴 필터링
+    const activeRoutines = routines.filter(r => isRoutineDue(r, dateStr));
+    dailyActiveRoutines[dateStr] = activeRoutines.length;
+    totalPossibleChecks += activeRoutines.length;
+    
+    // 모닝/나이트 구분
+    const morningCount = activeRoutines.filter(r => {
+      const schedule = typeof r.schedule === 'string' 
+        ? (() => { try { return JSON.parse(r.schedule); } catch { return r.schedule; } })()
+        : r.schedule;
+      return schedule?.category === 'morning';
+    }).length;
+    
+    const nightCount = activeRoutines.filter(r => {
+      const schedule = typeof r.schedule === 'string' 
+        ? (() => { try { return JSON.parse(r.schedule); } catch { return r.schedule; } })()
+        : r.schedule;
+      return schedule?.category === 'night';
+    }).length;
+    
+    dailyMorningRoutines[dateStr] = morningCount;
+    dailyNightRoutines[dateStr] = nightCount;
+    morningPossible += morningCount;
+    nightPossible += nightCount;
+    
+    // 루틴별 활성 일수 계산
+    activeRoutines.forEach(r => {
+      if (!routineActiveDays[r.id]) {
+        routineActiveDays[r.id] = 0;
+      }
+      routineActiveDays[r.id]++;
+    });
+  }
   
-  // 전체 루틴 실천율 계산
-  const totalPossibleChecks = routines.length * 7; // 루틴 수 × 7일
   const totalChecks = logs.length;
   const practiceRate = totalPossibleChecks > 0 
     ? (totalChecks / totalPossibleChecks) * 100 
     : 0;
   
-  // 모닝/나이트 개별 실천율
-  const morningPossible = morningRoutines.length * 7;
+  // 모닝/나이트 개별 실천율 (날짜별 계산된 값 사용)
   const morningChecks = logs.filter(log => {
     const routine = routines.find(r => r.id === log.routine_id);
-    return routine && routine.schedule?.category === 'morning';
+    if (!routine) return false;
+    const schedule = typeof routine.schedule === 'string' 
+      ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
+      : routine.schedule;
+    return schedule?.category === 'morning';
   }).length;
   const morningRate = morningPossible > 0 ? (morningChecks / morningPossible) * 100 : 0;
   
-  const nightPossible = nightRoutines.length * 7;
   const nightChecks = logs.filter(log => {
     const routine = routines.find(r => r.id === log.routine_id);
-    return routine && routine.schedule?.category === 'night';
+    if (!routine) return false;
+    const schedule = typeof routine.schedule === 'string' 
+      ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
+      : routine.schedule;
+    return schedule?.category === 'night';
   }).length;
   const nightRate = nightPossible > 0 ? (nightChecks / nightPossible) * 100 : 0;
   
@@ -196,18 +295,28 @@ async function getRoutinesStats(userId, weekStart, weekEnd) {
     dailyChecks[dateStr] = logs.filter(l => l.date === dateStr).length;
   }
   
-  // 루틴별 실천율
-  const routineRates = routines.map(routine => ({
-    id: routine.id,
-    title: routine.title,
-    totalChecks: routineCheckCounts[routine.id] || 0,
-    rate: 7 > 0 ? Math.round(((routineCheckCounts[routine.id] || 0) / 7) * 100) : 0
-  }));
+  // 루틴별 실천율 (활성 일수 기준으로 계산)
+  const routineRates = routines.map(routine => {
+    const activeDays = routineActiveDays[routine.id] || 0;
+    const checks = routineCheckCounts[routine.id] || 0;
+    const rate = activeDays > 0 ? Math.round((checks / activeDays) * 100) : 0;
+    return {
+      id: routine.id,
+      title: routine.title,
+      totalChecks: checks,
+      rate: rate
+    };
+  });
+  
+  // 전체 루틴 수는 주간 평균으로 계산 (표시용)
+  const avgRoutinesPerDay = totalPossibleChecks / 7;
+  const avgMorningRoutines = morningPossible / 7;
+  const avgNightRoutines = nightPossible / 7;
   
   return {
-    totalRoutines: routines.length,
-    morningRoutines: morningRoutines.length,
-    nightRoutines: nightRoutines.length,
+    totalRoutines: Math.round(avgRoutinesPerDay * 10) / 10, // 평균 루틴 수 (소수점 첫째 자리)
+    morningRoutines: Math.round(avgMorningRoutines * 10) / 10,
+    nightRoutines: Math.round(avgNightRoutines * 10) / 10,
     totalChecks,
     totalPossibleChecks,
     practiceRate: Math.round(practiceRate * 10) / 10,
@@ -220,8 +329,12 @@ async function getRoutinesStats(userId, weekStart, weekEnd) {
 
 /**
  * 성찰 통계
+ * @param {string} userId - 사용자 ID
+ * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
+ * @param {string} weekEnd - 주 종료일 (YYYY-MM-DD)
+ * @returns {Promise<Object>} 성찰 통계 객체
  */
-async function getReflectionsStats(userId, weekStart, weekEnd) {
+export async function getReflectionsStats(userId, weekStart, weekEnd) {
   const { data: reflections, error } = await supabase
     .from('daily_reflections')
     .select('date')
