@@ -58,7 +58,7 @@ serve(async (req) => {
     // 승인 사용자 확인
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('status, timezone')
+      .select('status, timezone, expires_at')
       .eq('id', user.id)
       .single();
 
@@ -67,6 +67,19 @@ serve(async (req) => {
         JSON.stringify({ error: 'User not approved' }),
         { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
+    }
+
+    // 만료일 체크
+    if (profile.expires_at) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const expiryDate = new Date(profile.expires_at);
+      if (expiryDate < today) {
+        return new Response(
+          JSON.stringify({ error: 'User subscription expired' }),
+          { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
     }
 
     // 요청 본문 파싱

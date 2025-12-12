@@ -173,11 +173,25 @@ export async function getCurrentProfile() {
 }
 
 /**
- * 승인된 사용자인지 확인
+ * 승인된 사용자인지 확인 (만료일 포함)
  */
 export async function isApprovedUser() {
   const profile = await getCurrentProfile();
-  return profile?.status === 'approved';
+  if (!profile || profile.status !== 'approved') {
+    return false;
+  }
+  
+  // 만료일 체크
+  if (profile.expires_at) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiryDate = new Date(profile.expires_at);
+    if (expiryDate < today) {
+      return false; // 만료됨
+    }
+  }
+  
+  return true;
 }
 
 /**

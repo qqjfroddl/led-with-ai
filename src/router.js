@@ -4,6 +4,7 @@ import { renderReports } from './pages/reports.js';
 import { renderGoals } from './pages/goals.js';
 import { renderPending } from './pages/pending.js';
 import { renderRejected } from './pages/rejected.js';
+import { renderExpired } from './pages/expired.js';
 import { renderNavigation } from './components/navigation.js';
 import { getSelectedDate, shiftSelectedDate, formatSelectedDate, resetSelectedDate, setSelectedDate } from './state/dateState.js';
 import { getToday } from './utils/date.js';
@@ -228,8 +229,21 @@ class Router {
       return;
     }
 
-    // 승인된 사용자만 라우팅
-    if (profile.status !== 'approved') {
+    // 승인된 사용자만 라우팅 (만료일 체크 포함)
+    if (profile.status === 'approved') {
+      // 만료일 체크
+      if (profile.expires_at) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expiryDate = new Date(profile.expires_at);
+        if (expiryDate < today) {
+          app.innerHTML = await renderExpired(profile);
+          this.renderIcons();
+          return;
+        }
+      }
+      // 만료되지 않은 승인 사용자는 아래 라우팅 로직 계속
+    } else {
       app.innerHTML = '<div class="error">알 수 없는 상태입니다.</div>';
       return;
     }

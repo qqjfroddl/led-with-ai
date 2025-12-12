@@ -1,4 +1,4 @@
-import { signOut } from '../utils/auth.js';
+import { signOut, isAdmin } from '../utils/auth.js';
 import { formatSelectedDate } from '../state/dateState.js';
 
 /**
@@ -15,12 +15,35 @@ export async function renderNavigation(currentRoute, profile) {
     { path: '/goals', label: '목표', icon: 'target' }
   ];
 
+  // 관리자인 경우 관리자 탭 추가
+  const isUserAdmin = await isAdmin();
+  if (isUserAdmin) {
+    routes.push({ 
+      path: '/admin', 
+      label: '관리자', 
+      icon: 'shield-check',
+      external: true,  // 외부 링크 플래그
+      url: '/admin.html'  // 실제 URL
+    });
+  }
+
   const navItems = routes.map(route => {
     const isActive = currentRoute === route.path || 
                      (route.path === '/weekly' && currentRoute === '/reports') ||
                      (route.path === '/monthly' && currentRoute === '/reports');
     const activeClass = isActive ? 'active' : '';
     
+    // 관리자 탭은 새 탭에서 열기
+    if (route.external) {
+      return `
+        <a href="${route.url}" target="_blank" rel="noopener noreferrer" class="nav-item ${activeClass}" data-route="${route.path}">
+          <i data-lucide="${route.icon}"></i>
+          <span>${route.label}</span>
+        </a>
+      `;
+    }
+    
+    // 일반 탭은 해시 라우팅
     return `
       <a href="#${route.path}" class="nav-item ${activeClass}" data-route="${route.path}">
         <i data-lucide="${route.icon}"></i>

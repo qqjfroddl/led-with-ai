@@ -14,6 +14,49 @@
   border-bottom: 2px solid var(--border-color);
 }
 
+/* 탭 컨테이너 */
+.tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+/* 탭 버튼 */
+.tab {
+  flex: 1;
+  max-width: 300px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+}
+
+.tab:hover {
+  background: #d1d5db;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: transparent;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.tab-content {
+  margin-top: 1.5rem;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -87,6 +130,9 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+
+
 
 
 

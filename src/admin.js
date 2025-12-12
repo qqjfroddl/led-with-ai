@@ -7,6 +7,7 @@ let pendingUsers = [];
 let approvedUsers = [];
 let allUsers = []; // 전체 사용자 목록 저장
 let selectedPendingIds = new Set();
+let selectedApprovedIds = new Set();
 
 // 초기화
 async function init() {
@@ -194,6 +195,7 @@ async function loadUsers() {
   
   // 선택 목록에서 존재하지 않는 ID 제거
   selectedPendingIds = new Set(pendingUsers.filter(u => selectedPendingIds.has(u.id)).map(u => u.id));
+  selectedApprovedIds = new Set(approvedUsers.filter(u => selectedApprovedIds.has(u.id)).map(u => u.id));
 }
 
 // 렌더링
@@ -292,7 +294,10 @@ function render() {
       <div id="approved-section" class="tab-content" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h2>✅ 승인된 사용자</h2>
-          <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
+            <button id="bulk-expiry" class="btn btn-primary btn-sm" disabled>일괄 기한 설정</button>
+          </div>
         </div>
         ${renderUserTable(approvedUsers, 'approved')}
       </div>
@@ -336,11 +341,14 @@ function renderUserTable(users, type) {
       <table class="admin-table">
         <thead>
           <tr>
-            ${type === 'pending' ? `<th style="width:40px; text-align:center;"><input type="checkbox" id="select-all-pending"></th>` : '<th style="width:40px;"></th>'}
+            ${type === 'pending' || type === 'approved' 
+              ? `<th style="width:40px; text-align:center;"><input type="checkbox" id="select-all-${type}"></th>` 
+              : '<th style="width:40px;"></th>'}
             <th>프로필</th>
             <th>이름</th>
             <th>이메일</th>
             <th>요청일시</th>
+            <th>사용 기한</th>
             <th>작업</th>
           </tr>
         </thead>
@@ -350,6 +358,8 @@ function renderUserTable(users, type) {
               <td style="text-align:center;">
                 ${type === 'pending'
                   ? `<input type="checkbox" class="pending-select" data-id="${user.id}" ${selectedPendingIds.has(user.id) ? 'checked' : ''}>`
+                  : type === 'approved'
+                  ? `<input type="checkbox" class="approved-select" data-id="${user.id}" ${selectedApprovedIds.has(user.id) ? 'checked' : ''}>`
                   : ''}
               </td>
               <td>
@@ -361,6 +371,21 @@ function renderUserTable(users, type) {
               <td>${user.name || '-'}</td>
               <td>${user.email || '-'}</td>
               <td>${new Date(user.created_at).toLocaleString('ko-KR')}</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  ${user.expires_at 
+                    ? `<span style="color: ${new Date(user.expires_at) < new Date() ? '#ef4444' : '#10b981'};">
+                        ${new Date(user.expires_at).toLocaleDateString('ko-KR')}
+                        ${new Date(user.expires_at) < new Date() ? ' (만료됨)' : ''}
+                       </span>`
+                    : '<span style="color: #6b7280;">무제한</span>'
+                  }
+                  <button onclick="openExpiryModal('${user.id}', '${user.expires_at || ''}')" 
+                          class="btn btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                    설정
+                  </button>
+                </div>
+              </td>
               <td>
                 <div class="action-buttons">
                   ${type === 'pending' 
@@ -632,6 +657,39 @@ function bindSelectionEvents() {
   if (bulkReject) bulkReject.disabled = selectedPendingIds.size === 0;
   if (bulkApprove) bulkApprove.onclick = () => updateUserStatusBulk(Array.from(selectedPendingIds), 'approved');
   if (bulkReject) bulkReject.onclick = () => updateUserStatusBulk(Array.from(selectedPendingIds), 'rejected');
+
+  // 승인된 사용자 체크박스
+  const selectAllApproved = document.getElementById('select-all-approved');
+  const rowChecksApproved = document.querySelectorAll('.approved-select');
+  const bulkExpiry = document.getElementById('bulk-expiry');
+
+  if (selectAllApproved) {
+    selectAllApproved.checked = approvedUsers.length > 0 && approvedUsers.every(u => selectedApprovedIds.has(u.id));
+    selectAllApproved.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        approvedUsers.forEach(u => selectedApprovedIds.add(u.id));
+      } else {
+        selectedApprovedIds.clear();
+      }
+      render(); // 선택 상태 반영 위해 재렌더
+    });
+  }
+
+  rowChecksApproved.forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.checked) selectedApprovedIds.add(id);
+      else selectedApprovedIds.delete(id);
+      const allChecked = approvedUsers.length > 0 && approvedUsers.every(u => selectedApprovedIds.has(u.id));
+      if (selectAllApproved) selectAllApproved.checked = allChecked;
+      if (bulkExpiry) bulkExpiry.disabled = selectedApprovedIds.size === 0;
+    });
+  });
+
+  if (bulkExpiry) {
+    bulkExpiry.disabled = selectedApprovedIds.size === 0;
+    bulkExpiry.onclick = () => openBulkExpiryModal();
+  }
 }
 
 // 새로고침
@@ -689,6 +747,206 @@ window.refreshUsers = async function(event) {
 
 // 로그아웃
 window.signOut = signOut;
+
+// 만료일 설정 모달 열기
+window.openExpiryModal = function(userId, currentExpiry) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+  modal.innerHTML = `
+    <div class="modal-content" style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+      <h3 style="margin-top: 0;">사용 기한 설정</h3>
+      <div style="margin: 1rem 0;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+          <input type="radio" name="expiry-type-${userId}" value="unlimited" 
+                 ${!currentExpiry ? 'checked' : ''} 
+                 onchange="toggleExpiryDate('${userId}')">
+          무제한
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="radio" name="expiry-type-${userId}" value="limited" 
+                 ${currentExpiry ? 'checked' : ''} 
+                 onchange="toggleExpiryDate('${userId}')">
+          특정 날짜까지
+        </label>
+      </div>
+      <div id="expiry-date-container-${userId}" style="margin: 1rem 0; ${!currentExpiry ? 'display: none;' : ''}">
+        <input type="date" id="expiry-date-${userId}" 
+               value="${currentExpiry || ''}" 
+               style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+        <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">취소</button>
+        <button onclick="saveExpiryDate('${userId}')" class="btn btn-primary">저장</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
+
+// 만료일 타입 토글
+window.toggleExpiryDate = function(userId) {
+  const type = document.querySelector(`input[name="expiry-type-${userId}"]:checked`).value;
+  const container = document.getElementById(`expiry-date-container-${userId}`);
+  if (container) {
+    container.style.display = type === 'limited' ? 'block' : 'none';
+  }
+};
+
+// 만료일 저장
+window.saveExpiryDate = async function(userId) {
+  const type = document.querySelector(`input[name="expiry-type-${userId}"]:checked`).value;
+  const expiryDate = type === 'limited' 
+    ? document.getElementById(`expiry-date-${userId}`).value 
+    : null;
+  
+  const { error } = await supabase
+    .from('profiles')
+    .update({ expires_at: expiryDate })
+    .eq('id', userId);
+  
+  if (error) {
+    let errorMessage = '오류가 발생했습니다: ' + error.message;
+    
+    // 스키마 캐시 에러인 경우 상세 안내
+    if (error.code === 'PGRST204' || error.message.includes('schema cache') || error.message.includes('expires_at')) {
+      errorMessage += '\n\n⚠️ expires_at 컬럼을 찾을 수 없습니다.\n\n';
+      errorMessage += '🔧 해결 방법:\n\n';
+      errorMessage += '1️⃣ SQL 실행 확인:\n';
+      errorMessage += '   - Supabase SQL Editor에서\n';
+      errorMessage += '   - supabase/force_add_expires_at.sql 파일 실행\n';
+      errorMessage += '   - 또는 SUPABASE_EXPIRES_AT_SETUP.md 참고\n\n';
+      errorMessage += '2️⃣ 컬럼 확인:\n';
+      errorMessage += '   - Table Editor → profiles 테이블\n';
+      errorMessage += '   - expires_at 컬럼 존재 여부 확인\n\n';
+      errorMessage += '3️⃣ 프로젝트 재시작:\n';
+      errorMessage += '   - Settings → General → "Restart Project"\n';
+      errorMessage += '   - 재시작 완료 후 1-2분 대기\n\n';
+      errorMessage += '4️⃣ 브라우저 새로고침:\n';
+      errorMessage += '   - Ctrl+Shift+R (강력 새로고침)';
+    }
+    
+    alert(errorMessage);
+    console.error('Error updating expiry date:', error);
+    console.error('Full error object:', JSON.stringify(error, null, 2));
+    return;
+  }
+  
+  document.querySelector('.modal').remove();
+  await loadUsers();
+  render();
+  alert('사용 기한이 설정되었습니다.');
+};
+
+// 일괄 기한 설정 모달 열기
+window.openBulkExpiryModal = function() {
+  const selectedIds = Array.from(selectedApprovedIds);
+  if (selectedIds.length === 0) {
+    alert('사용자를 선택해주세요.');
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+  modal.innerHTML = `
+    <div class="modal-content" style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+      <h3 style="margin-top: 0;">일괄 사용 기한 설정</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+        선택된 사용자: <strong>${selectedIds.length}명</strong>
+      </p>
+      <div style="margin: 1rem 0;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+          <input type="radio" name="bulk-expiry-type" value="unlimited" checked onchange="toggleBulkExpiryDate()">
+          무제한
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="radio" name="bulk-expiry-type" value="limited" onchange="toggleBulkExpiryDate()">
+          특정 날짜까지
+        </label>
+      </div>
+      <div id="bulk-expiry-date-container" style="margin: 1rem 0; display: none;">
+        <input type="date" id="bulk-expiry-date" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+        <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">취소</button>
+        <button onclick="saveBulkExpiryDate()" class="btn btn-primary">저장</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
+
+// 일괄 기한 타입 토글
+window.toggleBulkExpiryDate = function() {
+  const type = document.querySelector('input[name="bulk-expiry-type"]:checked').value;
+  const container = document.getElementById('bulk-expiry-date-container');
+  if (container) {
+    container.style.display = type === 'limited' ? 'block' : 'none';
+  }
+};
+
+// 일괄 기한 저장
+window.saveBulkExpiryDate = async function() {
+  const selectedIds = Array.from(selectedApprovedIds);
+  if (selectedIds.length === 0) {
+    alert('사용자를 선택해주세요.');
+    return;
+  }
+
+  const type = document.querySelector('input[name="bulk-expiry-type"]:checked').value;
+  const expiryDate = type === 'limited' 
+    ? document.getElementById('bulk-expiry-date').value 
+    : null;
+
+  if (type === 'limited' && !expiryDate) {
+    alert('날짜를 선택해주세요.');
+    return;
+  }
+
+  const dateText = expiryDate ? new Date(expiryDate).toLocaleDateString('ko-KR') : '무제한';
+  if (!confirm(`선택한 ${selectedIds.length}명의 사용 기한을 ${dateText}으로 설정하시겠습니까?`)) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ expires_at: expiryDate })
+    .in('id', selectedIds);
+
+  if (error) {
+    let errorMessage = '오류가 발생했습니다: ' + error.message;
+    
+    // 스키마 캐시 에러인 경우 상세 안내
+    if (error.code === 'PGRST204' || error.message.includes('schema cache') || error.message.includes('expires_at')) {
+      errorMessage += '\n\n⚠️ expires_at 컬럼을 찾을 수 없습니다.\n\n';
+      errorMessage += '🔧 해결 방법:\n\n';
+      errorMessage += '1️⃣ SQL 실행 확인:\n';
+      errorMessage += '   - Supabase SQL Editor에서\n';
+      errorMessage += '   - supabase/force_add_expires_at.sql 파일 실행\n';
+      errorMessage += '   - 또는 SUPABASE_EXPIRES_AT_SETUP.md 참고\n\n';
+      errorMessage += '2️⃣ 컬럼 확인:\n';
+      errorMessage += '   - Table Editor → profiles 테이블\n';
+      errorMessage += '   - expires_at 컬럼 존재 여부 확인\n\n';
+      errorMessage += '3️⃣ 프로젝트 재시작:\n';
+      errorMessage += '   - Settings → General → "Restart Project"\n';
+      errorMessage += '   - 재시작 완료 후 1-2분 대기\n\n';
+      errorMessage += '4️⃣ 브라우저 새로고침:\n';
+      errorMessage += '   - Ctrl+Shift+R (강력 새로고침)';
+    }
+    
+    alert(errorMessage);
+    console.error('Error updating bulk expiry date:', error);
+    console.error('Full error object:', JSON.stringify(error, null, 2));
+    return;
+  }
+
+  document.querySelector('.modal').remove();
+  selectedApprovedIds.clear();
+  await loadUsers();
+  render();
+  alert(`선택한 ${selectedIds.length}명의 사용 기한이 설정되었습니다.`);
+};
 
 // 초기화 실행
 init();
