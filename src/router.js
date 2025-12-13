@@ -1,6 +1,7 @@
 import { getCurrentProfile, isApprovedUser } from './utils/auth.js';
 import { renderToday } from './pages/today.js';
 import { renderReports } from './pages/reports.js';
+import { renderMonthly } from './pages/monthly.js';
 import { renderGoals } from './pages/goals.js';
 import { renderPending } from './pages/pending.js';
 import { renderRejected } from './pages/rejected.js';
@@ -15,7 +16,7 @@ class Router {
       '/today': renderToday,
       '/reports': renderReports,
       '/weekly': renderReports, // 주간 리포트 (renderReports 사용)
-      '/monthly': () => Promise.resolve({ html: '<div class="card"><div class="card-title">월간 리포트 준비 중</div><p style="color:var(--text-secondary);">이번 달 종합 리포트와 통계를 곧 추가합니다.</p></div>' }),
+      '/monthly': renderMonthly, // 월간 리포트
       '/goals': renderGoals
     };
   }

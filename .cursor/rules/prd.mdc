@@ -16,12 +16,11 @@ alwaysApply: true
   - 디자인 시스템 (카테고리 색상, 그라데이션, Lucide 아이콘, 토글 기능, 헤더 레이아웃)
   - 토글 버튼 안정성 개선 (cloneNode 패턴으로 중복 등록 방지, Lucide 렌더링 타이밍 보장)
   - 주간 리포트 (통계 지표 + 주간 분석 + AI 주간 성찰) - 주차 선택, 실천율/완료율/성찰 작성률, 전주 대비 변화, 주간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원)
+  - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
 - 🚧 **부분**: 
   - 목표/계획 (월간 데일리 루틴만 구현, 연간목표/월계획/AI 제안 미구현)
-  - AI 기능 (주간 성찰 완료, 월간 성찰/월계획 제안 미구현)
-- ❌ **미구현**: 
-  - 월간 리포트 (월간 통계)
+  - AI 기능 (주간/월간 성찰 완료, 월계획 제안 미구현)
 
 ---
 
@@ -84,7 +83,7 @@ alwaysApply: true
 ### 6.1 화면(공통: PC/모바일 반응형)
 - `/index.html#/today` 오늘(할일/루틴/성찰)
 - `/index.html#/weekly` 주간 리포트(통계 + AI 성찰)
-- `/index.html#/monthly` 월간 리포트(통계 + AI 성찰) - 미구현
+- `/index.html#/monthly` 월간 리포트(통계 + AI 성찰) ✅ 구현 완료
 - `/index.html#/goals` 목표(연간목표/월계획 + AI 월계획)
 - `/admin.html` 관리자(승인/상태변경) — Admin만
 - **참고**: `/reports`는 `/weekly`로 자동 리다이렉트 (하위 호환성)
@@ -113,8 +112,8 @@ alwaysApply: true
 ### 7.3 리포트/AI
 - **주간 리포트** (구현됨): 주간 지표(루틴 실천율, 할일 완료율, 성찰 작성률), 주간 분석(실천율 요약, 전주 대비 변화, 주간 패턴 분석), AI 주간 성찰 생성/조회
 - **AI 주간 성찰** (구현됨): Gemini API 연동, Edge Function 배포, 마크다운 변환, 스크롤바 지원, 재생성 기능
-- 월간 통계 리포트 - 미구현
-- AI 월간 성찰 - 미구현
+- **월간 리포트** (구현됨): 월간 지표(루틴 실천율, 할일 완료율, 성찰 작성률), 월간 분석(실천율 요약, 전월 대비 변화, 월간 패턴 분석), AI 월간 성찰 생성/조회
+- **AI 월간 성찰** (구현됨): Gemini API 연동, Edge Function 배포, 마크다운 변환, 스크롤바 지원, 재생성 기능, 레이트리밋 월 2회
 
 ### 7.4 목표/월계획/AI 제안
 - **월간 데일리 루틴** (구현됨): 모닝/나이트 각 0~10개 입력, 저장 시 오늘 루틴에 자동 반영
@@ -361,7 +360,25 @@ alwaysApply: true
     - **모닝/나이트**: 각각 날짜별로 계산하여 정확한 실천율 제공
     - **루틴별 실천율**: 각 루틴의 활성 일수 기준으로 계산 (7일 고정 아님)
   - 성찰 작성일 수 = daily_reflections 존재한 date 수
-- FR-FS2. 월간 지표(합/평균) - 미구현
+- FR-FS2. 월간 지표(합/평균) ✅ 구현 완료
+  - todo 완료율 = 완료 todo / 전체 todo (해당 월 date 기준)
+  - **루틴 실천율 = 체크 true / (각 날짜별 활성 루틴 수 합계)** ✅ 날짜별 필터링 적용
+    - **날짜별 계산**: 월의 각 날짜마다 `isRoutineDue` 함수로 활성 루틴 수 계산
+    - **루틴 변경 반영**: 월 중에 루틴이 추가/삭제되어도 정확한 실천율 계산
+    - **월의 일수**: 28~31일 동적 계산 (하드코딩된 "7일" 제거)
+    - **모닝/나이트**: 각각 날짜별로 계산하여 정확한 실천율 제공
+    - **루틴별 실천율**: 각 루틴의 활성 일수 기준으로 계산
+  - 성찰 작성일 수 = daily_reflections 존재한 date 수
+  - **월간 통계 계산 로직** ✅ 구현 완료
+    - **루틴 통계**: `src/utils/monthlyStats.js`의 `getRoutinesStats` 함수
+      - 모든 루틴 조회 (`is_active` 조건 제거, PRD FR-C5 준수)
+      - 각 날짜별로 `isRoutineDue` 함수로 활성 루틴 필터링
+      - 가능한 체크 수 = 각 날짜의 활성 루틴 수 합계
+      - 모닝/나이트도 날짜별로 계산
+      - 루틴별 실천율은 활성 일수 기준으로 계산
+    - **Edge Function**: `supabase/functions/ai-monthly-reflection/index.ts`의 `collectMonthlyStats` 함수
+      - 동일한 날짜별 필터링 로직 적용
+      - AI 성찰 생성 시 정확한 통계 사용
 - FR-FS3. 규칙 기반 인사이트 문장(v1) ✅ 구현 완료
   - 예: "이번 주 할일 완료율이 70%로 양호합니다. 다음 주는 루틴 실천율을 5%p 올려보세요."
   - 주간 분석: 실천율 요약, 전주 대비 변화, 주간 패턴 분석
@@ -381,10 +398,13 @@ alwaysApply: true
 - AC-FS1. “이번 주”는 월~일 고정(기기/브라우저 무관) ✅
 - AC-FS2. 날짜 경계(23:59~00:01)에서도 기준이 흔들리지 않음(타임존 준수) ✅
 - AC-FS3. **루틴 변경 반영**: 주 중에 루틴이 추가/삭제되어도 주간 실천율이 정확하게 계산됨 ✅
+- AC-FS4. **월간 통계**: 월의 일수(28~31일) 동적 계산, 하드코딩된 "7일" 값 제거 ✅
+- AC-FS5. **루틴 변경 반영**: 월 중에 루틴이 추가/삭제되어도 월간 실천율이 정확하게 계산됨 ✅
+- AC-FS6. **전월 비교**: 연도 경계를 넘어가는 전월 계산 정확 (Luxon 사용) ✅
 
-### F-2 AI 성찰 FR-FAI (필수: Edge Function) ✅ 주간 성찰 구현 완료
+### F-2 AI 성찰 FR-FAI (필수: Edge Function) ✅ 주간/월간 성찰 구현 완료
 - FR-FAI1. 주간 AI 성찰 생성 버튼 ✅ 구현 완료
-- FR-FAI2. 월간 AI 성찰 생성 버튼 - 미구현
+- FR-FAI2. 월간 AI 성찰 생성 버튼 ✅ 구현 완료
 - FR-FAI3. 입력은 해당 기간 요약(통계 + 핵심 텍스트 일부(길이 제한)) 포함 ✅ 구현 완료
 - FR-FAI4. 결과는 `content_md`로 저장(마크다운) ✅ 구현 완료
 - FR-FAI5. 동일 기간 재생성은 upsert(덮어쓰기)로 고정 ✅ 구현 완료
@@ -400,6 +420,8 @@ alwaysApply: true
 - AC-FAI1. 생성 후 DB 저장 → PC/모바일 동일 결과 조회 ✅
 - AC-FAI2. pending/rejected/blocked는 생성/조회 불가(RLS + Edge 인증) ✅
 - AC-FAI3. AI 호출 실패 시 DB에 부분 저장 없음(서버에서 원자적 처리) ✅
+- AC-FAI4. 월간 AI 성찰 생성/조회 정상 작동 ✅
+- AC-FAI5. 월간 레이트리밋 (월 2회) 정상 작동 ✅
 
 ---
 
@@ -716,9 +738,15 @@ alwaysApply: true
 - response: { "content_md":"...", "week_start":"...", "week_end":"...", "model":"...", "prompt_version":"..." }
 - 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용
 
-2) `POST /functions/v1/ai-monthly-reflection`
-- body: { "month_start":"YYYY-MM-01" }
-- 저장: monthly_ai_reflections upsert(user_id, month_start)
+2) `POST /functions/v1/ai-monthly-reflection` ✅ 구현 완료
+- body: { "month_start":"YYYY-MM-01" }  (필수)
+- server:
+  - month_end = 해당 월의 마지막 날 계산 (28~31일)
+  - 해당 기간 통계/텍스트 요약 생성(길이 제한: 총 1,500자 권장)
+  - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 8000)
+  - monthly_ai_reflections upsert(user_id, month_start)
+- response: { "content_md":"...", "month_start":"...", "model":"...", "prompt_version":"..." }
+- 구현 상태: ✅ 배포 준비 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용 (월 2회)
 
 3) `POST /functions/v1/ai-monthly-plan`
 - body: { "month_start":"YYYY-MM-01", "linked_year": 2025 }

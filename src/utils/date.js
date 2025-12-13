@@ -58,6 +58,16 @@ export function getMonthStart(date, timezone = 'Asia/Seoul') {
 }
 
 /**
+ * 월의 종료일 (YYYY-MM-DD, 해당 월의 마지막 날) 계산
+ * @param {string} date - 기준 날짜 (YYYY-MM-DD)
+ * @returns {string} 월 종료일 (YYYY-MM-DD)
+ */
+export function getMonthEnd(date, timezone = 'Asia/Seoul') {
+  const dt = DateTime.fromISO(date).setZone(timezone);
+  return dt.endOf('month').toISODate();
+}
+
+/**
  * 주차 키 생성 (예: 2025-W49)
  */
 export function getWeekKey(date, timezone = 'Asia/Seoul') {
