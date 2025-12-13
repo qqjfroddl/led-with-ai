@@ -13,6 +13,8 @@ alwaysApply: true
   - 오늘 할일 (Todos) - 카테고리 탭, Enter 키로 수정 저장, 토글 기능, 수동 순서 변경
   - 하루 성찰 (4항목) - 기본 접힘 상태, "성찰 작성하기" 버튼으로 펼치기, 저장 후 자동 접힘, 4항목 입력/저장 (감사한 일/잘한 일/아쉬운 일/내일의 다짐)
   - 월간 데일리 루틴 (Goals 탭) - 모닝/나이트 각 0~10개 입력, Enter 키 지원, 수정/저장
+  - 연간 목표 (Goals 탭) - 연도별 3영역(자기계발/관계/업무재정) 입력/저장/조회/수정
+  - 월간 실천계획 (Goals 탭) - 3컬럼 레이아웃(연간목표 표시/월실천계획 입력/월말 결과 입력), plan_content/results_content JSONB 저장
   - 네비게이션 레이아웃 (중앙 정렬, 아이콘+텍스트 한 줄) - 주간/월간 아이콘 구분 (calendar-days/calendar)
   - 디자인 시스템 (카테고리 색상, 그라데이션, Lucide 아이콘, 토글 기능, 헤더 레이아웃)
   - 토글 버튼 안정성 개선 (cloneNode 패턴으로 중복 등록 방지, Lucide 렌더링 타이밍 보장)
@@ -20,8 +22,7 @@ alwaysApply: true
   - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
 - 🚧 **부분**: 
-  - 목표/계획 (월간 데일리 루틴만 구현, 연간목표/월계획/AI 제안 미구현)
-  - AI 기능 (주간/월간 성찰 완료, 월계획 제안 미구현)
+  - AI 기능 (주간/월간 성찰 완료, AI 월실천계획 제안 미구현)
 
 ---
 
@@ -118,8 +119,8 @@ alwaysApply: true
 
 ### 7.4 목표/월계획/AI 제안
 - **월간 데일리 루틴** (구현됨): 모닝/나이트 각 0~10개 입력, 저장 시 오늘 루틴에 자동 반영
-- 연간목표 저장(연도별 1건) - 미구현
-- 월실천계획 저장(월별) - 미구현
+- **연간목표 저장** (구현됨): 연도별 1건, 3영역(자기계발/관계/업무재정) 입력/저장/조회/수정
+- **월실천계획 저장** (구현됨): 월별 3컬럼 레이아웃(연간목표 표시/월실천계획 입력/월말 결과 입력), plan_content/results_content JSONB 저장
 - AI 월실천계획 제안 생성 → 편집 → 채택(accepted) - 미구현
 
 ---
@@ -459,28 +460,60 @@ alwaysApply: true
 - AC-G0-4. PC/모바일 동기화 정상 ✅
 - AC-G0-5. 중복 생성 방지 (기존 루틴 비활성화 후 새로 생성) ✅
 
-### G-1 연간목표 FR-GY
-- FR-GY1. 연도 선택(현재/이전/다음)
-- FR-GY2. 연도별 1건 저장(3영역)
-  - self_dev / relationship / work_finance
-- FR-GY3. 조회/수정
+### G-1 연간목표 FR-GY ✅ 구현 완료
+#### 구조 (구현됨)
+- **위치**: Goals 탭 (월간 데일리 루틴 아래)
+- **제목**: "연간 목표" (그라데이션 배경: 인디고/보라)
+- **아이콘**: `target` (제목), `book-open` (자기계발), `heart` (관계), `briefcase` (업무/재정)
+- **모드**: 보기 모드 / 편집 모드 (토글)
+- **연도 선택**: 이전/다음 연도 이동 버튼
 
-### G-1 AC
-- AC-GY1. 연도별 데이터 분리, PC/모바일 동일
+#### FR-GY (구현됨)
+- FR-GY1. 연도 선택(현재/이전/다음) ✅
+- FR-GY2. 연도별 1건 저장(3영역) ✅
+  - self_dev (자기계발)
+  - relationship (관계)
+  - work_finance (업무/재정)
+- FR-GY3. 조회/수정 ✅
 
-### G-2 월실천계획(직접) FR-GM
-- FR-GM1. 월 선택(`month_start=YYYY-MM-01`)
-- FR-GM2. 편집/저장/재조회
-- FR-GM3. 연간목표 연결 방식(고정)
+### G-1 AC (검증됨)
+- AC-GY1. 연도별 데이터 분리, PC/모바일 동일 ✅
+
+### G-2 월실천계획(직접) FR-GM ✅ 구현 완료
+#### 구조 (구현됨)
+- **위치**: Goals 탭 (연간 목표 아래)
+- **제목**: "월간 실천계획" (그라데이션 배경: 청록/녹색)
+- **아이콘**: `calendar-check` (제목)
+- **모드**: 보기 모드 / 편집 모드 (토글)
+- **월 선택**: 이전/다음 월 이동 버튼
+- **3컬럼 레이아웃**:
+  - 왼쪽: 연간목표 표시 (linked_year에 해당하는 yearly_goals 조회, 읽기 전용)
+  - 가운데: 월실천계획 입력 (plan_content JSONB - self_dev/relationship/work_finance)
+  - 오른쪽: 월말 결과 입력 (results_content JSONB - self_dev/relationship/work_finance)
+  - 구분선: 1.4px dashed #80E2E2
+
+#### FR-GM (구현됨)
+- FR-GM1. 월 선택(`month_start=YYYY-MM-01`) ✅
+- FR-GM2. 편집/저장/재조회 ✅
+- FR-GM3. 연간목표 연결 방식(고정) ✅
   - `linked_year`에 year만 저장(참조)
-  - 월계획 본문은 `content_md`에 "스냅샷 문구"를 포함할 수 있으나, DB 참조 무결성은 year만 보장
-- **FR-GM4. 월간 데일리 루틴 저장** (구현됨)
+  - 연도 선택 시 해당 연도의 yearly_goals 자동 조회하여 왼쪽 컬럼에 표시
+  - 월계획 본문은 `plan_content`, `results_content` JSONB에 영역별로 저장
+- FR-GM4. 월간 데일리 루틴 저장 ✅
   - `monthly_plans.daily_routines` JSONB 컬럼에 저장
   - 형식: `{ "morning": ["루틴1", "루틴2"], "night": ["루틴3"] }`
+- FR-GM5. plan_content JSONB 저장 ✅
+  - 형식: `{ "self_dev": "", "relationship": "", "work_finance": "" }`
+  - 각 영역별 월실천계획 입력값 저장
+- FR-GM6. results_content JSONB 저장 ✅
+  - 형식: `{ "self_dev": "", "relationship": "", "work_finance": "" }`
+  - 각 영역별 월말 결과 입력값 저장
 
-### G-2 AC
-- AC-GM1. 월별 저장/조회가 기기 간 동일
-- AC-GM2. 연간목표 수정/삭제와 무관하게 월계획이 깨지지 않음(참조는 year 값)
+### G-2 AC (검증됨)
+- AC-GM1. 월별 저장/조회가 기기 간 동일 ✅
+- AC-GM2. 연간목표 수정/삭제와 무관하게 월계획이 깨지지 않음(참조는 year 값) ✅
+- AC-GM3. linked_year 선택 시 해당 연도의 연간목표가 왼쪽 컬럼에 자동 표시됨 ✅
+- AC-GM4. plan_content와 results_content가 각각 독립적으로 저장/조회됨 ✅
 
 ### G-3 AI 월실천계획 제안 FR-GAI (필수: Edge Function)
 - FR-GAI1. “AI로 월실천계획 제안받기” 버튼
@@ -651,17 +684,19 @@ alwaysApply: true
 - id uuid PK default gen_random_uuid()
 - user_id uuid not null FK → profiles(id)
 - month_start date not null                 -- YYYY-MM-01
-- linked_year int
+- linked_year int                            -- 연간목표 연결 (year 값만 저장)
 - source text not null                      -- manual/ai_suggested
 - status text not null default 'draft'      -- draft/accepted/archived
-- content_md text not null default ''
+- content_md text not null default ''        -- 기존 마크다운 본문 (하위 호환성 유지)
+- plan_content jsonb default '{"self_dev":"","relationship":"","work_finance":""}'  -- 월실천계획 (영역별) (구현됨)
+- results_content jsonb default '{"self_dev":"","relationship":"","work_finance":""}'  -- 월말 결과 (영역별) (구현됨)
 - daily_routines jsonb default '{"morning":[],"night":[]}'  -- 월간 데일리 루틴 (구현됨)
-- model text
-- prompt_version text
+- model text                                 -- AI 생성 시 모델명 (AI 제안용)
+- prompt_version text                        -- AI 생성 시 프롬프트 버전 (AI 제안용)
 - created_at timestamptz not null default now()
 - updated_at timestamptz not null default now()
 - UNIQUE(user_id, month_start, source)
-- 인덱스: (user_id, month_start), GIN(daily_routines)
+- 인덱스: (user_id, month_start), GIN(daily_routines), GIN(plan_content), GIN(results_content)
 
 ### weekly_ai_reflections
 - id uuid PK default gen_random_uuid()

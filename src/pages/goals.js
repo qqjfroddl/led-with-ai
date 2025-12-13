@@ -104,6 +104,223 @@ export async function renderGoals() {
         <p style="margin-top: 0.5rem;">로딩 중...</p>
       </div>
     </div>
+
+    <!-- 연간 목표 -->
+    <div class="card" style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); border: 2px solid #6366f1; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15); margin-top: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid rgba(99, 102, 241, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+            <i data-lucide="target" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+          </div>
+          <div style="flex: 1;">
+            <div class="card-title" style="color: #4f46e5; font-size: 1.5rem; margin: 0;">연간 목표</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button id="yearly-goal-prev-btn" class="btn-icon" style="background: white; border: 1px solid #6366f1; color: #6366f1; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+              <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
+            </button>
+            <span id="yearly-goal-year-label" style="font-size: 1rem; font-weight: 600; color: #4f46e5; min-width: 60px; text-align: center;">2025년</span>
+            <button id="yearly-goal-next-btn" class="btn-icon" style="background: white; border: 1px solid #6366f1; color: #6366f1; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+              <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 보기 모드 -->
+      <div id="yearly-goals-view-mode" style="display: none;">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="book-open" style="width: 18px; height: 18px; color: #6366f1;"></i>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">자기계발</h4>
+            </div>
+            <div id="yearly-goal-self-dev-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
+            <div id="yearly-goal-self-dev-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
+              목표를 입력해주세요
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="heart" style="width: 18px; height: 18px; color: #ec4899;"></i>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">관계</h4>
+            </div>
+            <div id="yearly-goal-relationship-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
+            <div id="yearly-goal-relationship-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
+              목표를 입력해주세요
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #10b981;"></i>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">업무/재정</h4>
+            </div>
+            <div id="yearly-goal-work-finance-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
+            <div id="yearly-goal-work-finance-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
+              목표를 입력해주세요
+            </div>
+          </div>
+        </div>
+        <button id="edit-yearly-goals-btn" class="btn btn-secondary" style="margin-top: 1.5rem;">수정하기</button>
+      </div>
+
+      <!-- 편집 모드 -->
+      <div id="yearly-goals-edit-mode" style="display: none;">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="book-open" style="width: 18px; height: 18px; color: #6366f1;"></i>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">자기계발</h4>
+            </div>
+            <textarea id="yearly-goal-self-dev-input" placeholder="예: 매일 30분 독서하기, 새로운 언어 배우기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="heart" style="width: 18px; height: 18px; color: #ec4899;"></i>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">관계</h4>
+            </div>
+            <textarea id="yearly-goal-relationship-input" placeholder="예: 가족과 더 많은 시간 보내기, 새로운 인연 만들기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #10b981;"></i>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">업무/재정</h4>
+            </div>
+            <textarea id="yearly-goal-work-finance-input" placeholder="예: 연봉 증가 목표, 부업 시작하기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+          <button id="save-yearly-goals-btn" class="btn" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">저장하기</button>
+          <button id="cancel-yearly-goals-btn" class="btn btn-secondary">취소</button>
+        </div>
+      </div>
+
+      <!-- 로딩 상태 -->
+      <div id="yearly-goals-loading" style="text-align: center; padding: 2rem; color: #9ca3af;">
+        <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
+        <p style="margin-top: 0.5rem;">로딩 중...</p>
+      </div>
+    </div>
+
+    <!-- 월간 실천계획 -->
+    <div class="card" style="background: linear-gradient(135deg, #e0f7f4 0%, #f0fdf4 100%); border: 2px solid #14b8a6; box-shadow: 0 8px 24px rgba(20, 184, 166, 0.15); margin-top: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid rgba(20, 184, 166, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">
+            <i data-lucide="calendar-check" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+          </div>
+          <div style="flex: 1;">
+            <div class="card-title" style="color: #0f766e; font-size: 1.5rem; margin: 0;">월간 실천계획</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button id="monthly-plan-prev-btn" class="btn-icon" style="background: white; border: 1px solid #14b8a6; color: #14b8a6; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+              <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
+            </button>
+            <span id="monthly-plan-month-label" style="font-size: 1rem; font-weight: 600; color: #0f766e; min-width: 80px; text-align: center;">2025년 12월</span>
+            <button id="monthly-plan-next-btn" class="btn-icon" style="background: white; border: 1px solid #14b8a6; color: #14b8a6; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+              <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 보기 모드 -->
+      <div id="monthly-plans-view-mode" style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 왼쪽: 연간목표 표시 -->
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="target" style="width: 18px; height: 18px; color: #6366f1;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">연간목표</h4>
+            </div>
+            <div id="monthly-plan-yearly-goals-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- 연간목표는 JavaScript로 동적으로 채워짐 -->
+            </div>
+          </div>
+
+          <!-- 가운데: 월실천계획 표시 -->
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="calendar-check" style="width: 18px; height: 18px; color: #14b8a6;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월실천계획</h4>
+            </div>
+            <div id="monthly-plan-plan-content-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- 월실천계획은 JavaScript로 동적으로 채워짐 -->
+            </div>
+          </div>
+
+          <!-- 오른쪽: 월말 결과 표시 -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #10b981;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월말 결과</h4>
+            </div>
+            <div id="monthly-plan-results-content-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- 월말 결과는 JavaScript로 동적으로 채워짐 -->
+            </div>
+          </div>
+        </div>
+        <button id="edit-monthly-plans-btn" class="btn btn-secondary" style="margin-top: 1.5rem;">수정하기</button>
+      </div>
+
+      <!-- 편집 모드 -->
+      <div id="monthly-plans-edit-mode" style="display: none;">
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; color: #0f766e; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem;">연간목표 연결</label>
+          <select id="monthly-plan-linked-year-select" style="width: 100%; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+            <option value="">연결하지 않음</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 왼쪽: 연간목표 표시 (읽기 전용) -->
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="target" style="width: 18px; height: 18px; color: #6366f1;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">연간목표</h4>
+            </div>
+            <div id="monthly-plan-yearly-goals-edit-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- 연간목표는 JavaScript로 동적으로 채워짐 -->
+            </div>
+          </div>
+
+          <!-- 가운데: 월실천계획 입력 -->
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="calendar-check" style="width: 18px; height: 18px; color: #14b8a6;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월실천계획</h4>
+            </div>
+            <div id="monthly-plan-plan-content-edit-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- 월실천계획 입력 필드는 JavaScript로 동적으로 생성됨 -->
+            </div>
+          </div>
+
+          <!-- 오른쪽: 월말 결과 입력 -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #10b981;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월말 결과</h4>
+            </div>
+            <div id="monthly-plan-results-content-edit-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- 월말 결과 입력 필드는 JavaScript로 동적으로 생성됨 -->
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="save-monthly-plans-btn" class="btn" style="background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">저장하기</button>
+          <button id="cancel-monthly-plans-btn" class="btn btn-secondary">취소</button>
+        </div>
+      </div>
+
+      <!-- 로딩 상태 -->
+      <div id="monthly-plans-loading" style="text-align: center; padding: 2rem; color: #9ca3af;">
+        <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
+        <p style="margin-top: 0.5rem;">로딩 중...</p>
+      </div>
+    </div>
   `;
 
   return {
@@ -386,16 +603,37 @@ export async function renderGoals() {
         try {
           console.log('[Saving]', dailyRoutines);
 
-          // 1. monthly_plans 저장
+          // 기존 레코드 조회 (content_md, linked_year 유지용)
+          const { data: existingPlan } = await supabase
+            .from('monthly_plans')
+            .select('content_md, linked_year')
+            .eq('user_id', profile.id)
+            .eq('month_start', currentMonth)
+            .eq('source', 'manual')
+            .maybeSingle();
+
+          // 1. monthly_plans 저장 (기존 content_md, linked_year 유지)
+          const updateData = {
+            user_id: profile.id,
+            month_start: currentMonth,
+            source: 'manual',
+            daily_routines: dailyRoutines,
+            status: 'draft'
+          };
+
+          // 기존 content_md와 linked_year가 있으면 유지
+          if (existingPlan) {
+            if (existingPlan.content_md) {
+              updateData.content_md = existingPlan.content_md;
+            }
+            if (existingPlan.linked_year) {
+              updateData.linked_year = existingPlan.linked_year;
+            }
+          }
+
           const { data: savedPlan, error: saveError } = await supabase
             .from('monthly_plans')
-            .upsert({
-              user_id: profile.id,
-              month_start: currentMonth,
-              source: 'manual',
-              daily_routines: dailyRoutines,
-              status: 'draft'
-            }, {
+            .upsert(updateData, {
               onConflict: 'user_id,month_start,source'
             })
             .select()
@@ -592,6 +830,714 @@ export async function renderGoals() {
 
       // 초기 로드
       await loadRoutines();
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 연간 목표 관련 변수 및 함수
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      const currentYear = new Date().getFullYear();
+      let selectedYear = currentYear;
+      let yearlyGoals = {
+        self_dev: null,
+        relationship: null,
+        work_finance: null
+      };
+      let isYearlyGoalsEditMode = false;
+
+      // 연도 레이블 업데이트
+      function updateYearLabel() {
+        const yearLabel = document.getElementById('yearly-goal-year-label');
+        if (yearLabel) {
+          yearLabel.textContent = `${selectedYear}년`;
+        }
+      }
+
+      // 연간 목표 조회
+      async function loadYearlyGoals() {
+        try {
+          document.getElementById('yearly-goals-loading').style.display = 'block';
+          document.getElementById('yearly-goals-view-mode').style.display = 'none';
+          document.getElementById('yearly-goals-edit-mode').style.display = 'none';
+
+          const { data, error } = await supabase
+            .from('yearly_goals')
+            .select('*')
+            .eq('user_id', profile.id)
+            .eq('year', selectedYear)
+            .maybeSingle();
+
+          if (error) {
+            console.error('[Yearly Goals Load Error]', error);
+            throw error;
+          }
+
+          if (data) {
+            yearlyGoals = {
+              self_dev: data.self_dev || null,
+              relationship: data.relationship || null,
+              work_finance: data.work_finance || null
+            };
+            displayYearlyGoals();
+          } else {
+            // 데이터가 없으면 편집 모드로
+            yearlyGoals = {
+              self_dev: null,
+              relationship: null,
+              work_finance: null
+            };
+            switchToYearlyGoalsEditMode();
+          }
+        } catch (error) {
+          console.error('[Yearly Goals Load Failed]', error);
+          alert('연간 목표를 불러오는 중 오류가 발생했습니다.');
+          switchToYearlyGoalsEditMode();
+        } finally {
+          document.getElementById('yearly-goals-loading').style.display = 'none';
+        }
+      }
+
+      // 연간 목표 표시
+      function displayYearlyGoals() {
+        const selfDevDisplay = document.getElementById('yearly-goal-self-dev-display');
+        const selfDevEmpty = document.getElementById('yearly-goal-self-dev-empty');
+        const relationshipDisplay = document.getElementById('yearly-goal-relationship-display');
+        const relationshipEmpty = document.getElementById('yearly-goal-relationship-empty');
+        const workFinanceDisplay = document.getElementById('yearly-goal-work-finance-display');
+        const workFinanceEmpty = document.getElementById('yearly-goal-work-finance-empty');
+
+        if (yearlyGoals.self_dev) {
+          selfDevDisplay.textContent = yearlyGoals.self_dev;
+          selfDevDisplay.style.display = 'block';
+          selfDevEmpty.style.display = 'none';
+        } else {
+          selfDevDisplay.style.display = 'none';
+          selfDevEmpty.style.display = 'block';
+        }
+
+        if (yearlyGoals.relationship) {
+          relationshipDisplay.textContent = yearlyGoals.relationship;
+          relationshipDisplay.style.display = 'block';
+          relationshipEmpty.style.display = 'none';
+        } else {
+          relationshipDisplay.style.display = 'none';
+          relationshipEmpty.style.display = 'block';
+        }
+
+        if (yearlyGoals.work_finance) {
+          workFinanceDisplay.textContent = yearlyGoals.work_finance;
+          workFinanceDisplay.style.display = 'block';
+          workFinanceEmpty.style.display = 'none';
+        } else {
+          workFinanceDisplay.style.display = 'none';
+          workFinanceEmpty.style.display = 'block';
+        }
+
+        switchToYearlyGoalsViewMode();
+      }
+
+      // 연간 목표 모드 전환
+      function switchToYearlyGoalsViewMode() {
+        document.getElementById('yearly-goals-view-mode').style.display = 'block';
+        document.getElementById('yearly-goals-edit-mode').style.display = 'none';
+        document.getElementById('yearly-goals-loading').style.display = 'none';
+        isYearlyGoalsEditMode = false;
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      function switchToYearlyGoalsEditMode() {
+        document.getElementById('yearly-goals-view-mode').style.display = 'none';
+        document.getElementById('yearly-goals-edit-mode').style.display = 'block';
+        document.getElementById('yearly-goals-loading').style.display = 'none';
+        isYearlyGoalsEditMode = true;
+
+        // 입력 필드에 현재 값 설정
+        document.getElementById('yearly-goal-self-dev-input').value = yearlyGoals.self_dev || '';
+        document.getElementById('yearly-goal-relationship-input').value = yearlyGoals.relationship || '';
+        document.getElementById('yearly-goal-work-finance-input').value = yearlyGoals.work_finance || '';
+
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      // 연간 목표 저장
+      async function saveYearlyGoals() {
+        const selfDev = document.getElementById('yearly-goal-self-dev-input').value.trim();
+        const relationship = document.getElementById('yearly-goal-relationship-input').value.trim();
+        const workFinance = document.getElementById('yearly-goal-work-finance-input').value.trim();
+
+        try {
+          const { data, error } = await supabase
+            .from('yearly_goals')
+            .upsert({
+              user_id: profile.id,
+              year: selectedYear,
+              self_dev: selfDev || null,
+              relationship: relationship || null,
+              work_finance: workFinance || null
+            }, {
+              onConflict: 'user_id,year'
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error('[Yearly Goals Save Error]', error);
+            throw error;
+          }
+
+          yearlyGoals = {
+            self_dev: data.self_dev,
+            relationship: data.relationship,
+            work_finance: data.work_finance
+          };
+
+          alert('저장되었습니다!');
+          displayYearlyGoals();
+        } catch (error) {
+          console.error('[Yearly Goals Save Failed]', error);
+          alert(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+        }
+      }
+
+      // 연간 목표 이벤트 리스너
+      const handleYearlyGoalPrev = () => {
+        selectedYear--;
+        updateYearLabel();
+        loadYearlyGoals();
+      };
+      const handleYearlyGoalNext = () => {
+        selectedYear++;
+        updateYearLabel();
+        loadYearlyGoals();
+      };
+      const handleEditYearlyGoals = () => switchToYearlyGoalsEditMode();
+      const handleCancelYearlyGoals = () => {
+        if (yearlyGoals.self_dev || yearlyGoals.relationship || yearlyGoals.work_finance) {
+          displayYearlyGoals();
+        } else {
+          loadYearlyGoals();
+        }
+      };
+      const handleSaveYearlyGoals = () => saveYearlyGoals();
+
+      document.getElementById('yearly-goal-prev-btn')?.addEventListener('click', handleYearlyGoalPrev);
+      document.getElementById('yearly-goal-next-btn')?.addEventListener('click', handleYearlyGoalNext);
+      document.getElementById('edit-yearly-goals-btn')?.addEventListener('click', handleEditYearlyGoals);
+      document.getElementById('cancel-yearly-goals-btn')?.addEventListener('click', handleCancelYearlyGoals);
+      document.getElementById('save-yearly-goals-btn')?.addEventListener('click', handleSaveYearlyGoals);
+
+      // 연도 레이블 초기화 및 초기 로드
+      updateYearLabel();
+      await loadYearlyGoals();
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 월간 실천계획 관련 변수 및 함수
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      let selectedMonthStart = currentMonth; // YYYY-MM-01 형식
+      let monthlyPlan = {
+        linked_year: null,
+        content_md: null,
+        plan_content: { self_dev: '', relationship: '', work_finance: '' },
+        results_content: { self_dev: '', relationship: '', work_finance: '' },
+        daily_routines: { morning: [], night: [] }
+      };
+      let linkedYearlyGoals = null; // linked_year에 해당하는 연간 목표
+      let isMonthlyPlanEditMode = false;
+
+      // 월 레이블 업데이트
+      function updateMonthLabel() {
+        const monthLabel = document.getElementById('monthly-plan-month-label');
+        if (monthLabel) {
+          const [year, month] = selectedMonthStart.split('-');
+          const monthNum = parseInt(month);
+          monthLabel.textContent = `${year}년 ${monthNum}월`;
+        }
+      }
+
+      // 월 이동 (이전/다음)
+      function shiftMonth(direction) {
+        const [year, month] = selectedMonthStart.split('-').map(Number);
+        let newYear = year;
+        let newMonth = month + direction;
+        
+        if (newMonth > 12) {
+          newMonth = 1;
+          newYear++;
+        } else if (newMonth < 1) {
+          newMonth = 12;
+          newYear--;
+        }
+        
+        selectedMonthStart = `${newYear}-${String(newMonth).padStart(2, '0')}-01`;
+        updateMonthLabel();
+        loadMonthlyPlan();
+      }
+
+      // 월간 실천계획 조회 (daily_routines 포함하여 전체 레코드 로드)
+      async function loadMonthlyPlan() {
+        try {
+          document.getElementById('monthly-plans-loading').style.display = 'block';
+          document.getElementById('monthly-plans-view-mode').style.display = 'none';
+          document.getElementById('monthly-plans-edit-mode').style.display = 'none';
+
+          const { data, error } = await supabase
+            .from('monthly_plans')
+            .select('*')
+            .eq('user_id', profile.id)
+            .eq('month_start', selectedMonthStart)
+            .eq('source', 'manual')
+            .maybeSingle();
+
+          if (error) {
+            console.error('[Monthly Plan Load Error]', error);
+            throw error;
+          }
+
+          if (data) {
+            monthlyPlan = {
+              linked_year: data.linked_year,
+              content_md: data.content_md || null,
+              plan_content: data.plan_content || { self_dev: '', relationship: '', work_finance: '' },
+              results_content: data.results_content || { self_dev: '', relationship: '', work_finance: '' },
+              daily_routines: data.daily_routines || { morning: [], night: [] }
+            };
+
+            // linked_year가 있으면 연간 목표 로드
+            if (data.linked_year) {
+              await loadLinkedYearlyGoals(data.linked_year);
+            } else {
+              linkedYearlyGoals = null;
+            }
+
+            displayMonthlyPlan();
+          } else {
+            // 데이터가 없으면 편집 모드로
+            monthlyPlan = {
+              linked_year: null,
+              content_md: null,
+              plan_content: { self_dev: '', relationship: '', work_finance: '' },
+              results_content: { self_dev: '', relationship: '', work_finance: '' },
+              daily_routines: { morning: [], night: [] }
+            };
+            linkedYearlyGoals = null;
+            switchToMonthlyPlanEditMode();
+          }
+        } catch (error) {
+          console.error('[Monthly Plan Load Failed]', error);
+          alert('월간 실천계획을 불러오는 중 오류가 발생했습니다.');
+          switchToMonthlyPlanEditMode();
+        } finally {
+          document.getElementById('monthly-plans-loading').style.display = 'none';
+        }
+      }
+
+      // linked_year에 해당하는 연간 목표 로드
+      async function loadLinkedYearlyGoals(year) {
+        try {
+          const { data, error } = await supabase
+            .from('yearly_goals')
+            .select('*')
+            .eq('user_id', profile.id)
+            .eq('year', year)
+            .maybeSingle();
+
+          if (error) {
+            console.error('[Linked Yearly Goals Load Error]', error);
+            linkedYearlyGoals = null;
+            return;
+          }
+
+          linkedYearlyGoals = data || null;
+        } catch (error) {
+          console.error('[Linked Yearly Goals Load Failed]', error);
+          linkedYearlyGoals = null;
+        }
+      }
+
+      // 연간 목표 목록 로드 (드롭다운용)
+      async function loadYearlyGoalsForDropdown() {
+        try {
+          const { data, error } = await supabase
+            .from('yearly_goals')
+            .select('year')
+            .eq('user_id', profile.id)
+            .order('year', { ascending: false });
+
+          if (error) {
+            console.error('[Yearly Goals Dropdown Load Error]', error);
+            return;
+          }
+
+          const select = document.getElementById('monthly-plan-linked-year-select');
+          if (!select) return;
+
+          // 기존 옵션 유지 (첫 번째 "연결하지 않음" 옵션)
+          const currentValue = select.value;
+          select.innerHTML = '<option value="">연결하지 않음</option>';
+
+          if (data && data.length > 0) {
+            data.forEach(item => {
+              const option = document.createElement('option');
+              option.value = item.year;
+              option.textContent = `${item.year}년 목표`;
+              select.appendChild(option);
+            });
+          }
+
+          // 기존 값 복원
+          if (currentValue) {
+            select.value = currentValue;
+          }
+        } catch (error) {
+          console.error('[Yearly Goals Dropdown Load Failed]', error);
+        }
+      }
+
+      // 월간 실천계획 표시 (3컬럼 레이아웃)
+      function displayMonthlyPlan() {
+        // 왼쪽: 연간목표 표시
+        const yearlyGoalsContainer = document.getElementById('monthly-plan-yearly-goals-container');
+        if (yearlyGoalsContainer) {
+          if (linkedYearlyGoals) {
+            yearlyGoalsContainer.innerHTML = `
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+                </div>
+                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.self_dev || '목표를 입력해주세요'}</div>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+                </div>
+                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.relationship || '목표를 입력해주세요'}</div>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+                </div>
+                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.work_finance || '목표를 입력해주세요'}</div>
+              </div>
+            `;
+          } else {
+            yearlyGoalsContainer.innerHTML = '<div style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; text-align: center;">연결된 연간목표가 없습니다</div>';
+          }
+        }
+
+        // 가운데: 월실천계획 표시
+        const planContainer = document.getElementById('monthly-plan-plan-content-container');
+        if (planContainer) {
+          planContainer.innerHTML = `
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.self_dev || '실천계획을 입력해주세요'}</div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.relationship || '실천계획을 입력해주세요'}</div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.work_finance || '실천계획을 입력해주세요'}</div>
+            </div>
+          `;
+        }
+
+        // 오른쪽: 월말 결과 표시
+        const resultsContainer = document.getElementById('monthly-plan-results-content-container');
+        if (resultsContainer) {
+          resultsContainer.innerHTML = `
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.self_dev || '결과를 입력해주세요'}</div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.relationship || '결과를 입력해주세요'}</div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.work_finance || '결과를 입력해주세요'}</div>
+            </div>
+          `;
+        }
+
+        switchToMonthlyPlanViewMode();
+      }
+
+      // 월간 실천계획 모드 전환
+      function switchToMonthlyPlanViewMode() {
+        document.getElementById('monthly-plans-view-mode').style.display = 'block';
+        document.getElementById('monthly-plans-edit-mode').style.display = 'none';
+        document.getElementById('monthly-plans-loading').style.display = 'none';
+        isMonthlyPlanEditMode = false;
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      async function switchToMonthlyPlanEditMode() {
+        document.getElementById('monthly-plans-view-mode').style.display = 'none';
+        document.getElementById('monthly-plans-edit-mode').style.display = 'block';
+        document.getElementById('monthly-plans-loading').style.display = 'none';
+        isMonthlyPlanEditMode = true;
+
+        // 드롭다운 로드
+        await loadYearlyGoalsForDropdown();
+
+        // linked_year 선택 시 연간 목표 로드
+        const linkedYearSelect = document.getElementById('monthly-plan-linked-year-select');
+        if (linkedYearSelect) {
+          linkedYearSelect.value = monthlyPlan.linked_year || '';
+          
+          // change 이벤트 리스너 추가 (연도 선택 시 연간 목표 로드)
+          linkedYearSelect.onchange = async () => {
+            const selectedYear = linkedYearSelect.value;
+            if (selectedYear) {
+              await loadLinkedYearlyGoals(parseInt(selectedYear));
+              renderYearlyGoalsInEditMode();
+            } else {
+              linkedYearlyGoals = null;
+              renderYearlyGoalsInEditMode();
+            }
+          };
+
+          // 초기 연간 목표 로드
+          if (monthlyPlan.linked_year) {
+            await loadLinkedYearlyGoals(monthlyPlan.linked_year);
+          }
+        }
+
+        // 편집 모드 렌더링
+        renderYearlyGoalsInEditMode();
+        renderPlanContentInEditMode();
+        renderResultsContentInEditMode();
+
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      // 편집 모드: 연간목표 표시 (읽기 전용)
+      function renderYearlyGoalsInEditMode() {
+        const container = document.getElementById('monthly-plan-yearly-goals-edit-container');
+        if (!container) return;
+
+        if (linkedYearlyGoals) {
+          container.innerHTML = `
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+              </div>
+              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.self_dev || '목표를 입력해주세요'}</div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+              </div>
+              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.relationship || '목표를 입력해주세요'}</div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+              </div>
+              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.work_finance || '목표를 입력해주세요'}</div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = '<div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; text-align: center; border: 1px solid #d1d5db;">연결된 연간목표가 없습니다</div>';
+        }
+      }
+
+      // 편집 모드: 월실천계획 입력 필드
+      function renderPlanContentInEditMode() {
+        const container = document.getElementById('monthly-plan-plan-content-edit-container');
+        if (!container) return;
+
+        container.innerHTML = `
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+            </div>
+            <textarea id="plan-content-self-dev-input" placeholder="이번 달 자기계발 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.self_dev || ''}</textarea>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+            </div>
+            <textarea id="plan-content-relationship-input" placeholder="이번 달 관계 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.relationship || ''}</textarea>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+            </div>
+            <textarea id="plan-content-work-finance-input" placeholder="이번 달 업무/재정 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.work_finance || ''}</textarea>
+          </div>
+        `;
+      }
+
+      // 편집 모드: 월말 결과 입력 필드
+      function renderResultsContentInEditMode() {
+        const container = document.getElementById('monthly-plan-results-content-edit-container');
+        if (!container) return;
+
+        container.innerHTML = `
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+            </div>
+            <textarea id="results-content-self-dev-input" placeholder="월말 자기계발 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.self_dev || ''}</textarea>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+            </div>
+            <textarea id="results-content-relationship-input" placeholder="월말 관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.relationship || ''}</textarea>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+            </div>
+            <textarea id="results-content-work-finance-input" placeholder="월말 업무/재정 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.work_finance || ''}</textarea>
+          </div>
+        `;
+      }
+
+      // 월간 실천계획 저장 (daily_routines, plan_content, results_content 포함)
+      async function saveMonthlyPlan() {
+        const linkedYear = document.getElementById('monthly-plan-linked-year-select').value;
+        
+        // plan_content 입력값 수집
+        const planContent = {
+          self_dev: document.getElementById('plan-content-self-dev-input')?.value.trim() || '',
+          relationship: document.getElementById('plan-content-relationship-input')?.value.trim() || '',
+          work_finance: document.getElementById('plan-content-work-finance-input')?.value.trim() || ''
+        };
+
+        // results_content 입력값 수집
+        const resultsContent = {
+          self_dev: document.getElementById('results-content-self-dev-input')?.value.trim() || '',
+          relationship: document.getElementById('results-content-relationship-input')?.value.trim() || '',
+          work_finance: document.getElementById('results-content-work-finance-input')?.value.trim() || ''
+        };
+
+        try {
+          // 기존 레코드 조회 (daily_routines, content_md 유지용)
+          const { data: existingPlan } = await supabase
+            .from('monthly_plans')
+            .select('daily_routines, content_md')
+            .eq('user_id', profile.id)
+            .eq('month_start', selectedMonthStart)
+            .eq('source', 'manual')
+            .maybeSingle();
+
+          const updateData = {
+            user_id: profile.id,
+            month_start: selectedMonthStart,
+            source: 'manual',
+            linked_year: linkedYear ? parseInt(linkedYear) : null,
+            plan_content: planContent,
+            results_content: resultsContent,
+            status: 'draft'
+          };
+
+          // 기존 daily_routines와 content_md 유지
+          if (existingPlan) {
+            if (existingPlan.daily_routines) {
+              updateData.daily_routines = existingPlan.daily_routines;
+            }
+            if (existingPlan.content_md) {
+              updateData.content_md = existingPlan.content_md;
+            }
+          } else {
+            // 없으면 기본값
+            updateData.daily_routines = { morning: [], night: [] };
+          }
+
+          const { data, error } = await supabase
+            .from('monthly_plans')
+            .upsert(updateData, {
+              onConflict: 'user_id,month_start,source'
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error('[Monthly Plan Save Error]', error);
+            throw error;
+          }
+
+          monthlyPlan = {
+            linked_year: data.linked_year,
+            content_md: data.content_md || null,
+            plan_content: data.plan_content || { self_dev: '', relationship: '', work_finance: '' },
+            results_content: data.results_content || { self_dev: '', relationship: '', work_finance: '' },
+            daily_routines: data.daily_routines || { morning: [], night: [] }
+          };
+
+          // linked_year가 변경되었거나 새로 설정된 경우 연간 목표 다시 로드
+          if (data.linked_year) {
+            await loadLinkedYearlyGoals(data.linked_year);
+          } else {
+            linkedYearlyGoals = null;
+          }
+
+          alert('저장되었습니다!');
+          displayMonthlyPlan();
+        } catch (error) {
+          console.error('[Monthly Plan Save Failed]', error);
+          alert(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+        }
+      }
+
+      // 월간 실천계획 이벤트 리스너
+      const handleMonthlyPlanPrev = () => shiftMonth(-1);
+      const handleMonthlyPlanNext = () => shiftMonth(1);
+      const handleEditMonthlyPlan = () => switchToMonthlyPlanEditMode();
+      const handleCancelMonthlyPlan = () => {
+        // 데이터가 있으면 보기 모드로, 없으면 다시 로드
+        if (monthlyPlan.plan_content?.self_dev || monthlyPlan.plan_content?.relationship || monthlyPlan.plan_content?.work_finance || 
+            monthlyPlan.results_content?.self_dev || monthlyPlan.results_content?.relationship || monthlyPlan.results_content?.work_finance) {
+          displayMonthlyPlan();
+        } else {
+          loadMonthlyPlan();
+        }
+      };
+      const handleSaveMonthlyPlan = () => saveMonthlyPlan();
+
+      document.getElementById('monthly-plan-prev-btn')?.addEventListener('click', handleMonthlyPlanPrev);
+      document.getElementById('monthly-plan-next-btn')?.addEventListener('click', handleMonthlyPlanNext);
+      document.getElementById('edit-monthly-plans-btn')?.addEventListener('click', handleEditMonthlyPlan);
+      document.getElementById('cancel-monthly-plans-btn')?.addEventListener('click', handleCancelMonthlyPlan);
+      document.getElementById('save-monthly-plans-btn')?.addEventListener('click', handleSaveMonthlyPlan);
+
+      // 월 레이블 초기화 및 초기 로드
+      updateMonthLabel();
+      await loadMonthlyPlan();
     }
   };
 }
