@@ -116,6 +116,79 @@ body {
   margin-bottom: 2rem;
 }
 
+/* 로그인 화면 로고 이미지 래퍼 */
+.auth-logo-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: visible;
+}
+
+/* 로그인 화면 로고 이미지 */
+.auth-logo {
+  max-width: 260%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* 이미지 하단에 겹쳐지는 로그인 버튼 */
+.auth-login-btn {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  margin-left: 0;
+  min-width: 216px;
+  max-width: 288px;
+  padding: 0.6rem 1.3rem;
+  font-size: 1.2rem;
+  background: #374151 !important;
+  color: white !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.auth-login-btn:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: #6b7280;
+  background: #4b5563;
+}
+
+.auth-login-btn:active {
+  transform: translateX(-50%) translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: #1f2937;
+}
+
+/* 반응형: 모바일에서 이미지 크기 조정 */
+@media (max-width: 768px) {
+  .auth-logo {
+    max-width: 240%;
+  }
+  
+  .auth-login-btn {
+    min-width: 180px;
+    max-width: 252px;
+    bottom: 1.5rem;
+    font-size: 1.125rem;
+    padding: 0.525rem 1.125rem;
+    border-radius: 20px;
+  }
+}
+
 /* 앱 헤더 컨테이너 (통합) */
 .app-header-container {
   /* position: fixed 제거 - 일반 흐름으로 변경하여 스크롤 시 사라지도록 */
