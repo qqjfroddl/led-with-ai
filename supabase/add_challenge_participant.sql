@@ -40,3 +40,4 @@ WHERE status = 'approved'
 ORDER BY created_at DESC
 LIMIT 10;
 
+

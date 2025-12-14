@@ -230,10 +230,13 @@ export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) 
     return getEmptyRoutinesStats(totalDays);
   }
   
-  // 루틴별 체크 수 계산
-  const routineCheckCounts = {};
+  // ✅ 루틴별 체크 수 계산 (이름 기준으로 집계 - 같은 이름의 루틴이 여러 ID로 존재할 수 있음)
+  const routineCheckCountsByTitle = {};
   logs.forEach(log => {
-    routineCheckCounts[log.routine_id] = (routineCheckCounts[log.routine_id] || 0) + 1;
+    const routine = routines.find(r => r.id === log.routine_id);
+    if (routine && routine.title) {
+      routineCheckCountsByTitle[routine.title] = (routineCheckCountsByTitle[routine.title] || 0) + 1;
+    }
   });
   
   // ✅ 날짜별로 활성 루틴 수 계산 (루틴 변경 반영)
@@ -243,7 +246,7 @@ export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) 
   const dailyActiveRoutines = {}; // 날짜별 활성 루틴 수
   const dailyMorningRoutines = {}; // 날짜별 모닝 루틴 수
   const dailyNightRoutines = {}; // 날짜별 나이트 루틴 수
-  const routineActiveDays = {}; // 루틴별 활성 일수
+  const routineActiveDaysByTitle = {}; // 루틴 이름별 활성 일수
   
   const DateTime = getDateTimeLib();
   const startDate = DateTime.fromISO(monthStart);
@@ -277,12 +280,14 @@ export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) 
     morningPossible += morningCount;
     nightPossible += nightCount;
     
-    // 루틴별 활성 일수 계산
+    // ✅ 루틴별 활성 일수 계산 (이름 기준으로 집계)
     activeRoutines.forEach(r => {
-      if (!routineActiveDays[r.id]) {
-        routineActiveDays[r.id] = 0;
+      if (r.title) {
+        if (!routineActiveDaysByTitle[r.title]) {
+          routineActiveDaysByTitle[r.title] = 0;
+        }
+        routineActiveDaysByTitle[r.title]++;
       }
-      routineActiveDays[r.id]++;
     });
   }
   
@@ -319,15 +324,44 @@ export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) 
     dailyChecks[dateStr] = logs.filter(l => l.date === dateStr).length;
   }
   
-  // 루틴별 실천율 (활성 일수 기준으로 계산)
-  const routineRates = routines.map(routine => {
-    const activeDays = routineActiveDays[routine.id] || 0;
-    const checks = routineCheckCounts[routine.id] || 0;
-    const rate = activeDays > 0 ? Math.round((checks / activeDays) * 100) : 0;
+  // ✅ 루틴별 실천율 (이름 기준으로 집계 - 같은 이름의 루틴 통합)
+  const routineMapByTitle = {}; // 이름별로 루틴 그룹화
+  
+  // 모든 루틴을 이름별로 그룹화 (가장 최근 루틴 ID 사용)
+  routines.forEach(routine => {
+    if (routine.title) {
+      if (!routineMapByTitle[routine.title]) {
+        routineMapByTitle[routine.title] = {
+          id: routine.id, // 가장 최근 루틴 ID 사용
+          title: routine.title,
+          totalChecks: 0,
+          activeDays: 0
+        };
+      }
+      // 같은 이름의 루틴 중 가장 최근 것 선택
+      const existingRoutine = routineMapByTitle[routine.title];
+      if (routine.created_at && (!existingRoutine.created_at || new Date(routine.created_at) > new Date(existingRoutine.created_at))) {
+        routineMapByTitle[routine.title].id = routine.id;
+        routineMapByTitle[routine.title].created_at = routine.created_at;
+      }
+    }
+  });
+  
+  // 체크 수와 활성 일수 합산
+  Object.keys(routineMapByTitle).forEach(title => {
+    routineMapByTitle[title].totalChecks = routineCheckCountsByTitle[title] || 0;
+    routineMapByTitle[title].activeDays = routineActiveDaysByTitle[title] || 0;
+  });
+  
+  // 루틴별 실천율 계산
+  const routineRates = Object.values(routineMapByTitle).map(routine => {
+    const rate = routine.activeDays > 0 
+      ? Math.round((routine.totalChecks / routine.activeDays) * 100) 
+      : 0;
     return {
       id: routine.id,
       title: routine.title,
-      totalChecks: checks,
+      totalChecks: routine.totalChecks,
       rate: rate
     };
   });

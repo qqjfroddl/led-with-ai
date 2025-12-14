@@ -2,6 +2,9 @@ import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
 
+// 피드백 적용 버튼 이벤트 핸들러 (중복 등록 방지를 위한 모듈 레벨 변수)
+let applyFeedbackClickHandler = null;
+
 export async function renderGoals() {
   const html = `
     <div class="card">
@@ -20,13 +23,19 @@ export async function renderGoals() {
           <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
             <i data-lucide="repeat" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
-          <div>
-            <div class="card-title" style="color: #7c3aed; font-size: 1.5rem; margin: 0;">월간 데일리 루틴</div>
-            <p style="color: #6b7280; font-size: 0.9rem; margin: 0.25rem 0 0 0;" id="routine-month-label">12월 매일 실천할 루틴</p>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="card-title" style="color: #7c3aed; font-size: 1.5rem; margin: 0;">월간 데일리 루틴</div>
+              <button id="toggle-routines" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
+                <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #7c3aed;"></i>
+              </button>
+            </div>
+            <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;" id="routine-month-label">12월 매일 실천할 루틴</p>
           </div>
         </div>
       </div>
 
+      <div id="routines-content" style="display: block;">
       <!-- 보기 모드 -->
       <div id="routines-view-mode" style="display: none;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
@@ -103,30 +112,44 @@ export async function renderGoals() {
         <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
         <p style="margin-top: 0.5rem;">로딩 중...</p>
       </div>
+      </div>
     </div>
 
     <!-- 연간 목표 -->
     <div class="card" style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); border: 2px solid #6366f1; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15); margin-top: 1.5rem;">
       <div class="card-header" style="border-bottom: 2px solid rgba(99, 102, 241, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
-            <i data-lucide="target" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
-          </div>
-          <div style="flex: 1;">
-            <div class="card-title" style="color: #4f46e5; font-size: 1.5rem; margin: 0;">연간 목표</div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+              <i data-lucide="target" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="card-title" style="color: #4f46e5; font-size: 1.5rem; margin: 0;">연간 목표</div>
+                <button id="toggle-yearly-goals" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
+                  <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #4f46e5;"></i>
+                </button>
+              </div>
+              <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;" id="yearly-goal-subtitle">2025년 연간 목표</p>
+            </div>
           </div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <button id="yearly-goal-prev-btn" class="btn-icon" style="background: white; border: 1px solid #6366f1; color: #6366f1; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
             </button>
-            <span id="yearly-goal-year-label" style="font-size: 1rem; font-weight: 600; color: #4f46e5; min-width: 60px; text-align: center;">2025년</span>
+            <span id="yearly-goal-year-label" style="font-size: 1rem; font-weight: 600; color: #4f46e5; min-width: 60px; text-align: center; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'">2025년</span>
             <button id="yearly-goal-next-btn" class="btn-icon" style="background: white; border: 1px solid #6366f1; color: #6366f1; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+            </button>
+            <button id="yearly-goal-go-to-current-year-btn" class="btn-icon" style="background: #e0e7ff; border: 1px solid rgba(99, 102, 241, 0.2); color: #1f2937; padding: 0.375rem 0.875rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: none;">
+              <i data-lucide="calendar" style="width: 16px; height: 16px; margin-right: 0.25rem;"></i>
+              올해로
             </button>
           </div>
         </div>
       </div>
 
+      <div id="yearly-goals-content" style="display: block;">
       <!-- 보기 모드 -->
       <div id="yearly-goals-view-mode" style="display: none;">
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
@@ -193,9 +216,71 @@ export async function renderGoals() {
             <textarea id="yearly-goal-work-finance-input" placeholder="예: 연봉 증가 목표, 부업 시작하기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
           </div>
         </div>
-        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <button id="ai-feedback-yearly-goals-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
+            <i data-lucide="sparkles" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            AI로 피드백받기
+          </button>
           <button id="save-yearly-goals-btn" class="btn" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">저장하기</button>
           <button id="cancel-yearly-goals-btn" class="btn btn-secondary">취소</button>
+        </div>
+
+        <!-- AI 피드백 표시 영역 -->
+        <div id="yearly-goals-ai-feedback" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #f0e7ff 0%, #fce7f3 100%); border: 2px solid #a78bfa; border-radius: 12px;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <i data-lucide="sparkles" style="width: 20px; height: 20px; color: #a78bfa;"></i>
+            <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">AI 피드백</h4>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
+                <div id="feedback-original-self-dev" style="color: #374151; white-space: pre-wrap;"></div>
+              </div>
+              <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 8px; border: 1px solid #86efac;">
+                <div style="font-size: 0.85rem; color: #16a34a; margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
+                <div id="feedback-improved-self-dev" style="color: #166534; white-space: pre-wrap;"></div>
+              </div>
+              <button class="apply-feedback-btn" data-field="self_dev" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
+            </div>
+
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
+                <div id="feedback-original-relationship" style="color: #374151; white-space: pre-wrap;"></div>
+              </div>
+              <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 8px; border: 1px solid #86efac;">
+                <div style="font-size: 0.85rem; color: #16a34a; margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
+                <div id="feedback-improved-relationship" style="color: #166534; white-space: pre-wrap;"></div>
+              </div>
+              <button class="apply-feedback-btn" data-field="relationship" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
+            </div>
+
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+              </div>
+              <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
+                <div id="feedback-original-work-finance" style="color: #374151; white-space: pre-wrap;"></div>
+              </div>
+              <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 8px; border: 1px solid #86efac;">
+                <div style="font-size: 0.85rem; color: #16a34a; margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
+                <div id="feedback-improved-work-finance" style="color: #166534; white-space: pre-wrap;"></div>
+              </div>
+              <button class="apply-feedback-btn" data-field="work_finance" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
+            </div>
+          </div>
+          <button id="close-feedback-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">닫기</button>
         </div>
       </div>
 
@@ -204,30 +289,67 @@ export async function renderGoals() {
         <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
         <p style="margin-top: 0.5rem;">로딩 중...</p>
       </div>
+      </div>
+    </div>
+
+      <!-- 연도 선택 모달 -->
+      <div id="yearly-goal-year-selector-overlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+        <div id="yearly-goal-year-selector-modal" style="background: #ffffff; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid #e5e7eb;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; color: #111827; font-size: 1rem;">연도 선택</span>
+            <button 
+              id="yearly-goal-year-selector-close"
+              style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              onmouseover="this.style.background='#f3f4f6';"
+              onmouseout="this.style.background='none';"
+            >
+              <i data-lucide="x" style="width: 20px; height: 20px; color: #6b7280; stroke-width: 2.5;"></i>
+            </button>
+          </div>
+          <div style="background: #f8fafc; border-radius: 0.75rem; padding: 0.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
+            <div id="yearly-goal-year-selector-options" style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <!-- 연도 옵션은 JavaScript로 동적으로 생성됨 -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 월간 실천계획 -->
     <div class="card" style="background: linear-gradient(135deg, #e0f7f4 0%, #f0fdf4 100%); border: 2px solid #14b8a6; box-shadow: 0 8px 24px rgba(20, 184, 166, 0.15); margin-top: 1.5rem;">
       <div class="card-header" style="border-bottom: 2px solid rgba(20, 184, 166, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">
-            <i data-lucide="calendar-check" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
-          </div>
-          <div style="flex: 1;">
-            <div class="card-title" style="color: #0f766e; font-size: 1.5rem; margin: 0;">월간 실천계획</div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">
+              <i data-lucide="calendar-check" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="card-title" style="color: #0f766e; font-size: 1.5rem; margin: 0;">월간 실천계획</div>
+                <button id="toggle-monthly-plans" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
+                  <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #0f766e;"></i>
+                </button>
+              </div>
+              <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;" id="monthly-plan-subtitle">2025년 12월 실천 계획 & 결과</p>
+            </div>
           </div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <button id="monthly-plan-prev-btn" class="btn-icon" style="background: white; border: 1px solid #14b8a6; color: #14b8a6; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
             </button>
-            <span id="monthly-plan-month-label" style="font-size: 1rem; font-weight: 600; color: #0f766e; min-width: 80px; text-align: center;">2025년 12월</span>
+            <span id="monthly-plan-month-label" style="font-size: 1rem; font-weight: 600; color: #0f766e; min-width: 80px; text-align: center; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'">2025년 12월</span>
             <button id="monthly-plan-next-btn" class="btn-icon" style="background: white; border: 1px solid #14b8a6; color: #14b8a6; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+            </button>
+            <button id="monthly-plan-go-to-current-month-btn" class="btn-icon" style="background: #e0f7f4; border: 1px solid rgba(20, 184, 166, 0.2); color: #1f2937; padding: 0.375rem 0.875rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: none;">
+              <i data-lucide="calendar" style="width: 16px; height: 16px; margin-right: 0.25rem;"></i>
+              이번 달로
             </button>
           </div>
         </div>
       </div>
 
+      <div id="monthly-plans-content" style="display: block;">
       <!-- 보기 모드 -->
       <div id="monthly-plans-view-mode" style="display: none;">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
@@ -264,17 +386,17 @@ export async function renderGoals() {
             </div>
           </div>
         </div>
-        <button id="edit-monthly-plans-btn" class="btn btn-secondary" style="margin-top: 1.5rem;">수정하기</button>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+          <button id="ai-suggest-monthly-plan-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
+            <i data-lucide="sparkles" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+            AI로 제안받기
+          </button>
+          <button id="edit-monthly-plans-btn" class="btn btn-secondary">수정하기</button>
+        </div>
       </div>
 
       <!-- 편집 모드 -->
       <div id="monthly-plans-edit-mode" style="display: none;">
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; color: #0f766e; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem;">연간목표 연결</label>
-          <select id="monthly-plan-linked-year-select" style="width: 100%; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
-            <option value="">연결하지 않음</option>
-          </select>
-        </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
           <!-- 왼쪽: 연간목표 표시 (읽기 전용) -->
           <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
@@ -319,6 +441,29 @@ export async function renderGoals() {
       <div id="monthly-plans-loading" style="text-align: center; padding: 2rem; color: #9ca3af;">
         <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
         <p style="margin-top: 0.5rem;">로딩 중...</p>
+      </div>
+      </div>
+
+      <!-- 월 선택 모달 -->
+      <div id="monthly-plan-month-selector-overlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+        <div id="monthly-plan-month-selector-modal" style="background: #ffffff; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid #e5e7eb;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; color: #111827; font-size: 1rem;">월 선택</span>
+            <button 
+              id="monthly-plan-month-selector-close"
+              style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              onmouseover="this.style.background='#f3f4f6';"
+              onmouseout="this.style.background='none';"
+            >
+              <i data-lucide="x" style="width: 20px; height: 20px; color: #6b7280; stroke-width: 2.5;"></i>
+            </button>
+          </div>
+          <div style="background: #f8fafc; border-radius: 0.75rem; padding: 0.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
+            <div id="monthly-plan-month-selector-options" style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <!-- 월 옵션은 JavaScript로 동적으로 생성됨 -->
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -849,6 +994,83 @@ export async function renderGoals() {
         if (yearLabel) {
           yearLabel.textContent = `${selectedYear}년`;
         }
+
+        // 부제목 업데이트
+        const subtitle = document.getElementById('yearly-goal-subtitle');
+        if (subtitle) {
+          subtitle.textContent = `${selectedYear}년 연간 목표`;
+        }
+
+        // "올해로" 버튼 표시/숨김 제어
+        const goToCurrentYearBtn = document.getElementById('yearly-goal-go-to-current-year-btn');
+        if (goToCurrentYearBtn) {
+          if (selectedYear !== currentYear) {
+            goToCurrentYearBtn.style.display = 'inline-flex';
+          } else {
+            goToCurrentYearBtn.style.display = 'none';
+          }
+        }
+      }
+
+      // 연도 선택 모달에 표시할 연도 목록 생성
+      async function generateYearOptions() {
+        // DB에서 저장된 연간목표가 있는 연도들 조회
+        const { data: existingYears } = await supabase
+          .from('yearly_goals')
+          .select('year')
+          .eq('user_id', profile.id)
+          .order('year', { ascending: false });
+
+        const existingYearSet = new Set(existingYears?.map(item => item.year) || []);
+        
+        // 현재 연도 기준 앞뒤 5년 + 저장된 연도들
+        const years = new Set();
+        for (let i = -5; i <= 5; i++) {
+          years.add(currentYear + i);
+        }
+        existingYears?.forEach(item => years.add(item.year));
+        
+        // 연도 정렬 (내림차순)
+        const sortedYears = Array.from(years).sort((a, b) => b - a);
+        
+        const optionsContainer = document.getElementById('yearly-goal-year-selector-options');
+        if (!optionsContainer) return;
+        
+        const optionsHtml = sortedYears.map(year => {
+          const isSelected = year === selectedYear;
+          const isCurrentYear = year === currentYear;
+          const selectedStyle = isSelected 
+            ? 'background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;'
+            : 'background: white; color: #111827;';
+          
+          let label = `${year}년`;
+          if (isCurrentYear) {
+            label = `올해 (${year}년)`;
+          }
+          
+          return `
+            <button 
+              class="yearly-goal-year-option-btn"
+              data-year="${year}"
+              style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? '#6366f1' : '#e5e7eb'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: space-between;"
+              onmouseover="if (!this.dataset.selected) { this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db'; }"
+              onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'white'}'; this.style.borderColor='${isSelected ? '#6366f1' : '#e5e7eb'}'; }"
+              ${isSelected ? 'data-selected="true"' : ''}
+            >
+              <span>${label}</span>
+              ${isSelected ? '<i data-lucide="check" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>' : ''}
+            </button>
+          `;
+        }).join('');
+        
+        optionsContainer.innerHTML = optionsHtml;
+        
+        // Lucide 아이콘 렌더링
+        if (window.lucide) {
+          setTimeout(() => {
+            window.lucide.createIcons();
+          }, 100);
+        }
       }
 
       // 연간 목표 조회
@@ -1008,8 +1230,35 @@ export async function renderGoals() {
         updateYearLabel();
         loadYearlyGoals();
       };
+      const handleGoToCurrentYear = () => {
+        selectedYear = currentYear;
+        updateYearLabel();
+        loadYearlyGoals();
+      };
+      // 연도 선택 모달 열기
+      const openYearSelectorModal = async () => {
+        const overlay = document.getElementById('yearly-goal-year-selector-overlay');
+        if (!overlay) return;
+        
+        await generateYearOptions();
+        overlay.style.display = 'flex';
+      };
+
+      // 연도 선택 모달 닫기
+      const closeYearSelectorModal = () => {
+        const overlay = document.getElementById('yearly-goal-year-selector-overlay');
+        if (overlay) {
+          overlay.style.display = 'none';
+        }
+      };
+
+      const handleYearLabelClick = () => {
+        openYearSelectorModal();
+      };
       const handleEditYearlyGoals = () => switchToYearlyGoalsEditMode();
       const handleCancelYearlyGoals = () => {
+        // 피드백 영역 숨기기
+        document.getElementById('yearly-goals-ai-feedback')?.style.setProperty('display', 'none');
         if (yearlyGoals.self_dev || yearlyGoals.relationship || yearlyGoals.work_finance) {
           displayYearlyGoals();
         } else {
@@ -1018,11 +1267,246 @@ export async function renderGoals() {
       };
       const handleSaveYearlyGoals = () => saveYearlyGoals();
 
+      // AI 피드백 생성
+      async function generateAIYearlyGoalFeedback() {
+        const selfDev = document.getElementById('yearly-goal-self-dev-input')?.value.trim() || '';
+        const relationship = document.getElementById('yearly-goal-relationship-input')?.value.trim() || '';
+        const workFinance = document.getElementById('yearly-goal-work-finance-input')?.value.trim() || '';
+
+        // 최소 1개 영역에 내용이 있어야 함
+        if (!selfDev && !relationship && !workFinance) {
+          alert('피드백을 받으려면 최소 1개 영역에 목표를 입력해주세요.');
+          return;
+        }
+
+        const confirmGenerate = confirm(`AI가 ${selectedYear}년 연간 목표에 대한 SMART 기준 피드백을 제공합니다.\n\n입력하신 목표를 더 구체적이고 측정 가능하게 개선하는 제안을 드립니다.`);
+        if (!confirmGenerate) return;
+
+        // 버튼 참조 및 원본 HTML 저장
+        const feedbackBtn = document.getElementById('ai-feedback-yearly-goals-btn');
+        // 원본 HTML: Lucide 아이콘과 텍스트 (기본값 제공)
+        const originalBtnHTML = feedbackBtn?.innerHTML || '<i data-lucide="sparkles" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i> AI로 피드백받기';
+
+        try {
+          // 로딩 표시
+          const feedbackArea = document.getElementById('yearly-goals-ai-feedback');
+          if (feedbackArea) {
+            feedbackArea.style.display = 'none';
+          }
+
+          // 버튼 비활성화 및 로딩 텍스트
+          if (feedbackBtn) {
+            feedbackBtn.disabled = true;
+            feedbackBtn.innerHTML = '<i data-lucide="loader" class="spin" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i> 피드백 생성 중...';
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+          }
+
+          // Edge Function 호출
+          const session = await supabase.auth.getSession();
+          if (!session.data.session) {
+            alert('로그인이 필요합니다.');
+            return;
+          }
+
+          const supabaseUrl = window.SUPABASE_CONFIG?.url || supabase.supabaseUrl;
+          const supabaseKey = window.SUPABASE_CONFIG?.anonKey || supabase.supabaseKey;
+
+          const response = await fetch(`${supabaseUrl}/functions/v1/ai-yearly-goal-feedback`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.data.session.access_token}`,
+              'apikey': supabaseKey,
+            },
+            body: JSON.stringify({
+              year: selectedYear,
+              self_dev: selfDev,
+              relationship: relationship,
+              work_finance: workFinance,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            if (response.status === 429) {
+              alert(`레이트리밋에 도달했습니다.\n\n${result.error}\n\n다음 달에 다시 시도해주세요.`);
+            } else {
+              alert(`피드백 생성 중 오류가 발생했습니다.\n\n${result.error || '알 수 없는 오류'}`);
+            }
+            return;
+          }
+
+          if (result.success && result.feedback) {
+            // 피드백 표시
+            displayYearlyGoalFeedback({
+              original: { self_dev: selfDev, relationship: relationship, work_finance: workFinance },
+              improved: result.feedback,
+            });
+          } else {
+            alert('피드백 생성에 실패했습니다. 다시 시도해주세요.');
+          }
+        } catch (error) {
+          console.error('[AI Yearly Goal Feedback Generation Failed]', error);
+          alert(`피드백 생성 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+        } finally {
+          // 버튼 복원 (DOM에서 다시 찾아서 안전하게 복원)
+          const btn = document.getElementById('ai-feedback-yearly-goals-btn');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHTML;
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+          }
+        }
+      }
+
+      // 피드백 표시
+      function displayYearlyGoalFeedback(data) {
+        const feedbackArea = document.getElementById('yearly-goals-ai-feedback');
+        if (!feedbackArea) return;
+
+        // 원본 표시
+        document.getElementById('feedback-original-self-dev').textContent = data.original.self_dev || '(작성되지 않음)';
+        document.getElementById('feedback-original-relationship').textContent = data.original.relationship || '(작성되지 않음)';
+        document.getElementById('feedback-original-work-finance').textContent = data.original.work_finance || '(작성되지 않음)';
+
+        // 개선 제안 표시
+        document.getElementById('feedback-improved-self-dev').textContent = data.improved.self_dev || data.original.self_dev || '';
+        document.getElementById('feedback-improved-relationship').textContent = data.improved.relationship || data.original.relationship || '';
+        document.getElementById('feedback-improved-work-finance').textContent = data.improved.work_finance || data.original.work_finance || '';
+
+        // 빈 항목 처리 (개선 제안이 없는 경우 버튼 숨김)
+        const selfDevBtn = document.querySelector('.apply-feedback-btn[data-field="self_dev"]');
+        const relationshipBtn = document.querySelector('.apply-feedback-btn[data-field="relationship"]');
+        const workFinanceBtn = document.querySelector('.apply-feedback-btn[data-field="work_finance"]');
+
+        if (selfDevBtn) {
+          selfDevBtn.style.display = data.improved.self_dev ? 'inline-block' : 'none';
+        }
+        if (relationshipBtn) {
+          relationshipBtn.style.display = data.improved.relationship ? 'inline-block' : 'none';
+        }
+        if (workFinanceBtn) {
+          workFinanceBtn.style.display = data.improved.work_finance ? 'inline-block' : 'none';
+        }
+
+        // 피드백 영역 표시
+        feedbackArea.style.display = 'block';
+        
+        // 아이콘 렌더링
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      // 피드백 적용
+      function applyFeedback(field) {
+        // field 이름을 HTML ID 형식으로 변환 (언더스코어 → 하이픈)
+        const feedbackId = `feedback-improved-${field.replace(/_/g, '-')}`;
+        const improvedText = document.getElementById(feedbackId)?.textContent || '';
+        
+        // 해당 필드에 적용
+        if (field === 'self_dev') {
+          document.getElementById('yearly-goal-self-dev-input').value = improvedText;
+        } else if (field === 'relationship') {
+          document.getElementById('yearly-goal-relationship-input').value = improvedText;
+        } else if (field === 'work_finance') {
+          document.getElementById('yearly-goal-work-finance-input').value = improvedText;
+        }
+
+        alert('피드백이 적용되었습니다.');
+      }
+
+      const handleAIFeedbackYearlyGoals = () => generateAIYearlyGoalFeedback();
+      const handleCloseFeedback = () => {
+        document.getElementById('yearly-goals-ai-feedback')?.style.setProperty('display', 'none');
+      };
+
       document.getElementById('yearly-goal-prev-btn')?.addEventListener('click', handleYearlyGoalPrev);
       document.getElementById('yearly-goal-next-btn')?.addEventListener('click', handleYearlyGoalNext);
+      document.getElementById('yearly-goal-go-to-current-year-btn')?.addEventListener('click', handleGoToCurrentYear);
+      document.getElementById('yearly-goal-year-label')?.addEventListener('click', handleYearLabelClick);
       document.getElementById('edit-yearly-goals-btn')?.addEventListener('click', handleEditYearlyGoals);
       document.getElementById('cancel-yearly-goals-btn')?.addEventListener('click', handleCancelYearlyGoals);
-      document.getElementById('save-yearly-goals-btn')?.addEventListener('click', handleSaveYearlyGoals);
+      
+      // 저장 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
+      const saveYearlyGoalsBtn = document.getElementById('save-yearly-goals-btn');
+      if (saveYearlyGoalsBtn) {
+        const newSaveBtn = saveYearlyGoalsBtn.cloneNode(true);
+        saveYearlyGoalsBtn.parentNode?.replaceChild(newSaveBtn, saveYearlyGoalsBtn);
+        newSaveBtn.addEventListener('click', handleSaveYearlyGoals);
+      }
+      
+      // AI 피드백 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
+      const aiFeedbackYearlyGoalsBtn = document.getElementById('ai-feedback-yearly-goals-btn');
+      if (aiFeedbackYearlyGoalsBtn) {
+        const newAiFeedbackBtn = aiFeedbackYearlyGoalsBtn.cloneNode(true);
+        aiFeedbackYearlyGoalsBtn.parentNode?.replaceChild(newAiFeedbackBtn, aiFeedbackYearlyGoalsBtn);
+        newAiFeedbackBtn.addEventListener('click', handleAIFeedbackYearlyGoals);
+      }
+      
+      document.getElementById('close-feedback-btn')?.addEventListener('click', handleCloseFeedback);
+      
+      // 피드백 적용 버튼들 (동적으로 생성되므로 이벤트 위임 사용)
+      // 중복 등록 방지: 기존 핸들러 제거 후 새로 등록
+      if (applyFeedbackClickHandler) {
+        document.removeEventListener('click', applyFeedbackClickHandler);
+      }
+      
+      applyFeedbackClickHandler = (e) => {
+        const target = e.target;
+        if (target && target.classList && target.classList.contains('apply-feedback-btn')) {
+          const field = target.getAttribute('data-field');
+          if (field) applyFeedback(field);
+        }
+      };
+      
+      document.addEventListener('click', applyFeedbackClickHandler);
+
+      // 연도 선택 모달 이벤트
+      const yearSelectorOverlay = document.getElementById('yearly-goal-year-selector-overlay');
+      const yearSelectorModal = document.getElementById('yearly-goal-year-selector-modal');
+      const yearSelectorClose = document.getElementById('yearly-goal-year-selector-close');
+      const yearSelectorOptions = document.getElementById('yearly-goal-year-selector-options');
+
+      // 닫기 버튼
+      if (yearSelectorClose) {
+        yearSelectorClose.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeYearSelectorModal();
+        });
+      }
+
+      // 오버레이 클릭으로 모달 닫기
+      if (yearSelectorOverlay) {
+        yearSelectorOverlay.addEventListener('click', (e) => {
+          if (e.target === yearSelectorOverlay) {
+            closeYearSelectorModal();
+          }
+        });
+      }
+
+      // 모달 내부 클릭은 전파 방지
+      if (yearSelectorModal) {
+        yearSelectorModal.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+
+      // 연도 옵션 클릭 (이벤트 위임)
+      if (yearSelectorOptions) {
+        yearSelectorOptions.addEventListener('click', (e) => {
+          const btn = e.target.closest('.yearly-goal-year-option-btn');
+          if (btn) {
+            e.stopPropagation();
+            const year = parseInt(btn.dataset.year);
+            if (!isNaN(year)) {
+              selectedYear = year;
+              closeYearSelectorModal();
+              updateYearLabel();
+              loadYearlyGoals();
+            }
+          }
+        });
+      }
 
       // 연도 레이블 초기화 및 초기 로드
       updateYearLabel();
@@ -1037,7 +1521,8 @@ export async function renderGoals() {
         content_md: null,
         plan_content: { self_dev: '', relationship: '', work_finance: '' },
         results_content: { self_dev: '', relationship: '', work_finance: '' },
-        daily_routines: { morning: [], night: [] }
+        daily_routines: { morning: [], night: [] },
+        source: 'manual'
       };
       let linkedYearlyGoals = null; // linked_year에 해당하는 연간 목표
       let isMonthlyPlanEditMode = false;
@@ -1050,7 +1535,30 @@ export async function renderGoals() {
           const monthNum = parseInt(month);
           monthLabel.textContent = `${year}년 ${monthNum}월`;
         }
+
+        // 부제목 업데이트
+        const subtitle = document.getElementById('monthly-plan-subtitle');
+        if (subtitle) {
+          const [year, month] = selectedMonthStart.split('-');
+          const monthNum = parseInt(month);
+          subtitle.textContent = `${year}년 ${monthNum}월 실천 계획 & 결과`;
+        }
+
+        // "이번 달로" 버튼 표시/숨김 제어
+        const goToCurrentMonthBtn = document.getElementById('monthly-plan-go-to-current-month-btn');
+        if (goToCurrentMonthBtn) {
+          if (selectedMonthStart !== currentMonth) {
+            goToCurrentMonthBtn.style.display = 'inline-flex';
+          } else {
+            goToCurrentMonthBtn.style.display = 'none';
+          }
+        }
       }
+
+      // 월 레이블 클릭 핸들러
+      const handleMonthLabelClick = () => {
+        openMonthSelectorModal();
+      };
 
       // 월 이동 (이전/다음)
       function shiftMonth(direction) {
@@ -1072,13 +1580,15 @@ export async function renderGoals() {
       }
 
       // 월간 실천계획 조회 (daily_routines 포함하여 전체 레코드 로드)
+      // manual 우선, 없으면 ai_suggested 조회
       async function loadMonthlyPlan() {
         try {
           document.getElementById('monthly-plans-loading').style.display = 'block';
           document.getElementById('monthly-plans-view-mode').style.display = 'none';
           document.getElementById('monthly-plans-edit-mode').style.display = 'none';
 
-          const { data, error } = await supabase
+          // manual 우선 조회
+          let { data, error } = await supabase
             .from('monthly_plans')
             .select('*')
             .eq('user_id', profile.id)
@@ -1087,37 +1597,58 @@ export async function renderGoals() {
             .maybeSingle();
 
           if (error) {
-            console.error('[Monthly Plan Load Error]', error);
+            console.error('[Monthly Plan Load Error (manual)]', error);
             throw error;
           }
 
+          // manual이 없으면 ai_suggested 조회
+          if (!data) {
+            const { data: aiData, error: aiError } = await supabase
+              .from('monthly_plans')
+              .select('*')
+              .eq('user_id', profile.id)
+              .eq('month_start', selectedMonthStart)
+              .eq('source', 'ai_suggested')
+              .maybeSingle();
+
+            if (aiError && aiError.code !== 'PGRST116') {
+              console.error('[Monthly Plan Load Error (ai_suggested)]', aiError);
+              throw aiError;
+            }
+
+            data = aiData;
+          }
+
+          // 선택된 월의 연도 자동 계산
+          const selectedYear = parseInt(selectedMonthStart.split('-')[0]);
+
           if (data) {
+            // linked_year가 없으면 선택된 월의 연도로 자동 설정
+            const linkedYear = data.linked_year || selectedYear;
             monthlyPlan = {
-              linked_year: data.linked_year,
+              linked_year: linkedYear,
               content_md: data.content_md || null,
               plan_content: data.plan_content || { self_dev: '', relationship: '', work_finance: '' },
               results_content: data.results_content || { self_dev: '', relationship: '', work_finance: '' },
-              daily_routines: data.daily_routines || { morning: [], night: [] }
+              daily_routines: data.daily_routines || { morning: [], night: [] },
+              source: data.source || 'manual'
             };
 
-            // linked_year가 있으면 연간 목표 로드
-            if (data.linked_year) {
-              await loadLinkedYearlyGoals(data.linked_year);
-            } else {
-              linkedYearlyGoals = null;
-            }
+            // linked_year로 연간 목표 로드
+            await loadLinkedYearlyGoals(linkedYear);
 
             displayMonthlyPlan();
           } else {
-            // 데이터가 없으면 편집 모드로
+            // 데이터가 없으면 선택된 월의 연도로 자동 연결
             monthlyPlan = {
-              linked_year: null,
+              linked_year: selectedYear,
               content_md: null,
               plan_content: { self_dev: '', relationship: '', work_finance: '' },
               results_content: { self_dev: '', relationship: '', work_finance: '' },
-              daily_routines: { morning: [], night: [] }
+              daily_routines: { morning: [], night: [] },
+              source: 'manual'
             };
-            linkedYearlyGoals = null;
+            await loadLinkedYearlyGoals(selectedYear);
             switchToMonthlyPlanEditMode();
           }
         } catch (error) {
@@ -1128,6 +1659,78 @@ export async function renderGoals() {
           document.getElementById('monthly-plans-loading').style.display = 'none';
         }
       }
+
+      // 월 선택 모달에 표시할 월 목록 생성 (1~12월)
+      function generateMonthOptions() {
+        // 선택된 연도는 monthlyPlan.linked_year 또는 선택된 월의 연도
+        const targetYear = monthlyPlan.linked_year || parseInt(selectedMonthStart.split('-')[0]);
+        const [currentYear, currentMonth] = selectedMonthStart.split('-').map(Number);
+        const currentMonthStart = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+        
+        const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+        const today = new Date();
+        const isCurrentYear = targetYear === today.getFullYear();
+        const currentMonthNum = today.getMonth() + 1;
+        
+        const optionsContainer = document.getElementById('monthly-plan-month-selector-options');
+        if (!optionsContainer) return;
+        
+        const optionsHtml = monthNames.map((monthName, index) => {
+          const monthNum = index + 1;
+          const monthStart = `${targetYear}-${String(monthNum).padStart(2, '0')}-01`;
+          const isSelected = monthStart === selectedMonthStart;
+          const isCurrentMonth = isCurrentYear && monthNum === currentMonthNum;
+          
+          const selectedStyle = isSelected 
+            ? 'background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;'
+            : 'background: white; color: #111827;';
+          
+          let label = `${targetYear}년 ${monthName}`;
+          if (isCurrentMonth) {
+            label = `이번 달 (${targetYear}년 ${monthName})`;
+          }
+          
+          return `
+            <button 
+              class="monthly-plan-month-option-btn"
+              data-month-start="${monthStart}"
+              style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? '#6366f1' : '#e5e7eb'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: space-between;"
+              onmouseover="if (!this.dataset.selected) { this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db'; }"
+              onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'white'}'; this.style.borderColor='${isSelected ? '#6366f1' : '#e5e7eb'}'; }"
+              ${isSelected ? 'data-selected="true"' : ''}
+            >
+              <span>${label}</span>
+              ${isSelected ? '<i data-lucide="check" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>' : ''}
+            </button>
+          `;
+        }).join('');
+        
+        optionsContainer.innerHTML = optionsHtml;
+        
+        // Lucide 아이콘 렌더링
+        if (window.lucide) {
+          setTimeout(() => {
+            window.lucide.createIcons();
+          }, 100);
+        }
+      }
+
+      // 월 선택 모달 열기
+      const openMonthSelectorModal = () => {
+        const overlay = document.getElementById('monthly-plan-month-selector-overlay');
+        if (!overlay) return;
+        
+        generateMonthOptions();
+        overlay.style.display = 'flex';
+      };
+
+      // 월 선택 모달 닫기
+      const closeMonthSelectorModal = () => {
+        const overlay = document.getElementById('monthly-plan-month-selector-overlay');
+        if (overlay) {
+          overlay.style.display = 'none';
+        }
+      };
 
       // linked_year에 해당하는 연간 목표 로드
       async function loadLinkedYearlyGoals(year) {
@@ -1299,30 +1902,15 @@ export async function renderGoals() {
         document.getElementById('monthly-plans-loading').style.display = 'none';
         isMonthlyPlanEditMode = true;
 
-        // 드롭다운 로드
-        await loadYearlyGoalsForDropdown();
+        // 선택된 월의 연도로 자동 연결 (linked_year가 없으면)
+        if (!monthlyPlan.linked_year) {
+          const selectedYear = parseInt(selectedMonthStart.split('-')[0]);
+          monthlyPlan.linked_year = selectedYear;
+        }
 
-        // linked_year 선택 시 연간 목표 로드
-        const linkedYearSelect = document.getElementById('monthly-plan-linked-year-select');
-        if (linkedYearSelect) {
-          linkedYearSelect.value = monthlyPlan.linked_year || '';
-          
-          // change 이벤트 리스너 추가 (연도 선택 시 연간 목표 로드)
-          linkedYearSelect.onchange = async () => {
-            const selectedYear = linkedYearSelect.value;
-            if (selectedYear) {
-              await loadLinkedYearlyGoals(parseInt(selectedYear));
-              renderYearlyGoalsInEditMode();
-            } else {
-              linkedYearlyGoals = null;
-              renderYearlyGoalsInEditMode();
-            }
-          };
-
-          // 초기 연간 목표 로드
-          if (monthlyPlan.linked_year) {
-            await loadLinkedYearlyGoals(monthlyPlan.linked_year);
-          }
+        // 연간 목표 로드
+        if (monthlyPlan.linked_year) {
+          await loadLinkedYearlyGoals(monthlyPlan.linked_year);
         }
 
         // 편집 모드 렌더링
@@ -1427,9 +2015,90 @@ export async function renderGoals() {
         `;
       }
 
+      // AI 월실천계획 제안 생성
+      async function generateAIMonthlyPlan() {
+        try {
+          // 선택된 월의 연도로 자동 연결
+          const selectedYear = parseInt(selectedMonthStart.split('-')[0]);
+          const linkedYear = monthlyPlan.linked_year || selectedYear;
+
+          // 연간목표가 없는 경우 로드 시도
+          if (!linkedYearlyGoals && linkedYear) {
+            await loadLinkedYearlyGoals(linkedYear);
+          }
+
+          // 확인 메시지
+          const confirmGenerate = confirm(`AI가 ${selectedMonthStart.substring(0, 4)}년 ${parseInt(selectedMonthStart.substring(5, 7))}월의 월간 실천계획을 제안해드립니다.\n\n연간목표와 최근 활동을 분석하여 구체적인 실천계획을 생성합니다.`);
+          if (!confirmGenerate) return;
+
+          // 로딩 표시
+          document.getElementById('monthly-plans-loading').style.display = 'block';
+          document.getElementById('monthly-plans-view-mode').style.display = 'none';
+          document.getElementById('monthly-plans-edit-mode').style.display = 'none';
+
+          // Edge Function 호출
+          const session = await supabase.auth.getSession();
+          if (!session.data.session) {
+            throw new Error('로그인이 필요합니다.');
+          }
+
+          const supabaseUrl = window.SUPABASE_CONFIG?.url || supabase.supabaseUrl;
+          const supabaseKey = window.SUPABASE_CONFIG?.anonKey || supabase.supabaseKey;
+
+          const response = await fetch(
+            `${supabaseUrl}/functions/v1/ai-monthly-plan`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.data.session.access_token}`,
+                'apikey': supabaseKey,
+              },
+              body: JSON.stringify({
+                month_start: selectedMonthStart,
+                linked_year: linkedYear,
+              }),
+            }
+          );
+
+          const responseData = await response.json();
+
+          if (!response.ok) {
+            console.error('Edge Function error response:', responseData);
+            const errorMessage = responseData.details || responseData.message || responseData.error || 'AI 제안 생성에 실패했습니다.';
+            throw new Error(errorMessage);
+          }
+
+          if (!responseData.plan_content) {
+            throw new Error('AI 제안 생성 결과가 없습니다.');
+          }
+
+          // 생성된 plan_content를 monthlyPlan에 반영
+          monthlyPlan.plan_content = responseData.plan_content;
+          monthlyPlan.linked_year = responseData.linked_year;
+          monthlyPlan.source = 'ai_suggested';
+
+          // linked_year가 있으면 연간 목표 로드
+          if (responseData.linked_year) {
+            await loadLinkedYearlyGoals(responseData.linked_year);
+          }
+
+          // 편집 모드로 전환하여 AI 제안 결과 표시
+          alert('AI 제안이 생성되었습니다! 내용을 확인하고 편집한 후 저장해주세요.');
+          switchToMonthlyPlanEditMode();
+
+        } catch (error) {
+          console.error('[AI Monthly Plan Generation Failed]', error);
+          alert(`AI 제안 생성 중 오류가 발생했습니다:\n\n${error.message}\n\n다시 시도해주세요.`);
+          document.getElementById('monthly-plans-loading').style.display = 'none';
+        }
+      }
+
       // 월간 실천계획 저장 (daily_routines, plan_content, results_content 포함)
       async function saveMonthlyPlan() {
-        const linkedYear = document.getElementById('monthly-plan-linked-year-select').value;
+        // 선택된 월의 연도로 자동 연결 (linked_year가 없으면)
+        const selectedYear = parseInt(selectedMonthStart.split('-')[0]);
+        const linkedYear = monthlyPlan.linked_year || selectedYear;
         
         // plan_content 입력값 수집
         const planContent = {
@@ -1459,7 +2128,7 @@ export async function renderGoals() {
             user_id: profile.id,
             month_start: selectedMonthStart,
             source: 'manual',
-            linked_year: linkedYear ? parseInt(linkedYear) : null,
+            linked_year: linkedYear,
             plan_content: planContent,
             results_content: resultsContent,
             status: 'draft'
@@ -1499,12 +2168,8 @@ export async function renderGoals() {
             daily_routines: data.daily_routines || { morning: [], night: [] }
           };
 
-          // linked_year가 변경되었거나 새로 설정된 경우 연간 목표 다시 로드
-          if (data.linked_year) {
-            await loadLinkedYearlyGoals(data.linked_year);
-          } else {
-            linkedYearlyGoals = null;
-          }
+          // linked_year로 연간 목표 다시 로드
+          await loadLinkedYearlyGoals(data.linked_year);
 
           alert('저장되었습니다!');
           displayMonthlyPlan();
@@ -1517,7 +2182,13 @@ export async function renderGoals() {
       // 월간 실천계획 이벤트 리스너
       const handleMonthlyPlanPrev = () => shiftMonth(-1);
       const handleMonthlyPlanNext = () => shiftMonth(1);
+      const handleGoToCurrentMonth = () => {
+        selectedMonthStart = currentMonth;
+        updateMonthLabel();
+        loadMonthlyPlan();
+      };
       const handleEditMonthlyPlan = () => switchToMonthlyPlanEditMode();
+      const handleAISuggestMonthlyPlan = () => generateAIMonthlyPlan();
       const handleCancelMonthlyPlan = () => {
         // 데이터가 있으면 보기 모드로, 없으면 다시 로드
         if (monthlyPlan.plan_content?.self_dev || monthlyPlan.plan_content?.relationship || monthlyPlan.plan_content?.work_finance || 
@@ -1531,13 +2202,105 @@ export async function renderGoals() {
 
       document.getElementById('monthly-plan-prev-btn')?.addEventListener('click', handleMonthlyPlanPrev);
       document.getElementById('monthly-plan-next-btn')?.addEventListener('click', handleMonthlyPlanNext);
+      document.getElementById('monthly-plan-go-to-current-month-btn')?.addEventListener('click', handleGoToCurrentMonth);
+      document.getElementById('monthly-plan-month-label')?.addEventListener('click', handleMonthLabelClick);
       document.getElementById('edit-monthly-plans-btn')?.addEventListener('click', handleEditMonthlyPlan);
+
+      // 월 선택 모달 이벤트
+      const monthSelectorOverlay = document.getElementById('monthly-plan-month-selector-overlay');
+      const monthSelectorModal = document.getElementById('monthly-plan-month-selector-modal');
+      const monthSelectorClose = document.getElementById('monthly-plan-month-selector-close');
+      const monthSelectorOptions = document.getElementById('monthly-plan-month-selector-options');
+
+      // 닫기 버튼
+      if (monthSelectorClose) {
+        monthSelectorClose.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeMonthSelectorModal();
+        });
+      }
+
+      // 오버레이 클릭으로 모달 닫기
+      if (monthSelectorOverlay) {
+        monthSelectorOverlay.addEventListener('click', (e) => {
+          if (e.target === monthSelectorOverlay) {
+            closeMonthSelectorModal();
+          }
+        });
+      }
+
+      // 모달 내부 클릭은 전파 방지
+      if (monthSelectorModal) {
+        monthSelectorModal.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+
+      // 월 옵션 클릭 (이벤트 위임)
+      if (monthSelectorOptions) {
+        monthSelectorOptions.addEventListener('click', (e) => {
+          const btn = e.target.closest('.monthly-plan-month-option-btn');
+          if (btn) {
+            e.stopPropagation();
+            const monthStart = btn.dataset.monthStart;
+            if (monthStart) {
+              selectedMonthStart = monthStart;
+              closeMonthSelectorModal();
+              updateMonthLabel();
+              loadMonthlyPlan();
+            }
+          }
+        });
+      }
+      document.getElementById('ai-suggest-monthly-plan-btn')?.addEventListener('click', handleAISuggestMonthlyPlan);
       document.getElementById('cancel-monthly-plans-btn')?.addEventListener('click', handleCancelMonthlyPlan);
       document.getElementById('save-monthly-plans-btn')?.addEventListener('click', handleSaveMonthlyPlan);
 
       // 월 레이블 초기화 및 초기 로드
       updateMonthLabel();
       await loadMonthlyPlan();
+
+      // 토글 기능 설정
+      const setupToggle = (buttonId, contentId) => {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+        
+        // 기존 이벤트 리스너 제거를 위한 클론
+        const newButton = button.cloneNode(true);
+        button.parentNode?.replaceChild(newButton, button);
+        
+        newButton.addEventListener('click', () => {
+          const content = document.getElementById(contentId);
+          const icon = newButton.querySelector('svg') || 
+                       newButton.querySelector('[data-lucide]') || 
+                       newButton.querySelector('i');
+          
+          if (!icon) {
+            console.error(`${buttonId} toggle icon not found`);
+            return;
+          }
+          
+          if (content && content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.setAttribute('data-lucide', 'chevron-down');
+          } else if (content) {
+            content.style.display = 'none';
+            icon.setAttribute('data-lucide', 'chevron-up');
+          }
+          if (window.lucide?.createIcons) {
+            setTimeout(() => window.lucide.createIcons(), 10);
+          }
+        });
+      };
+
+      // 월간 데일리 루틴 토글
+      setupToggle('toggle-routines', 'routines-content');
+      
+      // 연간 목표 토글
+      setupToggle('toggle-yearly-goals', 'yearly-goals-content');
+      
+      // 월간 실천계획 토글
+      setupToggle('toggle-monthly-plans', 'monthly-plans-content');
     }
   };
 }

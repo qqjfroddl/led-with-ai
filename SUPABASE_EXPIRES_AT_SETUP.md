@@ -158,3 +158,4 @@ ADD COLUMN expires_at date;
 - `supabase/verify_expires_at.sql` - 확인 및 문제 해결 스크립트
 - `supabase/add_expires_at.sql` - 기본 추가 스크립트
 
+

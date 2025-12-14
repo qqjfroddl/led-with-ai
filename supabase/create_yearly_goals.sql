@@ -130,3 +130,4 @@ FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name = 'yearly_goals'
 ORDER BY ordinal_position;
+

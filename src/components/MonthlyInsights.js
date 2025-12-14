@@ -223,12 +223,41 @@ function renderPatternAnalysis(todos, routines) {
   // 가장 완료율 높은 카테고리 찾기
   const bestCategory = findBestCategory(todos.byCategory);
   
-  // 가장 실천율 높은 루틴 찾기
-  const bestRoutine = routines.routineRates.length > 0
-    ? routines.routineRates.reduce((best, current) => 
-        current.rate > best.rate ? current : best
-      )
+  // 활성 일수가 있는 루틴만 필터링 (rate가 계산 가능했던 루틴)
+  const activeRoutines = (routines.routineRates || []).filter(r => {
+    // rate가 0이어도 totalChecks가 0보다 크면 활성 일수가 있었던 것
+    return r.rate !== undefined && (r.totalChecks > 0 || r.rate > 0);
+  });
+  
+  // 가장 실천율 높은 루틴 찾기 (최소 1회 이상 체크한 루틴 중)
+  const bestRoutine = activeRoutines.length > 0
+    ? activeRoutines
+        .filter(r => r.totalChecks > 0) // 최소 1회 이상 체크
+        .reduce((best, current) => 
+          current.rate > best.rate ? current : best,
+          activeRoutines.find(r => r.totalChecks > 0) || null
+        )
     : null;
+  
+  // 가장 부실한 루틴 찾기 (활성 일수가 있었지만 체크 수가 적은 루틴)
+  const worstRoutine = activeRoutines.length > 0
+    ? activeRoutines.reduce((worst, current) => {
+        // 체크 수가 0인 루틴 우선
+        if (current.totalChecks === 0 && worst.totalChecks > 0) return current;
+        if (worst.totalChecks === 0 && current.totalChecks > 0) return worst;
+        // 둘 다 체크했으면 rate가 낮은 것
+        if (current.totalChecks > 0 && worst.totalChecks > 0) {
+          return current.rate < worst.rate ? current : worst;
+        }
+        // 둘 다 체크 안 했으면 그냥 유지
+        return worst;
+      }, activeRoutines[0] || null)
+    : null;
+  
+  // bestRoutine과 worstRoutine이 같은 경우 worstRoutine 제외
+  const displayWorstRoutine = worstRoutine && 
+    bestRoutine && 
+    worstRoutine.id !== bestRoutine.id ? worstRoutine : null;
   
   return `
     <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(248, 113, 113, 0.1);">
@@ -239,20 +268,21 @@ function renderPatternAnalysis(todos, routines) {
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         ${mostActiveDay ? renderPatternCard('calendar', '가장 활발한 요일', mostActiveDay.day, mostActiveDay.description) : ''}
         ${bestCategory ? renderPatternCard('layers', '가장 완료율 높은 카테고리', bestCategory.name, `${Number(bestCategory.rate || 0).toFixed(1)}% 완료`) : ''}
-        ${bestRoutine ? renderPatternCard('target', '가장 실천율 높은 루틴', bestRoutine.title, `${Number(bestRoutine.rate || 0).toFixed(1)}% 실천`) : ''}
+        ${bestRoutine ? renderPatternCard('target', '가장 꾸준히 잘 한 루틴', bestRoutine.title, `${Number(bestRoutine.rate || 0).toFixed(1)}% 실천 (${bestRoutine.totalChecks}회)`, '#10b981') : ''}
+        ${displayWorstRoutine ? renderPatternCard('alert-circle', '개선이 필요한 루틴', displayWorstRoutine.title, displayWorstRoutine.totalChecks === 0 ? '0회 실천' : `${Number(displayWorstRoutine.rate || 0).toFixed(1)}% 실천 (${displayWorstRoutine.totalChecks}회)`, '#ef4444') : ''}
       </div>
     </div>
   `;
 }
 
 /**
- * 패턴 카드 렌더링
+ * 패턴 카드 렌더링 (색상 옵션 추가)
  */
-function renderPatternCard(icon, label, title, description) {
+function renderPatternCard(icon, label, title, description, color = '#f87171') {
   return `
     <div style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <i data-lucide="${icon}" style="width: 16px; height: 16px; color: #f87171; stroke-width: 2.5;"></i>
+        <i data-lucide="${icon}" style="width: 16px; height: 16px; color: ${color}; stroke-width: 2.5;"></i>
         <span style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">${label}</span>
       </div>
       <div style="font-weight: 600; color: #111827; margin-bottom: 0.25rem; font-size: 0.95rem;">

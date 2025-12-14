@@ -125,3 +125,4 @@ supabase functions deploy ai-monthly-reflection
   - 기존 주간 성찰 Edge Function과 동일한 키 사용
   - Dashboard → Edge Functions → `ai-weekly-reflection` → Settings에서 확인 가능
 
+

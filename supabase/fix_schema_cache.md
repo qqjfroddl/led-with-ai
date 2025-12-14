@@ -75,3 +75,4 @@ console.log('Error:', error);
 2. **Supabase 대시보드 → Settings → API** 확인
 3. Supabase 지원팀에 문의 (스키마 캐시 갱신 문제)
 
+

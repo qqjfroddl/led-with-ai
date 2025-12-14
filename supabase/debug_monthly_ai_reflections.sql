@@ -77,3 +77,4 @@ SELECT
       AND (p.expires_at IS NULL OR p.expires_at >= CURRENT_DATE)
   ) as is_approved_check;
 
+

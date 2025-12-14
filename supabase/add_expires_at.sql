@@ -25,3 +25,4 @@ WHERE table_schema = 'public'
   AND table_name = 'profiles'
   AND column_name = 'expires_at';
 
+

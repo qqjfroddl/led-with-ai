@@ -76,3 +76,4 @@ $$;
 - Supabase 프로젝트 재시작 (Settings → General → Restart Project)
 - 또는 몇 분 대기 후 재시도
 
+

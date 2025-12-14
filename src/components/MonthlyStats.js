@@ -217,3 +217,4 @@ function renderChangeIndicator(change, unit = '') {
   `;
 }
 
+
