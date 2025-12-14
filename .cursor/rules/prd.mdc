@@ -12,9 +12,10 @@ alwaysApply: true
   - 오늘 루틴 (Routine) - 모닝/나이트 구분, 목표 탭 연동, 진행률 표시, Soft Delete 적용, 토글 기능, 날짜 기준 필터링 (어제 루틴 보존)
   - 오늘 할일 (Todos) - 카테고리 탭, Enter 키로 수정 저장, 토글 기능, 수동 순서 변경
   - 하루 성찰 (4항목) - 기본 접힘 상태, "성찰 작성하기" 버튼으로 펼치기, 저장 후 자동 접힘, 4항목 입력/저장 (감사한 일/잘한 일/아쉬운 일/내일의 다짐)
-  - 월간 데일리 루틴 (Goals 탭) - 모닝/나이트 각 0~10개 입력, Enter 키 지원, 수정/저장
-  - 연간 목표 (Goals 탭) - 연도별 3영역(자기계발/관계/업무재정) 입력/저장/조회/수정
-  - 월간 실천계획 (Goals 탭) - 3컬럼 레이아웃(연간목표 표시/월실천계획 입력/월말 결과 입력), plan_content/results_content JSONB 저장
+  - 월간 데일리 루틴 (Goals 탭) - 모닝/나이트 각 0~10개 입력, Enter 키 지원, 수정/저장, 토글 기능, 부제목 표시
+  - 연간 목표 (Goals 탭) - 연도별 3영역(자기계발/관계/업무재정) 입력/저장/조회/수정, 토글 기능, 부제목 표시, 연도 선택 모달, "올해로" 버튼
+  - 월간 실천계획 (Goals 탭) - 3컬럼 레이아웃(연간목표 표시/월실천계획 입력/월말 결과 입력), plan_content/results_content JSONB 저장, 토글 기능, 부제목 표시, 월 선택 모달, "이번 달로" 버튼
+  - AI 월실천계획 제안 (Goals 탭) - Edge Function 연동, 연간목표 및 최근 활동 분석, 구체적이고 실행 가능한 계획 제안, plan_content JSONB 저장
   - 네비게이션 레이아웃 (중앙 정렬, 아이콘+텍스트 한 줄) - 주간/월간 아이콘 구분 (calendar-days/calendar)
   - 디자인 시스템 (카테고리 색상, 그라데이션, Lucide 아이콘, 토글 기능, 헤더 레이아웃)
   - 토글 버튼 안정성 개선 (cloneNode 패턴으로 중복 등록 방지, Lucide 렌더링 타이밍 보장)
@@ -22,7 +23,7 @@ alwaysApply: true
   - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
 - 🚧 **부분**: 
-  - AI 기능 (주간/월간 성찰 완료, AI 월실천계획 제안 미구현)
+  - (현재 없음)
 
 ---
 
@@ -434,7 +435,9 @@ alwaysApply: true
 - **제목**: "월간 데일리 루틴" (그라데이션 배경: 보라색/핑크)
 - **아이콘**: `repeat` (제목), `sunrise` (모닝), `moon` (나이트)
 - **모드**: 보기 모드 / 편집 모드 (토글)
-- **월 표시**: "12월 매일 실천할 루틴" (동적)
+- **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장)
+- **부제목**: "12월 매일 실천할 루틴" (동적, 제목 아래 표시, 글씨 크기 1rem)
+- **구분선**: 부제목 아래 헤더 border-bottom으로 구분선 표시
 
 #### FR-G0 (구현됨)
 - FR-G0-1. 모닝/나이트 루틴 각각 0~10개 입력 가능
@@ -452,6 +455,8 @@ alwaysApply: true
 - FR-G0-9. 보기 모드: 저장된 루틴 목록 표시 + "수정하기" 버튼
 - FR-G0-10. 편집 모드: 입력 필드 + "저장하기" / "취소" 버튼
 - FR-G0-11. 루틴 없을 때: "등록된 모닝루틴이 없습니다" / "등록된 나이트루틴이 없습니다" 메시지
+- FR-G0-12. **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장) ✅
+- FR-G0-13. **부제목 표시**: 제목 아래 부제목 "12월 매일 실천할 루틴" 표시 (동적, 글씨 크기 1rem) ✅
 
 #### AC-G0 (검증됨)
 - AC-G0-1. Goals 탭 저장 → 오늘 탭 즉시 반영 ✅
@@ -459,6 +464,8 @@ alwaysApply: true
 - AC-G0-3. Enter 키로 자동 추가 작동 ✅
 - AC-G0-4. PC/모바일 동기화 정상 ✅
 - AC-G0-5. 중복 생성 방지 (기존 루틴 비활성화 후 새로 생성) ✅
+- AC-G0-6. 토글 기능 정상 작동, 상태가 localStorage에 저장되어 새로고침 후에도 유지 ✅
+- AC-G0-7. 부제목이 동적으로 업데이트되며 올바른 위치에 표시됨 ✅
 
 ### G-1 연간목표 FR-GY ✅ 구현 완료
 #### 구조 (구현됨)
@@ -466,7 +473,11 @@ alwaysApply: true
 - **제목**: "연간 목표" (그라데이션 배경: 인디고/보라)
 - **아이콘**: `target` (제목), `book-open` (자기계발), `heart` (관계), `briefcase` (업무/재정)
 - **모드**: 보기 모드 / 편집 모드 (토글)
-- **연도 선택**: 이전/다음 연도 이동 버튼
+- **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장)
+- **부제목**: "2025년 연간 목표" (동적, 제목 아래 표시, 글씨 크기 1rem)
+- **구분선**: 부제목 아래 헤더 border-bottom으로 구분선 표시
+- **연도 선택**: 이전/다음 연도 이동 버튼, 연도 레이블 클릭 시 연도 선택 모달
+- **"올해로" 버튼**: 올해가 아닌 연도 선택 시 표시되는 버튼
 
 #### FR-GY (구현됨)
 - FR-GY1. 연도 선택(현재/이전/다음) ✅
@@ -475,9 +486,17 @@ alwaysApply: true
   - relationship (관계)
   - work_finance (업무/재정)
 - FR-GY3. 조회/수정 ✅
+- FR-GY4. **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장) ✅
+- FR-GY5. **부제목 표시**: 제목 아래 부제목 "2025년 연간 목표" 표시 (동적, 글씨 크기 1rem) ✅
+- FR-GY6. **연도 선택 모달**: 연도 레이블 클릭 시 모달에서 연도 선택 가능 ✅
+- FR-GY7. **"올해로" 버튼**: 올해가 아닌 연도 선택 시 표시, 클릭 시 현재 연도로 이동 ✅
 
 ### G-1 AC (검증됨)
 - AC-GY1. 연도별 데이터 분리, PC/모바일 동일 ✅
+- AC-GY2. 토글 기능 정상 작동, 상태가 localStorage에 저장되어 새로고침 후에도 유지 ✅
+- AC-GY3. 부제목이 선택된 연도에 맞춰 동적으로 업데이트됨 ✅
+- AC-GY4. 연도 선택 모달에서 원하는 연도를 쉽게 선택 가능 ✅
+- AC-GY5. "올해로" 버튼이 올해가 아닐 때만 표시되고 정상 작동 ✅
 
 ### G-2 월실천계획(직접) FR-GM ✅ 구현 완료
 #### 구조 (구현됨)
@@ -485,7 +504,11 @@ alwaysApply: true
 - **제목**: "월간 실천계획" (그라데이션 배경: 청록/녹색)
 - **아이콘**: `calendar-check` (제목)
 - **모드**: 보기 모드 / 편집 모드 (토글)
-- **월 선택**: 이전/다음 월 이동 버튼
+- **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장)
+- **부제목**: "2025년 12월 실천 계획 & 결과" (동적, 제목 아래 표시, 글씨 크기 1rem)
+- **구분선**: 부제목 아래 헤더 border-bottom으로 구분선 표시
+- **월 선택**: 이전/다음 월 이동 버튼, 월 레이블 클릭 시 월 선택 모달 (선택된 연도의 1~12월)
+- **"이번 달로" 버튼**: 이번 달이 아닌 월 선택 시 표시되는 버튼
 - **3컬럼 레이아웃**:
   - 왼쪽: 연간목표 표시 (linked_year에 해당하는 yearly_goals 조회, 읽기 전용)
   - 가운데: 월실천계획 입력 (plan_content JSONB - self_dev/relationship/work_finance)
@@ -508,31 +531,53 @@ alwaysApply: true
 - FR-GM6. results_content JSONB 저장 ✅
   - 형식: `{ "self_dev": "", "relationship": "", "work_finance": "" }`
   - 각 영역별 월말 결과 입력값 저장
+- FR-GM7. **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장) ✅
+- FR-GM8. **부제목 표시**: 제목 아래 부제목 "2025년 12월 실천 계획 & 결과" 표시 (동적, 글씨 크기 1rem) ✅
+- FR-GM9. **월 선택 모달**: 월 레이블 클릭 시 모달에서 월 선택 가능 (선택된 연도의 1~12월) ✅
+- FR-GM10. **"이번 달로" 버튼**: 이번 달이 아닌 월 선택 시 표시, 클릭 시 현재 월로 이동 ✅
+- FR-GM11. **연간목표 연결 자동화**: linked_year는 선택된 월의 연도로 자동 연결 (드롭다운 제거) ✅
 
 ### G-2 AC (검증됨)
 - AC-GM1. 월별 저장/조회가 기기 간 동일 ✅
 - AC-GM2. 연간목표 수정/삭제와 무관하게 월계획이 깨지지 않음(참조는 year 값) ✅
 - AC-GM3. linked_year 선택 시 해당 연도의 연간목표가 왼쪽 컬럼에 자동 표시됨 ✅
 - AC-GM4. plan_content와 results_content가 각각 독립적으로 저장/조회됨 ✅
+- AC-GM5. 토글 기능 정상 작동, 상태가 localStorage에 저장되어 새로고침 후에도 유지 ✅
+- AC-GM6. 부제목이 선택된 월에 맞춰 동적으로 업데이트됨 ✅
+- AC-GM7. 월 선택 모달에서 선택된 연도의 원하는 월을 쉽게 선택 가능 ✅
+- AC-GM8. "이번 달로" 버튼이 이번 달이 아닐 때만 표시되고 정상 작동 ✅
+- AC-GM9. 연간목표 연결이 자동으로 처리되어 사용자 편의성 향상 ✅
 
-### G-3 AI 월실천계획 제안 FR-GAI (필수: Edge Function)
-- FR-GAI1. “AI로 월실천계획 제안받기” 버튼
-- FR-GAI2. 입력: 연간목표(해당 year), 대상 월, 선택으로 최근 4주 요약(루틴/성찰)
-- FR-GAI3. 출력 포맷(마크다운 고정 권장)
-  - 월 목표 요약
-  - 주차별 실행(Week 1~4/5)
-  - 측정 기준(빈도/시간/횟수)
-  - 데일리 루틴 후보 최대 3
-  - 할일 템플릿 후보(카테고리 포함)
-- FR-GAI4. 저장: `monthly_plans.source=ai_suggested`, `status=draft`
-- FR-GAI5. 사용자는 편집 후 저장 가능 및 `accepted`로 채택 가능
-- FR-GAI6. 재생성 정책(고정)
-  - 동일 `user_id + month_start + source=ai_suggested`는 upsert 덮어쓰기
+### G-3 AI 월실천계획 제안 FR-GAI ✅ 구현 완료 (필수: Edge Function)
+#### 구조 (구현됨)
+- **버튼**: "AI로 제안받기" (월간 실천계획 편집 모드에서 표시)
+- **입력**: 
+  - 연간목표(해당 year의 yearly_goals)
+  - 지난달 실천계획 및 결과(previous month의 monthly_plans)
+  - 최근 4주 활동 요약(루틴/할일/성찰 통계)
+- **출력 포맷**: JSON 형식 (plan_content JSONB)
+  - 각 영역(자기계발/관계/업무재정)별 1-2개 핵심 행동 제안
+  - 매우 구체적이고 실행 가능한 계획만 제안
+  - 마크다운 없이 일반 텍스트로 저장
+- **저장**: `monthly_plans.source='ai_suggested'`, `status='draft'`, `plan_content` JSONB에 저장
 
-### G-3 AC
-- AC-GAI1. 생성 결과 저장 후 PC/모바일 동일 조회
-- AC-GAI2. 편집/채택 상태가 기기 간 동일
-- AC-GAI3. 승인 사용자만 가능(RLS + Edge 인증)
+#### FR-GAI (구현됨)
+- FR-GAI1. "AI로 제안받기" 버튼 클릭 시 Edge Function 호출 ✅
+- FR-GAI2. 입력 수집: 연간목표(해당 year), 지난달 실천계획 및 결과, 최근 4주 활동 요약 ✅
+- FR-GAI3. AI 프롬프트: 연간목표와 지난달 실천계획/결과, 최근 활동을 종합적으로 고려하여 제안 ✅
+- FR-GAI4. 출력 포맷: JSON 형식 (plan_content JSONB, 각 영역별 1-2개 핵심 행동) ✅
+- FR-GAI5. 저장 정책: `monthly_plans.source='ai_suggested'`, `status='draft'`, plan_content JSONB 저장 ✅
+- FR-GAI6. 재생성 정책: 동일 `user_id + month_start + source='ai_suggested'`는 upsert 덮어쓰기 ✅
+- FR-GAI7. 사용자 편집: AI 제안 생성 후 편집 모드에서 수정 가능, 저장 시 manual로 전환 가능 ✅
+- FR-GAI8. 레이트리밋: 월 5회 제한 (ai_usage_counters 테이블로 관리) ✅
+
+### G-3 AC (검증됨)
+- AC-GAI1. 생성 결과 저장 후 PC/모바일 동일 조회 ✅
+- AC-GAI2. 편집/저장 상태가 기기 간 동일 ✅
+- AC-GAI3. 승인 사용자만 가능(RLS + Edge 인증) ✅
+- AC-GAI4. 연간목표와 지난달 실천계획/결과, 최근 활동이 AI 제안에 반영됨 ✅
+- AC-GAI5. AI 제안이 구체적이고 실행 가능한 1-2개 핵심 행동으로 제안됨 ✅
+- AC-GAI6. 레이트리밋 정상 작동 (월 5회 제한) ✅
 
 ---
 
@@ -784,9 +829,15 @@ alwaysApply: true
 - response: { "content_md":"...", "month_start":"...", "model":"...", "prompt_version":"..." }
 - 구현 상태: ✅ 배포 준비 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용 (월 2회)
 
-3) `POST /functions/v1/ai-monthly-plan`
-- body: { "month_start":"YYYY-MM-01", "linked_year": 2025 }
-- 저장: monthly_plans upsert(user_id, month_start, source='ai_suggested') status='draft'
+3) `POST /functions/v1/ai-monthly-plan` ✅ 구현 완료
+- body: { "month_start":"YYYY-MM-01", "linked_year": 2025 } (필수)
+- server:
+  - 연간목표(해당 year), 지난달 실천계획 및 결과, 최근 4주 활동 요약 수집
+  - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 8000)
+  - JSON 형식 응답 파싱 및 plan_content JSONB 저장
+  - monthly_plans upsert(user_id, month_start, source='ai_suggested') status='draft'
+- response: { "plan_content": {...}, "month_start":"...", "model":"...", "prompt_version":"..." }
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, JSON 저장, 레이트리밋 적용 (월 5회)
 
 ## 12.3 Prompt Versioning(필수)
 - prompt_version 예: `weekly_reflection_v1`, `monthly_plan_v1`
