@@ -14,6 +14,7 @@ alwaysApply: true
   - 하루 성찰 (4항목) - 기본 접힘 상태, "성찰 작성하기" 버튼으로 펼치기, 저장 후 자동 접힘, 4항목 입력/저장 (감사한 일/잘한 일/아쉬운 일/내일의 다짐)
   - 월간 데일리 루틴 (Goals 탭) - 모닝/나이트 각 0~10개 입력, Enter 키 지원, 수정/저장, 토글 기능, 부제목 표시
   - 연간 목표 (Goals 탭) - 연도별 3영역(자기계발/관계/업무재정) 입력/저장/조회/수정, 토글 기능, 부제목 표시, 연도 선택 모달, "올해로" 버튼
+  - AI 연간 목표 피드백 (Goals 탭) - Edge Function 연동, SMART 기준에 맞춰 개선 제안, 원본/개선 제안 비교 표시, 영역별 개별 적용 기능, 레이트리밋 월 2회
   - 월간 실천계획 (Goals 탭) - 3컬럼 레이아웃(연간목표 표시/월실천계획 입력/월말 결과 입력), plan_content/results_content JSONB 저장, 토글 기능, 부제목 표시, 월 선택 모달, "이번 달로" 버튼
   - AI 월실천계획 제안 (Goals 탭) - Edge Function 연동, 연간목표 및 최근 활동 분석, 구체적이고 실행 가능한 계획 제안, plan_content JSONB 저장
   - 네비게이션 레이아웃 (중앙 정렬, 아이콘+텍스트 한 줄) - 주간/월간 아이콘 구분 (calendar-days/calendar)
@@ -87,7 +88,7 @@ alwaysApply: true
 - `/index.html#/today` 오늘(할일/루틴/성찰)
 - `/index.html#/weekly` 주간 리포트(통계 + AI 성찰)
 - `/index.html#/monthly` 월간 리포트(통계 + AI 성찰) ✅ 구현 완료
-- `/index.html#/goals` 목표(연간목표/월계획 + AI 월계획)
+- `/index.html#/goals` 목표(연간목표/월계획 + AI 월계획 + AI 연간 목표 피드백)
 - `/admin.html` 관리자(승인/상태변경) — Admin만
 - **참고**: `/reports`는 `/weekly`로 자동 리다이렉트 (하위 호환성)
 
@@ -498,6 +499,42 @@ alwaysApply: true
 - AC-GY4. 연도 선택 모달에서 원하는 연도를 쉽게 선택 가능 ✅
 - AC-GY5. "올해로" 버튼이 올해가 아닐 때만 표시되고 정상 작동 ✅
 
+### G-1.5 AI 연간 목표 피드백 FR-GYAI ✅ 구현 완료 (필수: Edge Function)
+#### 구조 (구현됨)
+- **버튼**: "AI로 피드백받기" (연간 목표 편집 모드에서 표시)
+- **입력**: 
+  - 연도(year)
+  - 연간 목표 3영역(self_dev, relationship, work_finance)
+  - 최소 1개 영역에 내용이 있어야 함
+- **출력 포맷**: JSON 형식 (각 영역별 개선 제안)
+  - SMART 기준에 맞춰 개선 제안
+  - 번호 리스트 형식 (1., 2., 3. 등)
+  - 측정 가능한 수치 포함
+  - 반복되는 날짜 표현 제거
+- **표시**: 원본과 개선 제안을 나란히 표시
+  - 원본: 흰색 배경 박스
+  - 개선 제안: 녹색 배경 박스 (#f0fdf4)
+  - 각 영역별로 "적용하기" 버튼 제공
+- **저장**: DB 저장 없이 클라이언트에서만 표시 및 적용 (사용자가 직접 저장 버튼으로 저장)
+
+#### FR-GYAI (구현됨)
+- FR-GYAI1. "AI로 피드백받기" 버튼 클릭 시 Edge Function 호출 ✅
+- FR-GYAI2. 입력 검증: 최소 1개 영역에 내용이 있어야 함 ✅
+- FR-GYAI3. AI 프롬프트: SMART 기준에 맞춰 개선 제안 (Specific, Measurable, Achievable, Relevant, Time-bound) ✅
+- FR-GYAI4. 출력 포맷: JSON 형식 (각 영역별 개선 제안, 번호 리스트 형식) ✅
+- FR-GYAI5. 피드백 표시: 원본과 개선 제안을 나란히 표시, 각 영역별로 구분 ✅
+- FR-GYAI6. 개별 적용 기능: 각 영역별로 "적용하기" 버튼으로 개별 적용 가능 ✅
+- FR-GYAI7. 빈 항목 처리: 개선 제안이 없는 영역은 적용 버튼 숨김 ✅
+- FR-GYAI8. 레이트리밋: 월 2회 제한 (ai_usage_counters 테이블로 관리, scope: 'yearly_goal_feedback') ✅
+
+### G-1.5 AC (검증됨)
+- AC-GYAI1. 피드백 생성 후 원본과 개선 제안이 정확하게 표시됨 ✅
+- AC-GYAI2. 각 영역별로 개별 적용 기능 정상 작동 ✅
+- AC-GYAI3. 승인 사용자만 가능(RLS + Edge 인증) ✅
+- AC-GYAI4. SMART 기준에 맞춰 구체적이고 측정 가능한 개선 제안 제공 ✅
+- AC-GYAI5. 레이트리밋 정상 작동 (월 2회 제한) ✅
+- AC-GYAI6. 빈 항목 처리: 개선 제안이 없는 영역은 적용 버튼 숨김 ✅
+
 ### G-2 월실천계획(직접) FR-GM ✅ 구현 완료
 #### 구조 (구현됨)
 - **위치**: Goals 탭 (연간 목표 아래)
@@ -623,6 +660,7 @@ alwaysApply: true
   - 주간 AI 성찰: 주 3회
   - 월간 AI 성찰: 월 2회
   - AI 월계획: 월 5회
+  - AI 연간 목표 피드백: 월 2회
   - 구현: `ai_usage_counters` 테이블로 카운트(upsert)
 - NFR-AI4. 실패 시 사용자에게 재시도 버튼 제공(서버는 부분 저장 금지)
 
@@ -769,7 +807,7 @@ alwaysApply: true
 ### ai_usage_counters (레이트리밋)
 - id uuid PK default gen_random_uuid()
 - user_id uuid not null FK → profiles(id)
-- scope text not null                       -- weekly_reflection / monthly_reflection / monthly_plan
+- scope text not null                       -- weekly_reflection / monthly_reflection / monthly_plan / yearly_goal_feedback
 - period_key text not null                  -- 예: 2025-W49, 2025-12
 - count int not null default 0
 - created_at timestamptz not null default now()
@@ -838,6 +876,18 @@ alwaysApply: true
   - monthly_plans upsert(user_id, month_start, source='ai_suggested') status='draft'
 - response: { "plan_content": {...}, "month_start":"...", "model":"...", "prompt_version":"..." }
 - 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, JSON 저장, 레이트리밋 적용 (월 5회)
+
+4) `POST /functions/v1/ai-yearly-goal-feedback` ✅ 구현 완료
+- body: { "year": 2025, "self_dev": "...", "relationship": "...", "work_finance": "..." } (필수)
+- server:
+  - 입력 검증: 최소 1개 영역에 내용이 있어야 함
+  - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 4000, responseMimeType: 'application/json')
+  - SMART 기준에 맞춰 개선 제안 생성
+  - JSON 형식 응답 파싱 (각 영역별 개선 제안)
+  - 레이트리밋 카운터 증가 (scope: 'yearly_goal_feedback')
+  - DB 저장 없이 피드백만 반환 (사용자가 직접 저장)
+- response: { "success": true, "year": 2025, "feedback": { "self_dev": "...", "relationship": "...", "work_finance": "..." }, "model": "...", "prompt_version": "..." }
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 4000, JSON 응답, 레이트리밋 적용 (월 2회)
 
 ## 12.3 Prompt Versioning(필수)
 - prompt_version 예: `weekly_reflection_v1`, `monthly_plan_v1`
