@@ -2,6 +2,7 @@ import { getCurrentProfile, isApprovedUser } from './utils/auth.js';
 import { renderToday } from './pages/today.js';
 import { renderReports } from './pages/reports.js';
 import { renderMonthly } from './pages/monthly.js';
+import { renderYearly } from './pages/yearly.js';
 import { renderGoals } from './pages/goals.js';
 import { renderPending } from './pages/pending.js';
 import { renderRejected } from './pages/rejected.js';
@@ -17,6 +18,7 @@ class Router {
       '/reports': renderReports,
       '/weekly': renderReports, // 주간 리포트 (renderReports 사용)
       '/monthly': renderMonthly, // 월간 리포트
+      '/yearly': renderYearly, // 연간 리포트
       '/goals': renderGoals
     };
   }
