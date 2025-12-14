@@ -283,7 +283,7 @@ function generateFeedbackPrompt(year: number, selfDev: string, relationship: str
 ### 자기계발
 ${selfDev || '(작성되지 않음)'}
 
-### 관계
+### 가족/관계
 ${relationship || '(작성되지 않음)'}
 
 ### 업무/재정
@@ -314,7 +314,7 @@ ${workFinance || '(작성되지 않음)'}
 
 {
   "self_dev": "1. 첫 번째 자기계발 목표\n2. 두 번째 자기계발 목표",
-  "relationship": "1. 첫 번째 관계 목표",
+  "relationship": "1. 첫 번째 가족/관계 목표",
   "work_finance": "1. 첫 번째 업무/재정 목표\n2. 두 번째 업무/재정 목표"
 }
 

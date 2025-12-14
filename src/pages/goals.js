@@ -167,7 +167,7 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
               <i data-lucide="heart" style="width: 18px; height: 18px; color: #ec4899;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">관계</h4>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">가족/관계</h4>
             </div>
             <div id="yearly-goal-relationship-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
             <div id="yearly-goal-relationship-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
@@ -203,7 +203,7 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
               <i data-lucide="heart" style="width: 18px; height: 18px; color: #ec4899;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">관계</h4>
+              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">가족/관계</h4>
             </div>
             <textarea id="yearly-goal-relationship-input" placeholder="예: 가족과 더 많은 시간 보내기, 새로운 인연 만들기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
           </div>
@@ -251,7 +251,7 @@ export async function renderGoals() {
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
               <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
                 <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
@@ -1811,7 +1811,7 @@ export async function renderGoals() {
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                   <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
                 </div>
                 <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.relationship || '목표를 입력해주세요'}</div>
               </div>
@@ -1842,7 +1842,7 @@ export async function renderGoals() {
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
               <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.relationship || '실천계획을 입력해주세요'}</div>
             </div>
@@ -1870,7 +1870,7 @@ export async function renderGoals() {
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
               <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.relationship || '결과를 입력해주세요'}</div>
             </div>
@@ -1938,7 +1938,7 @@ export async function renderGoals() {
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
               <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.relationship || '목표를 입력해주세요'}</div>
             </div>
@@ -1971,9 +1971,9 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
               <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
             </div>
-            <textarea id="plan-content-relationship-input" placeholder="이번 달 관계 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.relationship || ''}</textarea>
+            <textarea id="plan-content-relationship-input" placeholder="이번 달 가족/관계 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.relationship || ''}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -2001,9 +2001,9 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
               <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">관계</h5>
+              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
             </div>
-            <textarea id="results-content-relationship-input" placeholder="월말 관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.relationship || ''}</textarea>
+            <textarea id="results-content-relationship-input" placeholder="월말 가족/관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.relationship || ''}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
