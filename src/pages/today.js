@@ -277,6 +277,28 @@ export async function renderToday() {
         </div>
       </div>
     </div>
+
+    <!-- 할일 복제 모달 -->
+    <div id="todo-duplicate-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+      <div id="todo-duplicate-modal" class="date-modal" style="background: white; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18); width: min(400px, 90vw); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div class="date-modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid #e5e7eb;">
+          <span style="font-weight: 700; font-size: 1.125rem; color: #111827;">복제할 날짜 선택</span>
+          <button id="todo-duplicate-close" class="date-close-btn" style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #6b7280;">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        <div class="date-modal-body" style="padding: 1.25rem; flex: 1; overflow-y: auto;">
+          <input type="text" id="todo-duplicate-calendar-input" readonly style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 0.75rem;" />
+        </div>
+        <div class="date-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem; border-top: 1px solid #e5e7eb;">
+          <button id="todo-duplicate-today-modal" class="btn btn-secondary" style="padding: 0.625rem 1.25rem; background: #f3f4f6; color: #1f2937; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+            오늘
+          </button>
+          <button id="todo-duplicate-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
+        </div>
+      </div>
+    </div>
   `;
 
   return {
@@ -639,11 +661,11 @@ function renderTodos(todosList, date, profile, timezone) {
           ${isProcessed ? (todo.carried_over_at ? '<span style="font-size: 0.75rem; color: #10b981; padding: 0.25rem 0.5rem; background: #d1fae5; border-radius: 4px;">→ 오늘로 이동됨</span>' : '<span style="font-size: 0.75rem; color: #ef4444; padding: 0.25rem 0.5rem; background: #fee2e2; border-radius: 4px;">× 포기함</span>') : ''}
           ${!isReadOnly ? `
             ${!isEditing ? `
-              <button class="edit-todo-btn" data-edit-todo="${todo.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="수정">
-                <i data-lucide="pencil" style="width: 18px; height: 18px;"></i>
-              </button>
               <button class="move-todo-date-btn" data-move-todo-date="${todo.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="날짜 이동">
                 <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+              </button>
+              <button class="duplicate-todo-btn" data-duplicate-todo="${todo.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem;" title="복제">
+                <i data-lucide="copy" style="width: 18px; height: 18px;"></i>
               </button>
             ` : `
               <button class="save-todo-btn" data-save-todo="${todo.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem;">
@@ -1006,6 +1028,15 @@ function bindTodoEvents(date, profile, timezone) {
       if (isExistingTodo || editingTodoId) return;
       const todoId = target.getAttribute('data-move-todo-date');
       openTodoDatePicker(todoId, todo?.date || date, date, profile, timezone);
+      return;
+    }
+
+    // 복제 버튼 (날짜 이동 버튼 다음에 처리)
+    if (target.hasAttribute('data-duplicate-todo')) {
+      e.stopPropagation();
+      if (isExistingTodo || editingTodoId) return;
+      const todoId = target.getAttribute('data-duplicate-todo');
+      openTodoDuplicatePicker(todoId, todo?.date || date, date, profile, timezone);
       return;
     }
 
@@ -1628,6 +1659,17 @@ let currentProfileForMove = null;
 let currentTimezoneForMove = null;
 let currentTodoDateForMove = null; // 할일의 현재 날짜 (비교용)
 
+// ============================================
+// 할일 복제 관련 함수들
+// ============================================
+
+let currentDuplicatingTodoId = null;
+let currentSelectedDateForDuplicate = null;
+let currentProfileForDuplicate = null;
+let currentTimezoneForDuplicate = null;
+let currentTodoForDuplicate = null; // 복제할 할일 객체
+let todoDuplicatePickerInitialized = false;
+
 function openTodoDatePicker(todoId, currentDate, selectedDate, profile, timezone = 'Asia/Seoul') {
   const overlay = document.getElementById('todo-date-overlay');
   const calendarInput = document.getElementById('todo-date-calendar-input');
@@ -1891,5 +1933,253 @@ async function moveTodoDate(todoId, newDate, currentSelectedDate, profile, timez
   } catch (error) {
     console.error('Error moving todo date:', error);
     alert('할일 날짜 이동 중 오류가 발생했습니다.');
+  }
+}
+
+function openTodoDuplicatePicker(todoId, currentDate, selectedDate, profile, timezone = 'Asia/Seoul') {
+  const overlay = document.getElementById('todo-duplicate-overlay');
+  const calendarInput = document.getElementById('todo-duplicate-calendar-input');
+  const today = getToday(timezone);
+  
+  if (!overlay || !calendarInput || !window.flatpickr) {
+    console.error('Todo duplicate picker elements not found or flatpickr not loaded');
+    return;
+  }
+  
+  // 복제할 할일 정보 조회
+  const todo = todos.find(t => t.id === todoId);
+  if (!todo) {
+    console.error('Todo not found for duplication', { todoId });
+    alert('할일을 찾을 수 없습니다.');
+    return;
+  }
+  
+  // 전역 변수에 현재 값 저장 (onChange 콜백에서 사용)
+  currentDuplicatingTodoId = todoId;
+  currentSelectedDateForDuplicate = selectedDate;
+  currentProfileForDuplicate = profile;
+  currentTimezoneForDuplicate = timezone;
+  currentTodoForDuplicate = todo; // 할일 객체 저장
+  console.log('[openTodoDuplicatePicker] Global variables set', { todoId, currentDate, selectedDate, profile: profile?.id, timezone });
+  
+  const closeOverlay = () => {
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+    currentDuplicatingTodoId = null;
+    currentSelectedDateForDuplicate = null;
+    currentProfileForDuplicate = null;
+    currentTimezoneForDuplicate = null;
+    currentTodoForDuplicate = null;
+    if (window.lucide?.createIcons) {
+      setTimeout(() => window.lucide.createIcons(), 10);
+    }
+  };
+  
+  // flatpickr 초기화 (매번 새로 생성하여 최신 콜백 보장)
+  if (calendarInput._fp) {
+    calendarInput._fp.destroy();
+    calendarInput._fp = null;
+  }
+  
+  // 초기화 완료 플래그
+  let isReady = false;
+  let lastSelectedDate = selectedDate; // 마지막으로 선택된 날짜 추적 (기본값은 현재 선택된 날짜)
+  
+  calendarInput._fp = window.flatpickr(calendarInput, {
+    inline: true,
+    defaultDate: selectedDate,
+    locale: (window.flatpickr.l10ns && window.flatpickr.l10ns.ko) ? window.flatpickr.l10ns.ko : undefined,
+    onReady: (dates, dateStr, instance) => {
+      console.log('[TodoDuplicatePicker] onReady called', { dates, dateStr, instance });
+      isReady = true;
+      if (dates && dates[0]) {
+        lastSelectedDate = dates[0].toISOString().slice(0, 10);
+      }
+      
+      // flatpickr 캘린더의 날짜 클릭 이벤트 직접 리스닝
+      const handleDateClick = async (e) => {
+        const dayElement = e.target.closest('.flatpickr-day');
+        if (!dayElement || !isReady) return;
+        
+        if (dayElement.classList.contains('flatpickr-disabled')) return;
+        
+        let clickedDate = null;
+        
+        if (dayElement.dataset.day) {
+          const day = parseInt(dayElement.dataset.day);
+          const month = instance?.currentMonth || 0;
+          const year = instance?.currentYear || new Date().getFullYear();
+          clickedDate = new Date(year, month, day).toISOString().slice(0, 10);
+        } else if (instance) {
+          setTimeout(() => {
+            if (instance.selectedDates && instance.selectedDates.length > 0) {
+              clickedDate = instance.selectedDates[0].toISOString().slice(0, 10);
+              processDateClick(clickedDate);
+            }
+          }, 100);
+          return;
+        }
+        
+        if (clickedDate) {
+          processDateClick(clickedDate);
+        }
+      };
+      
+      const processDateClick = async (clickedDate) => {
+        console.log('[TodoDuplicatePicker] Date clicked directly', { clickedDate });
+        
+        if (clickedDate === lastSelectedDate) {
+          return;
+        }
+        
+        lastSelectedDate = clickedDate;
+        
+        if (currentDuplicatingTodoId && currentSelectedDateForDuplicate && currentProfileForDuplicate && currentTimezoneForDuplicate && currentTodoForDuplicate) {
+          console.log('[TodoDuplicatePicker] Duplicating todo via direct click', { todoId: currentDuplicatingTodoId, clickedDate });
+          await duplicateTodo(currentDuplicatingTodoId, clickedDate, currentSelectedDateForDuplicate, currentProfileForDuplicate, currentTimezoneForDuplicate, currentTodoForDuplicate);
+          closeOverlay();
+        }
+      };
+      
+      const calendarContainer = instance?.calendarContainer;
+      if (calendarContainer) {
+        calendarContainer.removeEventListener('click', handleDateClick);
+        calendarContainer.addEventListener('click', handleDateClick);
+      }
+    },
+    onChange: async (dates, dateStr, instance) => {
+      console.log('[TodoDuplicatePicker] onChange called', { 
+        dates, 
+        dateStr, 
+        instanceSelectedDates: instance?.selectedDates,
+        isReady,
+        currentDuplicatingTodoId, 
+        currentSelectedDateForDuplicate, 
+        currentProfileForDuplicate, 
+        currentTimezoneForDuplicate 
+      });
+      
+      if (!isReady) {
+        console.log('[TodoDuplicatePicker] Not ready yet, ignoring');
+        return;
+      }
+      
+      let newDate = null;
+      
+      if (dateStr) {
+        newDate = dateStr;
+        console.log('[TodoDuplicatePicker] Using dateStr (primary)', { newDate });
+      } else if (dates && dates.length > 0 && dates[0]) {
+        newDate = dates[0].toISOString().slice(0, 10);
+        console.log('[TodoDuplicatePicker] Using dates[0]', { newDate });
+      } else if (instance && instance.selectedDates && instance.selectedDates.length > 0) {
+        newDate = instance.selectedDates[0].toISOString().slice(0, 10);
+        console.log('[TodoDuplicatePicker] Using instance.selectedDates[0] (fallback)', { newDate });
+      }
+      
+      if (!newDate) {
+        console.warn('[TodoDuplicatePicker] No date found in onChange');
+        return;
+      }
+      
+      if (newDate === lastSelectedDate) {
+        console.log('[TodoDuplicatePicker] Date unchanged, ignoring', { newDate, lastSelectedDate });
+        return;
+      }
+      
+      lastSelectedDate = newDate;
+      
+      if (currentDuplicatingTodoId && currentSelectedDateForDuplicate && currentProfileForDuplicate && currentTimezoneForDuplicate && currentTodoForDuplicate) {
+        console.log('[TodoDuplicatePicker] Duplicating todo', { todoId: currentDuplicatingTodoId, newDate, currentSelectedDate: currentSelectedDateForDuplicate });
+        await duplicateTodo(currentDuplicatingTodoId, newDate, currentSelectedDateForDuplicate, currentProfileForDuplicate, currentTimezoneForDuplicate, currentTodoForDuplicate);
+        closeOverlay();
+      } else {
+        console.warn('[TodoDuplicatePicker] onChange conditions not met', { 
+          hasNewDate: !!newDate,
+          hasTodoId: !!currentDuplicatingTodoId, 
+          hasTodo: !!currentTodoForDuplicate,
+          hasSelectedDate: !!currentSelectedDateForDuplicate, 
+          hasProfile: !!currentProfileForDuplicate, 
+          hasTimezone: !!currentTimezoneForDuplicate 
+        });
+      }
+    },
+  });
+  
+  // 이벤트 리스너는 한 번만 등록 (중복 방지)
+  if (!todoDuplicatePickerInitialized) {
+    const closeBtn = document.getElementById('todo-duplicate-close');
+    const closeFooterBtn = document.getElementById('todo-duplicate-close-footer');
+    const todayBtn = document.getElementById('todo-duplicate-today-modal');
+    
+    if (closeBtn) {
+      closeBtn.onclick = closeOverlay;
+    }
+    if (closeFooterBtn) {
+      closeFooterBtn.onclick = closeOverlay;
+    }
+    if (todayBtn) {
+      todayBtn.onclick = async () => {
+        if (currentDuplicatingTodoId && currentSelectedDateForDuplicate && currentProfileForDuplicate && currentTimezoneForDuplicate && currentTodoForDuplicate) {
+          const today = getToday(currentTimezoneForDuplicate);
+          await duplicateTodo(currentDuplicatingTodoId, today, currentSelectedDateForDuplicate, currentProfileForDuplicate, currentTimezoneForDuplicate, currentTodoForDuplicate);
+          closeOverlay();
+        }
+      };
+    }
+    
+    // 오버레이 배경 클릭 시 닫기
+    if (overlay) {
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          closeOverlay();
+        }
+      };
+    }
+    
+    todoDuplicatePickerInitialized = true;
+  }
+  
+  // 오버레이 표시
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
+  
+  // Lucide 아이콘 업데이트
+  if (window.lucide?.createIcons) {
+    setTimeout(() => window.lucide.createIcons(), 10);
+  }
+}
+
+async function duplicateTodo(todoId, newDate, currentSelectedDate, profile, timezone = 'Asia/Seoul', todo) {
+  try {
+    console.log('[duplicateTodo] Starting', { todoId, newDate, currentSelectedDate, todo });
+    
+    // 원본 할일의 정보를 복사하여 새 할일 생성
+    const { error } = await supabase
+      .from('todos')
+      .insert({
+        user_id: profile.id,
+        date: newDate,
+        category: todo.category,
+        title: todo.title,
+        memo: todo.memo || null,
+        due_date: todo.due_date || null,
+        priority: todo.priority || null,
+        pinned: todo.pinned || false,
+        is_done: false, // 복제된 할일은 미완료 상태로 시작
+        done_at: null,
+        display_order: null // 순서는 자동으로 결정됨
+      });
+
+    if (error) throw error;
+
+    console.log('[duplicateTodo] Success, reloading todos');
+    // 현재 선택된 날짜의 할일 목록 새로고침
+    await loadTodos(currentSelectedDate, profile, timezone);
+  } catch (error) {
+    console.error('Error duplicating todo:', error);
+    alert('할일 복제 중 오류가 발생했습니다.');
   }
 }
