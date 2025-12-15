@@ -525,6 +525,41 @@ function formatDate(dateString, timezone = 'Asia/Seoul') {
 }
 
 /**
+ * 레이트리밋 사용량 조회
+ */
+async function getYearlyReflectionRateLimit(year) {
+  try {
+    const userId = (await supabase.auth.getUser()).data?.user?.id;
+    if (!userId) return null;
+    
+    // 연도 키 계산 (Edge Function과 동일한 방식)
+    const yearKey = String(year);
+    
+    const { data: counter, error } = await supabase
+      .from('ai_usage_counters')
+      .select('count')
+      .eq('user_id', userId)
+      .eq('scope', 'yearly_reflection')
+      .eq('period_key', yearKey)
+      .maybeSingle();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+      console.error('Error fetching rate limit:', error);
+      return null;
+    }
+    
+    return {
+      current: counter?.count || 0,
+      limit: 2, // 연당 2회
+      yearKey: yearKey
+    };
+  } catch (error) {
+    console.error('Error in getYearlyReflectionRateLimit:', error);
+    return null;
+  }
+}
+
+/**
  * AI 성찰 생성 이벤트 바인딩
  */
 export function initYearlyAIReflection(onGenerate, year) {
@@ -532,6 +567,26 @@ export function initYearlyAIReflection(onGenerate, year) {
   const generateBtn = document.getElementById('generate-ai-reflection-btn');
   if (generateBtn) {
     generateBtn.addEventListener('click', async () => {
+      // 레이트리밋 사용량 조회
+      const rateLimit = await getYearlyReflectionRateLimit(year);
+      
+      if (rateLimit) {
+        // 사용량 메시지 표시
+        const remaining = rateLimit.limit - rateLimit.current;
+        if (remaining <= 0) {
+          alert(`연간 성찰은 연당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 연도에는 더 이상 생성할 수 없습니다.`);
+          return;
+        }
+        
+        const shouldContinue = confirm(
+          `연간 성찰은 연당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n계속하시겠습니까?`
+        );
+        
+        if (!shouldContinue) {
+          return;
+        }
+      }
+      
       generateBtn.disabled = true;
       generateBtn.innerHTML = '<i data-lucide="loader-2" style="width: 18px; height: 18px; stroke-width: 2.5; margin-right: 0.5rem; animation: spin 1s linear infinite;"></i> 생성 중...';
       
@@ -546,6 +601,11 @@ export function initYearlyAIReflection(onGenerate, year) {
         alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5; margin-right: 0.5rem;"></i> AI 성찰 생성하기';
+        
+        // Lucide 아이콘 다시 렌더링
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
       }
     });
   }
@@ -554,8 +614,29 @@ export function initYearlyAIReflection(onGenerate, year) {
   const regenerateBtn = document.getElementById('regenerate-ai-reflection-btn');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', async () => {
-      if (!confirm('AI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.')) {
-        return;
+      // 레이트리밋 사용량 조회
+      const rateLimit = await getYearlyReflectionRateLimit(year);
+      
+      if (rateLimit) {
+        // 사용량 메시지 표시
+        const remaining = rateLimit.limit - rateLimit.current;
+        if (remaining <= 0) {
+          alert(`연간 성찰은 연당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 연도에는 더 이상 생성할 수 없습니다.`);
+          return;
+        }
+        
+        const shouldContinue = confirm(
+          `연간 성찰은 연당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\nAI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.`
+        );
+        
+        if (!shouldContinue) {
+          return;
+        }
+      } else {
+        // 레이트리밋 조회 실패 시 기존 확인 메시지만 표시
+        if (!confirm('AI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.')) {
+          return;
+        }
       }
       
       regenerateBtn.disabled = true;
@@ -572,6 +653,11 @@ export function initYearlyAIReflection(onGenerate, year) {
         alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         regenerateBtn.disabled = false;
         regenerateBtn.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5; margin-right: 0.25rem;"></i> 다시 생성';
+        
+        // Lucide 아이콘 다시 렌더링
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
       }
     });
   }

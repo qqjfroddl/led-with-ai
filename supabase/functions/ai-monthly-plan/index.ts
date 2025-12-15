@@ -107,7 +107,7 @@ serve(async (req) => {
     const month_end = monthEndDate.toISOString().split('T')[0];
     const totalDays = monthEndDate.getDate();
 
-    // 레이트리밋 확인 (월 5회)
+    // 레이트리밋 확인 (월 2회)
     const monthKey = `${monthStartDate.getFullYear()}-${String(monthStartDate.getMonth() + 1).padStart(2, '0')}`;
     const { data: counter } = await supabase
       .from('ai_usage_counters')
@@ -118,9 +118,9 @@ serve(async (req) => {
       .single();
 
     const currentCount = counter?.count || 0;
-    if (currentCount >= 5) {
+    if (currentCount >= 2) {
       return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Maximum 5 times per month.' }),
+        JSON.stringify({ error: 'Rate limit exceeded. Maximum 2 times per month.' }),
         { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }

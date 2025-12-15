@@ -204,7 +204,98 @@ async function generateAIReflection(weekStart) {
     
     if (!response.ok) {
       console.error('Edge Function error response:', responseData);
-      const errorMessage = responseData.details || responseData.message || responseData.error || 'AI 성찰 생성에 실패했습니다.';
+      
+      // 에러 메시지 추출 (객체일 수 있으므로 처리)
+      let errorMessage = 'AI 성찰 생성에 실패했습니다.';
+      let rawErrorMessage = '';
+      
+      // 1. message 필드를 우선 확인 (Edge Function에서 추출한 메시지)
+      if (responseData.message) {
+        rawErrorMessage = String(responseData.message);
+        errorMessage = rawErrorMessage;
+      }
+      // 2. details 필드 확인 (Gemini API 에러가 여기 있을 수 있음)
+      else if (responseData.details) {
+        if (typeof responseData.details === 'object') {
+          // Gemini API 에러 형식: { error: { message: "...", code: ... } }
+          if (responseData.details.error?.message) {
+            rawErrorMessage = responseData.details.error.message;
+            errorMessage = rawErrorMessage;
+          } 
+          // 또는 직접 message 필드가 있는 경우
+          else if (responseData.details.message) {
+            rawErrorMessage = responseData.details.message;
+            errorMessage = rawErrorMessage;
+          }
+          // 또는 status 필드가 있는 경우 (Gemini API)
+          else if (responseData.details.status) {
+            rawErrorMessage = responseData.details.message || '알 수 없는 오류';
+            errorMessage = `API 오류 (${responseData.details.status}): ${rawErrorMessage}`;
+          }
+          else {
+            // 객체를 문자열로 변환 시도
+            try {
+              rawErrorMessage = JSON.stringify(responseData.details);
+              errorMessage = rawErrorMessage;
+            } catch {
+              errorMessage = '알 수 없는 오류가 발생했습니다.';
+            }
+          }
+        } else {
+          rawErrorMessage = String(responseData.details);
+          errorMessage = rawErrorMessage;
+        }
+      } 
+      // 3. error 필드 확인
+      else if (responseData.error) {
+        if (typeof responseData.error === 'object') {
+          rawErrorMessage = responseData.error.message || JSON.stringify(responseData.error);
+          errorMessage = rawErrorMessage;
+        } else {
+          rawErrorMessage = String(responseData.error);
+          errorMessage = rawErrorMessage;
+        }
+      }
+      
+      // 할당량 초과 에러 감지 및 처리
+      if (rawErrorMessage.includes('exceeded your current quota') || 
+          rawErrorMessage.includes('Quota exceeded') || 
+          rawErrorMessage.includes('RESOURCE_EXHAUSTED') ||
+          errorMessage.includes('exceeded your current quota') || 
+          errorMessage.includes('Quota exceeded')) {
+        
+        // 재시도 시간 추출 (원본 에러 메시지에서)
+        const retryMatch = rawErrorMessage.match(/Please retry in ([\d.]+)s/i) || 
+                          errorMessage.match(/Please retry in ([\d.]+)s/i);
+        let retryMessage = '';
+        if (retryMatch) {
+          const retrySeconds = parseFloat(retryMatch[1]);
+          const retryMinutes = Math.floor(retrySeconds / 60);
+          const remainingSeconds = Math.ceil(retrySeconds % 60);
+          
+          if (retryMinutes > 0) {
+            retryMessage = `약 ${retryMinutes}분 ${remainingSeconds}초 후 다시 시도해주세요.`;
+          } else {
+            retryMessage = `약 ${Math.ceil(retrySeconds)}초 후 다시 시도해주세요.`;
+          }
+        }
+        
+        // 할당량 제한 정보 추출
+        const limitMatch = rawErrorMessage.match(/limit: (\d+)/i) || 
+                          errorMessage.match(/limit: (\d+)/i);
+        const limitInfo = limitMatch ? ` (일일 ${limitMatch[1]}회 제한)` : '';
+        
+        errorMessage = `Gemini API 할당량을 초과했습니다${limitInfo}.\n\n${retryMessage || '잠시 후 다시 시도해주세요.'}\n\n무료 티어는 제한이 있으므로, 잠시 기다린 후 다시 시도해주시기 바랍니다.`;
+      }
+      // 레이트리밋 에러인 경우 특별 처리 (앱 레벨 레이트리밋)
+      else if (response.status === 429 || errorMessage.includes('Rate limit exceeded')) {
+        errorMessage = '레이트리밋에 도달했습니다. 다음 주에 다시 시도해주세요.';
+      }
+      // API 키 관련 에러
+      else if (errorMessage.includes('API key') || errorMessage.includes('UNAUTHENTICATED')) {
+        errorMessage = 'API 키 오류가 발생했습니다. 관리자에게 문의해주세요.';
+      }
+      
       throw new Error(errorMessage);
     }
     

@@ -167,6 +167,56 @@ function handleYearChange(year, timezone) {
 }
 
 /**
+ * Gemini API 에러 메시지를 한글로 변환
+ */
+function translateErrorMessage(errorMessage) {
+  if (!errorMessage) return '알 수 없는 오류가 발생했습니다.';
+  
+  const message = String(errorMessage).toLowerCase();
+  
+  // 할당량 초과
+  if (message.includes('quota') || message.includes('exceeded') || message.includes('limit')) {
+    return '일일 사용 한도를 초과했습니다. 내일 다시 시도해주세요.';
+  }
+  
+  // API 키 오류
+  if (message.includes('api key') || message.includes('invalid key') || message.includes('unauthorized')) {
+    return 'API 키가 유효하지 않습니다. 관리자에게 문의해주세요.';
+  }
+  
+  // 네트워크 오류
+  if (message.includes('network') || message.includes('timeout') || message.includes('connection')) {
+    return '네트워크 연결 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.';
+  }
+  
+  // 서버 오류
+  if (message.includes('internal server') || message.includes('server error') || message.includes('500')) {
+    return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+  }
+  
+  // 모델 과부하
+  if (message.includes('overloaded') || message.includes('overload')) {
+    return 'AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.';
+  }
+  
+  // 기타 알려진 오류
+  if (message.includes('rate limit')) {
+    return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+  }
+  
+  if (message.includes('forbidden') || message.includes('403')) {
+    return '접근이 거부되었습니다. 권한을 확인해주세요.';
+  }
+  
+  if (message.includes('not found') || message.includes('404')) {
+    return '요청한 리소스를 찾을 수 없습니다.';
+  }
+  
+  // 원본 메시지 반환 (한글이거나 이미 번역된 경우)
+  return errorMessage;
+}
+
+/**
  * AI 성찰 생성
  */
 async function generateAIReflection(year) {
@@ -203,8 +253,46 @@ async function generateAIReflection(year) {
     
     if (!response.ok) {
       console.error('Edge Function error response:', responseData);
-      const errorMessage = responseData.details || responseData.message || responseData.error || 'AI 성찰 생성에 실패했습니다.';
-      throw new Error(errorMessage);
+      // details 객체의 전체 내용을 로깅 (디버깅용)
+      if (responseData.details) {
+        console.error('Error details:', JSON.stringify(responseData.details, null, 2));
+      }
+      
+      // 에러 메시지 추출 (우선순위: details.error.message > message > error > details)
+      let errorMessage = 'AI 성찰 생성에 실패했습니다.';
+      
+      // 1순위: responseData.details.error.message (Gemini API의 실제 에러 메시지 - 가장 구체적)
+      if (responseData.details && typeof responseData.details === 'object') {
+        if (responseData.details.error?.message) {
+          errorMessage = String(responseData.details.error.message);
+        }
+        // 2순위: responseData.details.message
+        else if (responseData.details.message) {
+          errorMessage = String(responseData.details.message);
+        }
+        // 3순위: responseData.details.status (HTTP 에러)
+        else if (responseData.details.status) {
+          errorMessage = `HTTP ${responseData.details.status} 오류`;
+        }
+      }
+      // 4순위: responseData.message (Edge Function에서 추출한 메시지)
+      else if (responseData.message && 
+               responseData.message !== 'AI generation failed' && 
+               responseData.message !== 'Unknown error') {
+        errorMessage = String(responseData.message);
+      }
+      // 5순위: responseData.error
+      else if (responseData.error) {
+        errorMessage = String(responseData.error);
+      }
+      // 6순위: responseData.details (문자열인 경우)
+      else if (responseData.details && typeof responseData.details !== 'object') {
+        errorMessage = String(responseData.details);
+      }
+      
+      // 에러 메시지를 한글로 변환
+      const translatedMessage = translateErrorMessage(errorMessage);
+      throw new Error(translatedMessage);
     }
     
     if (!responseData.content_md) {
@@ -217,7 +305,7 @@ async function generateAIReflection(year) {
     
   } catch (error) {
     console.error('Error generating AI reflection:', error);
-    alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
+    // 에러는 컴포넌트에서 처리하므로 여기서는 throw만 수행
     throw error;
   }
 }
@@ -227,4 +315,5 @@ if (typeof window !== 'undefined') {
   window.generateAIReflection = generateAIReflection;
   window.setSelectedYear = setSelectedYear;
 }
+
 

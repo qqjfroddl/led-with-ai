@@ -22,7 +22,7 @@ alwaysApply: true
   - 토글 버튼 안정성 개선 (cloneNode 패턴으로 중복 등록 방지, Lucide 렌더링 타이밍 보장)
   - 주간 리포트 (통계 지표 + 주간 분석 + AI 주간 성찰) - 주차 선택, 실천율/완료율/성찰 작성률, 전주 대비 변화, 주간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원)
   - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
-  - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 1회)
+  - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
 - 🚧 **부분**: 
   - (현재 없음)
@@ -121,7 +121,7 @@ alwaysApply: true
 - **월간 리포트** (구현됨): 월간 지표(루틴 실천율, 할일 완료율, 성찰 작성률), 월간 분석(실천율 요약, 전월 대비 변화, 월간 패턴 분석), AI 월간 성찰 생성/조회
 - **AI 월간 성찰** (구현됨): Gemini API 연동, Edge Function 배포, 마크다운 변환, 스크롤바 지원, 재생성 기능, 레이트리밋 월 2회
 - **연간 리포트** (구현됨): 연간 지표(루틴 실천율, 할일 완료율, 성찰 작성률), 연간 통계 요약, 월별 통계 요약, AI 연간 성찰 생성/조회
-- **AI 연간 성찰** (구현됨): Gemini API 연동, Edge Function 배포, 마크다운 변환, 스크롤바 지원, 재생성 기능, 레이트리밋 연 1회
+- **AI 연간 성찰** (구현됨): Gemini API 연동, Edge Function 배포, 마크다운 변환, 스크롤바 지원, 재생성 기능, 레이트리밋 연 2회
 
 ### 7.4 목표/월계획/AI 제안
 - **월간 데일리 루틴** (구현됨): 모닝/나이트 각 0~10개 입력, 저장 시 오늘 루틴에 자동 반영
@@ -464,6 +464,13 @@ alwaysApply: true
   - 스크롤바: max-height: 600px, overflow-y: scroll
   - 디버깅 로그: DB 원본 데이터 및 변환 과정 추적
   - 예외 처리: 각 줄 처리 시 예외 발생해도 모든 내용 표시 보장
+  - **에러 메시지 한글화**: Gemini API 에러 메시지를 한글로 번역하여 사용자에게 표시 ✅
+    - 할당량 초과: "일일 사용 한도를 초과했습니다. 내일 다시 시도해주세요."
+    - 모델 과부하: "AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요."
+    - API 키 오류: "API 키가 유효하지 않습니다. 관리자에게 문의해주세요."
+    - 네트워크 오류: "네트워크 연결 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요."
+    - 서버 오류: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+  - **에러 팝업 중복 방지**: 에러 발생 시 팝업이 한 번만 표시되도록 개선 ✅
 
 ### F-2 AC (검증됨)
 - AC-FAI1. 생성 후 DB 저장 → PC/모바일 동일 결과 조회 ✅
@@ -472,7 +479,9 @@ alwaysApply: true
 - AC-FAI4. 월간 AI 성찰 생성/조회 정상 작동 ✅
 - AC-FAI5. 월간 레이트리밋 (월 2회) 정상 작동 ✅
 - AC-FAI6. 연간 AI 성찰 생성/조회 정상 작동 ✅
-- AC-FAI7. 연간 레이트리밋 (연 1회) 정상 작동 ✅
+- AC-FAI7. 연간 레이트리밋 (연 2회) 정상 작동 ✅
+- AC-FAI8. **에러 메시지 한글화**: Gemini API 에러 메시지가 한글로 표시됨 ✅
+- AC-FAI9. **에러 팝업 중복 방지**: 에러 발생 시 팝업이 한 번만 표시됨 ✅
 
 ---
 
@@ -658,7 +667,7 @@ alwaysApply: true
 - FR-GAI5. 저장 정책: `monthly_plans.source='ai_suggested'`, `status='draft'`, plan_content JSONB 저장 ✅
 - FR-GAI6. 재생성 정책: 동일 `user_id + month_start + source='ai_suggested'`는 upsert 덮어쓰기 ✅
 - FR-GAI7. 사용자 편집: AI 제안 생성 후 편집 모드에서 수정 가능, 저장 시 manual로 전환 가능 ✅
-- FR-GAI8. 레이트리밋: 월 5회 제한 (ai_usage_counters 테이블로 관리) ✅
+- FR-GAI8. 레이트리밋: 월 2회 제한 (ai_usage_counters 테이블로 관리) ✅
 
 ### G-3 AC (검증됨)
 - AC-GAI1. 생성 결과 저장 후 PC/모바일 동일 조회 ✅
@@ -666,7 +675,7 @@ alwaysApply: true
 - AC-GAI3. 승인 사용자만 가능(RLS + Edge 인증) ✅
 - AC-GAI4. 연간목표와 지난달 실천계획/결과, 최근 활동이 AI 제안에 반영됨 ✅
 - AC-GAI5. AI 제안이 구체적이고 실행 가능한 1-2개 핵심 행동으로 제안됨 ✅
-- AC-GAI6. 레이트리밋 정상 작동 (월 5회 제한) ✅
+- AC-GAI6. 레이트리밋 정상 작동 (월 2회 제한) ✅
 
 ---
 
@@ -709,10 +718,10 @@ alwaysApply: true
 - NFR-AI1. AI 키는 Edge Function 환경변수로만 보관
 - NFR-AI2. 저장: model/prompt_version 필수
 - NFR-AI3. 레이트리밋(고정, v1 권장)
-  - 주간 AI 성찰: 주 3회
+  - 주간 AI 성찰: 주 2회
   - 월간 AI 성찰: 월 2회
-  - 연간 AI 성찰: 연 1회
-  - AI 월계획: 월 5회
+  - 연간 AI 성찰: 연 2회
+  - AI 월계획: 월 2회
   - AI 연간 목표 피드백: 월 2회
   - 구현: `ai_usage_counters` 테이블로 카운트(upsert)
 - NFR-AI4. 실패 시 사용자에게 재시도 버튼 제공(서버는 부분 저장 금지)
@@ -940,7 +949,7 @@ alwaysApply: true
   - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 8000)
   - yearly_ai_reflections upsert(user_id, year)
 - response: { "content_md":"...", "year": 2025, "model":"...", "prompt_version":"..." }
-- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용 (연 1회), CORS 헤더 수정 완료
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용 (연 2회), CORS 헤더 수정 완료
 
 4) `POST /functions/v1/ai-monthly-plan` ✅ 구현 완료
 - body: { "month_start":"YYYY-MM-01", "linked_year": 2025 } (필수)
@@ -950,7 +959,7 @@ alwaysApply: true
   - JSON 형식 응답 파싱 및 plan_content JSONB 저장
   - monthly_plans upsert(user_id, month_start, source='ai_suggested') status='draft'
 - response: { "plan_content": {...}, "month_start":"...", "model":"...", "prompt_version":"..." }
-- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, JSON 저장, 레이트리밋 적용 (월 5회)
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, JSON 저장, 레이트리밋 적용 (월 2회)
 
 5) `POST /functions/v1/ai-yearly-goal-feedback` ✅ 구현 완료
 - body: { "year": 2025, "self_dev": "...", "relationship": "...", "work_finance": "..." } (필수)

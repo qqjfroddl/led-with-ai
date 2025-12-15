@@ -99,7 +99,7 @@ serve(async (req) => {
     weekEndDate.setDate(weekEndDate.getDate() + 6);
     const week_end = weekEndDate.toISOString().split('T')[0];
 
-    // 레이트리밋 확인 (주 3회)
+    // 레이트리밋 확인 (주 2회)
     const weekKey = `${weekStartDate.getFullYear()}-W${getWeekNumber(weekStartDate)}`;
     const { data: counter, error: counterError } = await supabase
       .from('ai_usage_counters')
@@ -107,12 +107,17 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .eq('scope', 'weekly_reflection')
       .eq('period_key', weekKey)
-      .single();
+      .maybeSingle();
+
+    if (counterError && counterError.code !== 'PGRST116') { // PGRST116 = not found (정상)
+      console.error('Error fetching rate limit counter:', counterError);
+      // 에러가 발생해도 계속 진행 (레이트리밋 체크 실패 시 허용)
+    }
 
     const currentCount = counter?.count || 0;
-    if (currentCount >= 3) {
+    if (currentCount >= 2) {
       return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Maximum 3 times per week.' }),
+        JSON.stringify({ error: 'Rate limit exceeded. Maximum 2 times per week.' }),
         { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
@@ -185,10 +190,26 @@ serve(async (req) => {
     );
 
     if (!geminiResponse.ok) {
-      const errorData = await geminiResponse.json().catch(() => ({ message: 'Unknown error' }));
+      let errorData: any;
+      try {
+        const errorText = await geminiResponse.text();
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: `HTTP ${geminiResponse.status}: ${geminiResponse.statusText}` };
+      }
+      
       console.error('Gemini API error:', errorData);
+      
+      // 에러 메시지 추출
+      let errorMessage = errorData.error?.message || errorData.message || 'Unknown error';
+      
+      // 전체 에러 정보를 details에 포함
       return new Response(
-        JSON.stringify({ error: 'AI generation failed', details: errorData }),
+        JSON.stringify({ 
+          error: 'AI generation failed', 
+          message: errorMessage,
+          details: errorData
+        }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
@@ -227,17 +248,38 @@ serve(async (req) => {
     }
 
     // 레이트리밋 카운터 증가
-    await supabase
+    const newCount = currentCount + 1;
+    console.log('[weekly_reflection] Updating counter:', { userId: user.id, scope: 'weekly_reflection', period_key: weekKey, currentCount, newCount });
+    
+    const { data: updatedCounter, error: counterUpdateError } = await supabase
       .from('ai_usage_counters')
       .upsert(
         {
           user_id: user.id,
           scope: 'weekly_reflection',
           period_key: weekKey,
-          count: currentCount + 1,
+          count: newCount,
         },
         { onConflict: 'user_id,scope,period_key' }
       );
+
+    if (counterUpdateError) {
+      console.error('[weekly_reflection] Error updating rate limit counter:', counterUpdateError);
+      // 카운터 업데이트 실패해도 성찰은 이미 저장되었으므로 계속 진행
+    } else {
+      console.log('[weekly_reflection] Counter updated successfully:', updatedCounter);
+      
+      // 업데이트 확인: 다시 조회하여 검증
+      const { data: verifyCounter } = await supabase
+        .from('ai_usage_counters')
+        .select('count')
+        .eq('user_id', user.id)
+        .eq('scope', 'weekly_reflection')
+        .eq('period_key', weekKey)
+        .maybeSingle();
+      
+      console.log('[weekly_reflection] Verified count after update:', verifyCounter?.count);
+    }
 
     // 성공 응답
     return new Response(
