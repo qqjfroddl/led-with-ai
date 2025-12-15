@@ -76,3 +76,4 @@ console.log('Error:', error);
 3. Supabase 지원팀에 문의 (스키마 캐시 갱신 문제)
 
 
+

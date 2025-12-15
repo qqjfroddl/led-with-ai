@@ -126,3 +126,4 @@ supabase functions deploy ai-monthly-reflection
   - Dashboard → Edge Functions → `ai-weekly-reflection` → Settings에서 확인 가능
 
 
+

@@ -554,3 +554,4 @@ function getEmptyReflectionsStats(totalDays) {
     monthlyStats: {}
   };
 }
+

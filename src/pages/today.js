@@ -255,6 +255,28 @@ export async function renderToday() {
         </div>
       </div>
     </div>
+
+    <!-- 할일 날짜 이동 모달 -->
+    <div id="todo-date-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+      <div id="todo-date-modal" class="date-modal" style="background: white; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18); width: min(400px, 90vw); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div class="date-modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid #e5e7eb;">
+          <span style="font-weight: 700; font-size: 1.125rem; color: #111827;">날짜 선택</span>
+          <button id="todo-date-close" class="date-close-btn" style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #6b7280;">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        <div class="date-modal-body" style="padding: 1.25rem; flex: 1; overflow-y: auto;">
+          <input type="text" id="todo-date-calendar-input" readonly style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 0.75rem;" />
+        </div>
+        <div class="date-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem; border-top: 1px solid #e5e7eb;">
+          <button id="todo-date-today-modal" class="btn btn-secondary" style="padding: 0.625rem 1.25rem; background: #f3f4f6; color: #1f2937; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+            오늘
+          </button>
+          <button id="todo-date-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
+        </div>
+      </div>
+    </div>
   `;
 
   return {
@@ -262,6 +284,7 @@ export async function renderToday() {
     onMount: async () => {
       // 이벤트 바인딩 플래그 초기화 (페이지가 다시 렌더링될 때마다)
       todoEventsBound = false;
+      todoDatePickerInitialized = false;
       
       // 루틴과 할일 로드 및 이벤트 바인딩
       await loadRoutines(selectedDate, profile);
@@ -619,6 +642,9 @@ function renderTodos(todosList, date, profile, timezone) {
               <button class="edit-todo-btn" data-edit-todo="${todo.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="수정">
                 <i data-lucide="pencil" style="width: 18px; height: 18px;"></i>
               </button>
+              <button class="move-todo-date-btn" data-move-todo-date="${todo.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="날짜 이동">
+                <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+              </button>
             ` : `
               <button class="save-todo-btn" data-save-todo="${todo.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem;">
                 <i data-lucide="check" style="width: 18px; height: 18px;"></i>
@@ -877,6 +903,7 @@ function setupEventHandlers(date, profile, timezone) {
 
 // 이벤트 위임을 위한 전역 핸들러 (한 번만 등록)
 let todoEventsBound = false;
+let todoDatePickerInitialized = false;
 
 function bindTodoEvents(date, profile, timezone) {
   const today = getToday(timezone);
@@ -970,6 +997,15 @@ function bindTodoEvents(date, profile, timezone) {
       editingTodoId = null;
       editingTodoValue = '';
       loadTodos(date, profile, timezone);
+      return;
+    }
+
+    // 날짜 이동 버튼 (삭제 버튼 전에 처리)
+    if (target.hasAttribute('data-move-todo-date')) {
+      e.stopPropagation();
+      if (isExistingTodo || editingTodoId) return;
+      const todoId = target.getAttribute('data-move-todo-date');
+      openTodoDatePicker(todoId, todo?.date || date, date, profile, timezone);
       return;
     }
 
@@ -1579,5 +1615,281 @@ async function saveReflection(date, profile) {
   } catch (error) {
     console.error('Error saving reflection:', error);
     alert('성찰 저장 중 오류가 발생했습니다.');
+  }
+}
+
+// ============================================
+// 할일 날짜 이동 관련 함수들
+// ============================================
+
+let currentMovingTodoId = null;
+let currentSelectedDateForMove = null;
+let currentProfileForMove = null;
+let currentTimezoneForMove = null;
+let currentTodoDateForMove = null; // 할일의 현재 날짜 (비교용)
+
+function openTodoDatePicker(todoId, currentDate, selectedDate, profile, timezone = 'Asia/Seoul') {
+  const overlay = document.getElementById('todo-date-overlay');
+  const calendarInput = document.getElementById('todo-date-calendar-input');
+  const today = getToday(timezone);
+  
+  if (!overlay || !calendarInput || !window.flatpickr) {
+    console.error('Todo date picker elements not found or flatpickr not loaded');
+    return;
+  }
+  
+  // 전역 변수에 현재 값 저장 (onChange 콜백에서 사용)
+  currentMovingTodoId = todoId;
+  currentSelectedDateForMove = selectedDate;
+  currentProfileForMove = profile;
+  currentTimezoneForMove = timezone;
+  currentTodoDateForMove = currentDate; // 할일의 현재 날짜 저장
+  console.log('[openTodoDatePicker] Global variables set', { todoId, currentDate, selectedDate, profile: profile?.id, timezone });
+  
+  const closeOverlay = () => {
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+    currentMovingTodoId = null;
+    currentSelectedDateForMove = null;
+    currentProfileForMove = null;
+    currentTimezoneForMove = null;
+    currentTodoDateForMove = null;
+    if (window.lucide?.createIcons) {
+      setTimeout(() => window.lucide.createIcons(), 10);
+    }
+  };
+  
+  // flatpickr 초기화 (매번 새로 생성하여 최신 콜백 보장)
+  if (calendarInput._fp) {
+    calendarInput._fp.destroy();
+    calendarInput._fp = null;
+  }
+  
+  // 초기화 완료 플래그
+  let isReady = false;
+  let lastSelectedDate = currentDate; // 마지막으로 선택된 날짜 추적
+  
+  calendarInput._fp = window.flatpickr(calendarInput, {
+    inline: true,
+    defaultDate: currentDate,
+    locale: (window.flatpickr.l10ns && window.flatpickr.l10ns.ko) ? window.flatpickr.l10ns.ko : undefined,
+    onReady: (dates, dateStr, instance) => {
+      // 초기화 완료 후 플래그 설정
+      console.log('[TodoDatePicker] onReady called', { dates, dateStr, instance });
+      isReady = true;
+      if (dates && dates[0]) {
+        lastSelectedDate = dates[0].toISOString().slice(0, 10);
+      }
+      
+      // flatpickr 캘린더의 날짜 클릭 이벤트 직접 리스닝 (onChange가 제대로 작동하지 않을 때를 대비)
+      const handleDateClick = async (e) => {
+        // flatpickr-day 클래스를 가진 요소만 처리
+        const dayElement = e.target.closest('.flatpickr-day');
+        if (!dayElement || !isReady) return;
+        
+        // 선택 불가능한 날짜는 무시
+        if (dayElement.classList.contains('flatpickr-disabled')) return;
+        
+        // 클릭한 날짜를 직접 추출 (data-day 속성 또는 텍스트에서)
+        let clickedDate = null;
+        
+        // 방법 1: data-day 속성 확인
+        if (dayElement.dataset.day) {
+          const day = parseInt(dayElement.dataset.day);
+          const month = instance?.currentMonth || 0;
+          const year = instance?.currentYear || new Date().getFullYear();
+          clickedDate = new Date(year, month, day).toISOString().slice(0, 10);
+        }
+        // 방법 2: flatpickr 인스턴스에서 선택된 날짜 확인 (약간의 지연 후)
+        else if (instance) {
+          setTimeout(() => {
+            if (instance.selectedDates && instance.selectedDates.length > 0) {
+              clickedDate = instance.selectedDates[0].toISOString().slice(0, 10);
+              processDateClick(clickedDate);
+            }
+          }, 100);
+          return; // 비동기 처리이므로 여기서 리턴
+        }
+        
+        if (clickedDate) {
+          processDateClick(clickedDate);
+        }
+      };
+      
+      // 날짜 클릭 처리 함수 (중복 코드 제거)
+      const processDateClick = async (clickedDate) => {
+        console.log('[TodoDatePicker] Date clicked directly', { clickedDate, currentTodoDate: currentTodoDateForMove });
+        
+        // 날짜가 변경되지 않았으면 무시
+        if (clickedDate === lastSelectedDate) {
+          return;
+        }
+        
+        // 마지막 선택된 날짜 업데이트
+        lastSelectedDate = clickedDate;
+        
+        if (currentMovingTodoId && currentSelectedDateForMove && currentProfileForMove && currentTimezoneForMove && currentTodoDateForMove) {
+          // 같은 날짜로 이동하려고 하면 모달만 닫기
+          if (clickedDate === currentTodoDateForMove) {
+            console.log('[TodoDatePicker] Same date clicked, closing modal');
+            closeOverlay();
+            return;
+          }
+          
+          console.log('[TodoDatePicker] Moving todo via direct click', { todoId: currentMovingTodoId, clickedDate, currentSelectedDate: currentSelectedDateForMove });
+          await moveTodoDate(currentMovingTodoId, clickedDate, currentSelectedDateForMove, currentProfileForMove, currentTimezoneForMove);
+          closeOverlay();
+        }
+      };
+      
+      // 캘린더 컨테이너에 이벤트 리스너 추가 (이벤트 위임)
+      const calendarContainer = instance?.calendarContainer;
+      if (calendarContainer) {
+        // 기존 리스너 제거 (중복 방지)
+        calendarContainer.removeEventListener('click', handleDateClick);
+        calendarContainer.addEventListener('click', handleDateClick);
+      }
+    },
+    onChange: async (dates, dateStr, instance) => {
+      console.log('[TodoDatePicker] onChange called', { 
+        dates, 
+        dateStr, 
+        instanceSelectedDates: instance?.selectedDates,
+        isReady,
+        currentMovingTodoId, 
+        currentTodoDateForMove, 
+        currentSelectedDateForMove, 
+        currentProfileForMove, 
+        currentTimezoneForMove 
+      });
+      
+      // 초기화가 완료되지 않았으면 무시
+      if (!isReady) {
+        console.log('[TodoDatePicker] Not ready yet, ignoring');
+        return;
+      }
+      
+      // dateStr을 우선 사용 (이미 올바른 날짜를 가지고 있음)
+      // instance.selectedDates는 비동기로 업데이트되어 타이밍 이슈가 있음
+      let newDate = null;
+      
+      // 1순위: dateStr 사용 (가장 신뢰할 수 있음)
+      if (dateStr) {
+        newDate = dateStr;
+        console.log('[TodoDatePicker] Using dateStr (primary)', { newDate });
+      } 
+      // 2순위: dates 배열 사용
+      else if (dates && dates.length > 0 && dates[0]) {
+        newDate = dates[0].toISOString().slice(0, 10);
+        console.log('[TodoDatePicker] Using dates[0]', { newDate });
+      } 
+      // 3순위: instance.selectedDates 사용 (비동기 업데이트로 인해 부정확할 수 있음)
+      else if (instance && instance.selectedDates && instance.selectedDates.length > 0) {
+        newDate = instance.selectedDates[0].toISOString().slice(0, 10);
+        console.log('[TodoDatePicker] Using instance.selectedDates[0] (fallback)', { newDate });
+      }
+      
+      if (!newDate) {
+        console.warn('[TodoDatePicker] No date found in onChange');
+        return;
+      }
+      
+      // 날짜가 변경되지 않았으면 무시 (중복 호출 방지)
+      if (newDate === lastSelectedDate) {
+        console.log('[TodoDatePicker] Date unchanged, ignoring', { newDate, lastSelectedDate });
+        return;
+      }
+      
+      // 마지막 선택된 날짜 업데이트
+      lastSelectedDate = newDate;
+      
+      if (currentMovingTodoId && currentSelectedDateForMove && currentProfileForMove && currentTimezoneForMove && currentTodoDateForMove) {
+        console.log('[TodoDatePicker] Date comparison', { newDate, currentTodoDate: currentTodoDateForMove, isDifferent: newDate !== currentTodoDateForMove });
+        
+        // 같은 날짜로 이동하려고 하면 모달만 닫기
+        if (newDate === currentTodoDateForMove) {
+          console.log('[TodoDatePicker] Same date selected, closing modal');
+          closeOverlay();
+          return;
+        }
+        
+        console.log('[TodoDatePicker] Moving todo', { todoId: currentMovingTodoId, newDate, currentSelectedDate: currentSelectedDateForMove });
+        await moveTodoDate(currentMovingTodoId, newDate, currentSelectedDateForMove, currentProfileForMove, currentTimezoneForMove);
+        closeOverlay();
+      } else {
+        console.warn('[TodoDatePicker] onChange conditions not met', { 
+          hasNewDate: !!newDate,
+          hasTodoId: !!currentMovingTodoId, 
+          hasTodoDate: !!currentTodoDateForMove,
+          hasSelectedDate: !!currentSelectedDateForMove, 
+          hasProfile: !!currentProfileForMove, 
+          hasTimezone: !!currentTimezoneForMove 
+        });
+      }
+    },
+  });
+  
+  // 이벤트 리스너는 한 번만 등록 (중복 방지)
+  if (!todoDatePickerInitialized) {
+    const closeBtn = document.getElementById('todo-date-close');
+    const closeFooterBtn = document.getElementById('todo-date-close-footer');
+    const todayBtn = document.getElementById('todo-date-today-modal');
+    
+    if (closeBtn) {
+      closeBtn.onclick = closeOverlay;
+    }
+    if (closeFooterBtn) {
+      closeFooterBtn.onclick = closeOverlay;
+    }
+    if (todayBtn) {
+      todayBtn.onclick = async () => {
+        if (currentMovingTodoId && currentSelectedDateForMove && currentProfileForMove && currentTimezoneForMove) {
+          const today = getToday(currentTimezoneForMove);
+          await moveTodoDate(currentMovingTodoId, today, currentSelectedDateForMove, currentProfileForMove, currentTimezoneForMove);
+          closeOverlay();
+        }
+      };
+    }
+    
+    // 오버레이 배경 클릭 시 닫기 (이벤트 위임 사용)
+    if (overlay) {
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          closeOverlay();
+        }
+      };
+    }
+    
+    todoDatePickerInitialized = true;
+  }
+  
+  // 오버레이 표시
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
+  
+  // Lucide 아이콘 업데이트
+  if (window.lucide?.createIcons) {
+    setTimeout(() => window.lucide.createIcons(), 10);
+  }
+}
+
+async function moveTodoDate(todoId, newDate, currentSelectedDate, profile, timezone = 'Asia/Seoul') {
+  try {
+    console.log('[moveTodoDate] Starting', { todoId, newDate, currentSelectedDate });
+    const { error } = await supabase
+      .from('todos')
+      .update({ date: newDate })
+      .eq('id', todoId);
+
+    if (error) throw error;
+
+    console.log('[moveTodoDate] Success, reloading todos');
+    // 현재 선택된 날짜의 할일 목록 새로고침
+    await loadTodos(currentSelectedDate, profile, timezone);
+  } catch (error) {
+    console.error('Error moving todo date:', error);
+    alert('할일 날짜 이동 중 오류가 발생했습니다.');
   }
 }

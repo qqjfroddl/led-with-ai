@@ -19,7 +19,7 @@ export async function renderExpired(profile) {
         만료일: ${new Date(profile.expires_at).toLocaleDateString('ko-KR')}
       </p>
       <p style="margin-top: 1rem;">
-        계속 사용하려면 관리자에게 문의해주세요.
+        계속 사용하려면 관리자(<span style="color: #2563eb; font-weight: bold;">ledhelper@daum.net</span>)에게 문의해주세요.
       </p>
       <button onclick="handleExpiredLogout()" class="btn btn-primary" style="margin-top: 2rem;">
         로그아웃
@@ -27,5 +27,6 @@ export async function renderExpired(profile) {
     </div>
   `;
 }
+
 
 

@@ -227,3 +227,4 @@ if (typeof window !== 'undefined') {
   window.generateAIReflection = generateAIReflection;
   window.setSelectedYear = setSelectedYear;
 }
+

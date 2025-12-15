@@ -159,3 +159,4 @@ ADD COLUMN expires_at date;
 - `supabase/add_expires_at.sql` - 기본 추가 스크립트
 
 
+

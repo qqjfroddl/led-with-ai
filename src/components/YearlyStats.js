@@ -216,3 +216,4 @@ function renderChangeIndicator(change, unit = '') {
     </div>
   `;
 }
+
