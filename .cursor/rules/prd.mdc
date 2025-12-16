@@ -7,7 +7,7 @@ alwaysApply: true
 ## 구현 상태 (Implementation Status)
 - ✅ **완료**: 
   - 로그인 화면 - 로고 이미지(logo.png) 표시, 구글 로그인 버튼 이미지 하단 오버레이, 짙은 회색 배경/흰색 텍스트 스타일, 반응형 디자인
-  - 날짜 선택 바 (Date Bar) - 이전/다음 날짜 이동, 달력 오버레이, 오늘로 이동 버튼 (오늘 날짜가 아닐 때만 표시)
+  - 날짜 선택 바 (Date Bar) - 이전/다음 날짜 이동, 달력 오버레이, 오늘로 이동 버튼 (오늘 날짜가 아닐 때만 표시), 타임존 정확성 개선 (로컬 날짜 사용)
   - 오늘 할일 (Todos) + Carry-over (미완료 이월) + Enter 키로 수정 저장 + 날짜 이동 기능
   - 오늘 루틴 (Routine) - 모닝/나이트 구분, 목표 탭 연동, 진행률 표시, Soft Delete 적용, 토글 기능, 날짜 기준 필터링 (어제 루틴 보존)
   - 오늘 할일 (Todos) - 카테고리 탭, Enter 키로 수정 저장, 토글 기능, 수동 순서 변경
@@ -17,16 +17,16 @@ alwaysApply: true
   - AI 연간 목표 피드백 (Goals 탭) - Edge Function 연동, SMART 기준에 맞춰 개선 제안, 원본/개선 제안 비교 표시, 영역별 개별 적용 기능, 레이트리밋 월 2회
   - 월간 실천계획 (Goals 탭) - 3컬럼 레이아웃(연간목표 표시/월실천계획 입력/월말 결과 입력), plan_content/results_content JSONB 저장, 토글 기능, 부제목 표시, 월 선택 모달, "이번 달로" 버튼
   - AI 월실천계획 제안 (Goals 탭) - Edge Function 연동, 연간목표 및 최근 활동 분석, 구체적이고 실행 가능한 계획 제안, plan_content JSONB 저장
-  - 네비게이션 레이아웃 (중앙 정렬, 아이콘+텍스트 한 줄) - 주간/월간 아이콘 구분 (calendar-days/calendar)
+  - 네비게이션 레이아웃 - **Plan-Do-See 그룹 구조** (계획/실행/리뷰), 그룹별 색상 테마, 반응형 줄바꿈 지원
   - 디자인 시스템 (카테고리 색상, 그라데이션, Lucide 아이콘, 토글 기능, 헤더 레이아웃)
   - 토글 버튼 안정성 개선 (cloneNode 패턴으로 중복 등록 방지, Lucide 렌더링 타이밍 보장)
   - 주간 리포트 (통계 지표 + 주간 분석 + AI 주간 성찰) - 주차 선택, 실천율/완료율/성찰 작성률, 전주 대비 변화, 주간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원)
   - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
   - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
-  - 프로젝트 관리 (DB 스키마) - 프로젝트/프로젝트 할일 테이블, Soft Delete, RLS 정책 완료
+  - **프로젝트 관리 (완료)** - 프로젝트 CRUD, 프로젝트 할일 관리, 진행중/완료 탭 분류, 카드 그리드 + 아코디언 UI, 오늘 할일 연동, 양방향 동기화, 마감날짜 관리, 다시 진행하기 기능
 - 🚧 **부분**: 
-  - 프로젝트 관리 (UI/기능) - DB 스키마 완료, 프론트엔드 구현 예정
+  - (없음)
 
 ---
 
@@ -87,12 +87,17 @@ alwaysApply: true
 
 ## 6. 정보구조(IA) / 라우팅
 ### 6.1 화면(공통: PC/모바일 반응형)
-- `/index.html#/today` 오늘(할일/루틴/성찰)
-- `/index.html#/weekly` 주간 리포트(통계 + AI 성찰)
-- `/index.html#/monthly` 월간 리포트(통계 + AI 성찰) ✅ 구현 완료
-- `/index.html#/yearly` 연간 리포트(통계 + AI 성찰) ✅ 구현 완료
-- `/index.html#/goals` 목표(연간목표/월계획 + AI 월계획 + AI 연간 목표 피드백)
-- `/admin.html` 관리자(승인/상태변경) — Admin만
+- **계획 (Plan)**
+  - `/index.html#/goals` 목표(연간목표/월계획 + AI 월계획 + AI 연간 목표 피드백)
+  - `/index.html#/projects` 프로젝트(프로젝트 관리/할일 등록/오늘 할일 연동) ✅ 구현 완료
+- **실행 (Do)**
+  - `/index.html#/today` 오늘(할일/루틴/성찰)
+- **리뷰 (See)**
+  - `/index.html#/weekly` 주간 리포트(통계 + AI 성찰)
+  - `/index.html#/monthly` 월간 리포트(통계 + AI 성찰) ✅ 구현 완료
+  - `/index.html#/yearly` 연간 리포트(통계 + AI 성찰) ✅ 구현 완료
+- **관리**
+  - `/admin.html` 관리자(승인/상태변경) — Admin만
 - **참고**: `/reports`는 `/weekly`로 자동 리다이렉트 (하위 호환성)
 
 ### 6.2 승인 상태별 UX
@@ -165,6 +170,9 @@ alwaysApply: true
   - 클릭 시: `resetSelectedDate(timezone)` 호출하여 오늘 날짜로 선택 날짜 리셋
 - FR-B0-4. 선택 날짜는 localStorage에 저장 (`app_selected_date` 키)
 - FR-B0-5. 날짜 변경 시 페이지 자동 리렌더링 (루틴/할일/성찰 재조회)
+- FR-B0-6. **타임존 정확성**: flatpickr 날짜 선택 시 로컬 날짜 사용 (UTC 변환 방지)
+  - `toISOString()` 대신 `getFullYear()/getMonth()/getDate()` 사용
+  - 한국(UTC+9)에서 자정 이전 날짜 선택 시 하루 전으로 이동하는 버그 수정
 
 ### AC-B0 (검증됨)
 - AC-B0-1. 오늘 날짜일 때 "오늘로 이동" 버튼 숨김 ✅
@@ -172,6 +180,7 @@ alwaysApply: true
 - AC-B0-3. "오늘로 이동" 버튼 클릭 시 오늘 날짜로 즉시 이동 ✅
 - AC-B0-4. 날짜 변경 시 해당 날짜의 루틴/할일/성찰 정상 조회 ✅
 - AC-B0-5. 선택 날짜가 localStorage에 저장되어 새로고침 후에도 유지 ✅
+- AC-B0-6. **타임존 정확성**: 날짜 선택 시 정확한 날짜로 이동 (UTC 변환 버그 수정) ✅
 
 ---
 
@@ -711,63 +720,92 @@ alwaysApply: true
 
 ---
 
-## I. 프로젝트 관리 (Projects)
+## I. 프로젝트 관리 (Projects) ✅ 구현 완료
 ### I-0 개요
 - **목적**: 연간 목표를 달성하기 위한 구체적인 프로젝트를 관리하고 추적
 - **범위**: 프로젝트 생성/관리, 프로젝트별 할일(Tasks) 추적, 일일 할일(Todos)과 연결
 - **카테고리 연동**: 연간 목표의 3영역(자기계발/관계/업무재정)과 동일하게 분류
+- **카테고리 매핑**: 프로젝트 → 오늘 할일 등록 시
+  - `self_dev` → `self_dev` (Growth)
+  - `relationship` → `personal` (Personal)
+  - `work_finance` → `work` (Work)
 
-### I-1 프로젝트 (Projects) FR-IP
-#### 구조 (DB 스키마 완료)
-- **위치**: Goals 탭 내 별도 섹션 (월간 실천계획 아래 예정)
+### I-1 프로젝트 (Projects) FR-IP ✅ 구현 완료
+#### 구조 (구현됨)
+- **위치**: 별도 탭 (네비게이션 "계획" 그룹 내)
 - **제목**: "프로젝트" (그라데이션 배경: 인디고/청록)
 - **아이콘**: `folder-kanban` (제목)
-- **모드**: 보기 모드 / 편집 모드 (토글)
+- **UI 구조**: 진행중/완료 탭 분류, 카드 그리드 레이아웃, 아코디언 상세보기
 - **카테고리 구분**: 자기계발(self_dev) / 관계(relationship) / 업무재정(work_finance)
+- **카테고리 아이콘**: Lucide 아이콘 (`book-open`, `heart`, `briefcase`)
 
-#### FR-IP (DB 스키마 완료, UI 미구현)
-- FR-IP1. 프로젝트 생성/수정/삭제(Soft Delete) ✅ 스키마 완료
+#### FR-IP (구현됨)
+- FR-IP1. 프로젝트 생성/수정/삭제(Soft Delete) ✅
   - 필수: `name`, `category`
   - Soft Delete: `deleted_at` 타임스탬프
-- FR-IP2. 카테고리별 필터링 (자기계발/관계/업무재정) 🚧 미구현
-- FR-IP3. 프로젝트 목록 조회 (deleted_at IS NULL) 🚧 미구현
-- FR-IP4. 프로젝트별 진행률 표시 (완료 Tasks / 전체 Tasks) 🚧 미구현
+  - 심플한 한 줄 모달 UI
+- FR-IP2. 진행중/완료 탭 분류 ✅
+  - 모든 할일 완료 시 "완료" 탭으로 이동
+  - "다시 진행하기" 버튼으로 진행중으로 복귀
+- FR-IP3. 프로젝트 목록 조회 (deleted_at IS NULL) ✅
+- FR-IP4. 프로젝트별 진행률 표시 (완료 Tasks / 전체 Tasks) ✅
+  - 진행바 + 퍼센트 표시
+  - D-Day 표시 (가장 가까운 마감일 기준)
 
-### I-2 프로젝트 할일 (Project Tasks) FR-IPT
-#### 구조 (DB 스키마 완료)
-- **위치**: 프로젝트 상세 화면 (확장 시)
+### I-2 프로젝트 할일 (Project Tasks) FR-IPT ✅ 구현 완료
+#### 구조 (구현됨)
+- **위치**: 프로젝트 카드 클릭 시 아코디언 확장
 - **구성**: 프로젝트당 0~N개의 Tasks
 - **수동 순서 변경**: `display_order` 컬럼으로 사용자 정의 순서 지원
+- **인라인 편집**: 클릭하여 바로 수정, Enter로 저장
 
-#### FR-IPT (DB 스키마 완료, UI 미구현)
-- FR-IPT1. Task 생성/수정/삭제(Soft Delete) ✅ 스키마 완료
+#### FR-IPT (구현됨)
+- FR-IPT1. Task 생성/수정/삭제(Soft Delete) ✅
   - 필수: `title`, `project_id`
   - 선택: `due_date`, `is_done`, `display_order`
-- FR-IPT2. Task 완료/미완료 토글 (`is_done`, `done_at`) 🚧 미구현
-- FR-IPT3. Task 수동 순서 변경 (`display_order`) 🚧 미구현
-  - Todos와 동일한 인덱스 기반 재할당 방식 `(인덱스 + 1) * 10`
-- FR-IPT4. 일일 할일(Todos)과 연결 (`todos.project_task_id`) 🚧 미구현
-  - Task를 Todos로 "오늘 할일로 추가" 기능
-  - 연결된 Todo 완료 시 Task도 자동 완료 (선택적)
+  - Enter 키로 빠른 등록, 자동 포커스 유지
+- FR-IPT2. Task 완료/미완료 토글 (`is_done`, `done_at`) ✅
+- FR-IPT3. Task 수동 순서 변경 (`display_order`) ✅
+  - 위/아래 화살표 버튼
+  - 인덱스 기반 재할당 방식 `(인덱스 + 1) * 10`
+- FR-IPT4. 마감일 설정 (flatpickr 달력) ✅
+  - 캘린더 아이콘 클릭으로 날짜 선택
+  - 즉시 적용
 
-### I-3 통합 기능 FR-IPI
-#### FR-IPI (미구현)
-- FR-IPI1. 프로젝트 → Task → Todo 연결 흐름 🚧 미구현
-  - 프로젝트 생성 → Task 추가 → "오늘 할일로 추가" 버튼으로 Todo 생성
+### I-3 통합 기능 FR-IPI ✅ 구현 완료
+#### FR-IPI (구현됨)
+- FR-IPI1. 프로젝트 → Task → Todo 연결 흐름 ✅
+  - "오늘 할일 등록하기" 버튼으로 마감일 기준 Todo 생성
   - Todo에 `project_task_id` 저장하여 출처 추적
-- FR-IPI2. 프로젝트 진행률 추적 🚧 미구현
+  - 중복 등록 방지 (동일 날짜에 이미 등록된 Task 스킵)
+- FR-IPI2. 양방향 동기화 ✅
+  - 프로젝트 Task 완료 → 연결된 Todo 완료
+  - Todo 완료 → 연결된 Project Task 완료 (모든 연결 Todo 완료 시)
+  - 제목 수정 시 양방향 동기화
+  - 동기화 플래그로 무한 루프 방지
+- FR-IPI3. Carry-over 연동 ✅
+  - 프로젝트 Task 연결된 미완료 Todo도 이월 대상
+  - 이월 시 `project_task_id` 유지
+  - 이월 시 Project Task의 `due_date`도 오늘로 업데이트
+- FR-IPI4. 날짜 이동 동기화 ✅
+  - 오늘 탭에서 Todo 날짜 이동 시 Project Task `due_date`도 동기화
+- FR-IPI5. 포기 처리 ✅
+  - 오늘 탭에서 Todo 포기 시 Project Task `due_date`를 NULL로 설정
+- FR-IPI6. 프로젝트 진행률 추적 ✅
   - 완료 Tasks / 전체 Tasks 비율 표시
   - 프로젝트 카드에 진행바 표시
-- FR-IPI3. 카테고리별 프로젝트 통계 🚧 미구현
-  - Goals 탭에서 카테고리별 프로젝트 수, 완료율 요약 표시
 
-### AC-I (미검증)
-- AC-IP1. PC/모바일 동일 프로젝트 목록 조회 🚧
-- AC-IP2. Soft Delete 정책으로 삭제된 프로젝트 숨김 🚧
-- AC-IP3. 프로젝트 삭제 시 관련 Tasks도 CASCADE 삭제 ✅ 스키마 완료
-- AC-IPT1. Task 순서 변경 시 인덱스 기반 재할당 정상 작동 🚧
-- AC-IPT2. Todo에서 연결된 Task 정보 확인 가능 🚧
-- AC-IPI1. 프로젝트 진행률이 실시간 업데이트됨 🚧
+### AC-I (검증됨)
+- AC-IP1. PC/모바일 동일 프로젝트 목록 조회 ✅
+- AC-IP2. Soft Delete 정책으로 삭제된 프로젝트 숨김 ✅
+- AC-IP3. 프로젝트 삭제 시 관련 Tasks도 CASCADE 삭제 ✅
+- AC-IP4. 프로젝트 삭제 시 연결된 Todo의 `project_task_id` NULL 처리 ✅
+- AC-IPT1. Task 순서 변경 시 인덱스 기반 재할당 정상 작동 ✅
+- AC-IPT2. Todo에서 연결된 Task 정보 확인 가능 ✅
+- AC-IPI1. 프로젝트 진행률이 실시간 업데이트됨 ✅
+- AC-IPI2. 양방향 동기화 정상 작동 (무한 루프 없음) ✅
+- AC-IPI3. Carry-over 시 Project Task due_date 업데이트 정상 ✅
+- AC-IPI4. 날짜 이동/포기 시 동기화 정상 ✅
 
 ---
 
@@ -1162,15 +1200,24 @@ alwaysApply: true
 
 ## B4) 컴포넌트
 
-### 네비게이션 탭 (구현됨)
+### 네비게이션 탭 (Plan-Do-See 그룹 구조) ✅ 구현 완료
 ```css
 위치: 앱 헤더 내부 (최상단 고정)
-탭 개수: 4개 (오늘, 주간, 월간, 목표) + 관리자 탭 (관리자만 표시)
-레이아웃: 중앙 정렬, 균등 분배 (flex: 1, max-width: 150px)
+구조: Plan-Do-See 그룹 기반
+  - 계획 (Plan): 목표, 프로젝트 (연보라 배경 #f3e8ff)
+  - 실행 (Do): 오늘 (연파랑 배경 #e0f2fe)
+  - 리뷰 (See): 주간, 월간, 연간 (연녹색 배경 #d1fae5)
+  - 관리: 관리자 (연노랑 배경 #fef3c7, Admin만 표시)
+레이아웃: flex, 그룹별 균등 분배 (flex: 1)
+그룹 라벨: 상단에 "계획", "실행", "리뷰", "관리" 표시
 아이콘+텍스트: 한 줄 배치 (flex-direction: row)
 아이콘 크기: 20px × 20px
-간격: gap: 0.5rem
-반응형: 모바일에서 2열 배치 (flex: 1 1 calc(50% - 0.5rem))
+활성 탭: 그룹별 그라데이션 색상
+  - 계획: 보라색 그라데이션
+  - 실행: 파란색 그라데이션  
+  - 리뷰: 녹색 그라데이션
+  - 관리: 노란색 그라데이션
+반응형: 화면 축소 시 줄바꿈 (flex-wrap: wrap)
 관리자 탭: shield-check 아이콘, 새 탭에서 /admin.html 열기 (target="_blank")
 ```
 

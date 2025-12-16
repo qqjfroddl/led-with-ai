@@ -8,49 +8,109 @@ import { formatSelectedDate } from '../state/dateState.js';
  * @returns {Promise<string>} 네비게이션 HTML
  */
 export async function renderNavigation(currentRoute, profile) {
-  const routes = [
-    { path: '/goals', label: '목표', icon: 'target' },
-    { path: '/today', label: '오늘', icon: 'sun' },
-    { path: '/projects', label: '프로젝트', icon: 'folder-kanban' },
-    { path: '/weekly', label: '주간', icon: 'calendar-days' },
-    { path: '/monthly', label: '월간', icon: 'calendar-range' },
-    { path: '/yearly', label: '연간', icon: 'calendar-check' }
+  // Plan-Do-See 그룹 정의
+  const navGroups = [
+    {
+      id: 'plan',
+      label: '계획',
+      color: { bg: '#f3e8ff', border: '#c4b5fd', active: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' },
+      routes: [
+        { path: '/goals', label: '목표', icon: 'target' },
+        { path: '/projects', label: '프로젝트', icon: 'folder-kanban' }
+      ]
+    },
+    {
+      id: 'do',
+      label: '실행',
+      color: { bg: '#e0f2fe', border: '#7dd3fc', active: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' },
+      routes: [
+        { path: '/today', label: '오늘', icon: 'sun' }
+      ]
+    },
+    {
+      id: 'see',
+      label: '리뷰',
+      color: { bg: '#d1fae5', border: '#6ee7b7', active: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
+      routes: [
+        { path: '/weekly', label: '주간', icon: 'calendar-days' },
+        { path: '/monthly', label: '월간', icon: 'calendar-range' },
+        { path: '/yearly', label: '연간', icon: 'calendar-check' }
+      ]
+    }
   ];
 
-  // 관리자인 경우 관리자 탭 추가
+  // 관리자인 경우 관리자 그룹 추가
   const isUserAdmin = await isAdmin();
   if (isUserAdmin) {
-    routes.push({ 
-      path: '/admin', 
-      label: '관리자', 
-      icon: 'shield-check',
-      external: true,  // 외부 링크 플래그
-      url: '/admin.html'  // 실제 URL
+    navGroups.push({
+      id: 'admin',
+      label: '관리',
+      color: { bg: '#fef3c7', border: '#fcd34d', active: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+      routes: [
+        { path: '/admin', label: '관리자', icon: 'shield-check', external: true, url: '/admin.html' }
+      ]
     });
   }
 
-  const navItems = routes.map(route => {
-    const isActive = currentRoute === route.path || 
-                     (route.path === '/weekly' && currentRoute === '/reports') ||
-                     (route.path === '/monthly' && currentRoute === '/reports');
-    const activeClass = isActive ? 'active' : '';
+  // 현재 라우트가 속한 그룹 찾기
+  const findActiveGroup = () => {
+    for (const group of navGroups) {
+      for (const route of group.routes) {
+        if (currentRoute === route.path || 
+            (route.path === '/weekly' && currentRoute === '/reports') ||
+            (route.path === '/monthly' && currentRoute === '/reports')) {
+          return group.id;
+        }
+      }
+    }
+    return null;
+  };
+  const activeGroupId = findActiveGroup();
+
+  // 그룹별 HTML 생성
+  const navGroupsHtml = navGroups.map(group => {
+    const isGroupActive = group.id === activeGroupId;
     
-    // 관리자 탭은 새 탭에서 열기
-    if (route.external) {
+    const routesHtml = group.routes.map(route => {
+      const isActive = currentRoute === route.path || 
+                       (route.path === '/weekly' && currentRoute === '/reports') ||
+                       (route.path === '/monthly' && currentRoute === '/reports');
+      
+      const activeStyle = isActive 
+        ? `background: ${group.color.active}; color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.15);`
+        : `background: white; color: #374151; border-color: ${group.color.border};`;
+      
+      // 관리자 탭은 새 탭에서 열기
+      if (route.external) {
+        return `
+          <a href="${route.url}" target="_blank" rel="noopener noreferrer" 
+             class="nav-item-new ${isActive ? 'active' : ''}" 
+             style="${activeStyle}"
+             data-route="${route.path}">
+            <i data-lucide="${route.icon}"></i>
+            <span>${route.label}</span>
+          </a>
+        `;
+      }
+      
       return `
-        <a href="${route.url}" target="_blank" rel="noopener noreferrer" class="nav-item ${activeClass}" data-route="${route.path}">
+        <a href="#${route.path}" 
+           class="nav-item-new ${isActive ? 'active' : ''}" 
+           style="${activeStyle}"
+           data-route="${route.path}">
           <i data-lucide="${route.icon}"></i>
           <span>${route.label}</span>
         </a>
       `;
-    }
-    
-    // 일반 탭은 해시 라우팅
+    }).join('');
+
     return `
-      <a href="#${route.path}" class="nav-item ${activeClass}" data-route="${route.path}">
-        <i data-lucide="${route.icon}"></i>
-        <span>${route.label}</span>
-      </a>
+      <div class="nav-group" data-group="${group.id}" style="background: ${group.color.bg}; border: 1px solid ${group.color.border};">
+        ${group.label ? `<span class="nav-group-label">${group.label}</span>` : ''}
+        <div class="nav-group-items">
+          ${routesHtml}
+        </div>
+      </div>
     `;
   }).join('');
 
@@ -140,9 +200,9 @@ export async function renderNavigation(currentRoute, profile) {
           </button>
         </div>
       </div>
-      <!-- 2줄: 네비게이션 탭 -->
-      <nav class="top-navigation">
-        ${navItems}
+      <!-- 2줄: 네비게이션 탭 (Plan-Do-See 그룹) -->
+      <nav class="top-navigation-grouped">
+        ${navGroupsHtml}
       </nav>
       <!-- 3줄: 날짜 바 (오늘 탭일 때만) -->
       ${dateBarHtml}

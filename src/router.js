@@ -117,7 +117,9 @@ class Router {
           locale: (window.flatpickr.l10ns && window.flatpickr.l10ns.ko) ? window.flatpickr.l10ns.ko : undefined,
           onChange: (dates) => {
             if (dates && dates[0]) {
-              const iso = dates[0].toISOString().slice(0, 10);
+              // 로컬 날짜 사용 (UTC 변환 방지)
+              const d = dates[0];
+              const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
               setSelectedDate(iso);
               closeOverlay();
               rerender();

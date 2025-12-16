@@ -1895,7 +1895,9 @@ function openTodoDatePicker(todoId, currentDate, selectedDate, profile, timezone
       console.log('[TodoDatePicker] onReady called', { dates, dateStr, instance });
       isReady = true;
       if (dates && dates[0]) {
-        lastSelectedDate = dates[0].toISOString().slice(0, 10);
+        // 로컬 날짜 사용 (UTC 변환 방지)
+        const d = dates[0];
+        lastSelectedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       }
       
       // flatpickr 캘린더의 날짜 클릭 이벤트 직접 리스닝 (onChange가 제대로 작동하지 않을 때를 대비)
@@ -1910,18 +1912,26 @@ function openTodoDatePicker(todoId, currentDate, selectedDate, profile, timezone
         // 클릭한 날짜를 직접 추출 (data-day 속성 또는 텍스트에서)
         let clickedDate = null;
         
+        // 로컬 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+        const formatLocalDate = (date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+        
         // 방법 1: data-day 속성 확인
         if (dayElement.dataset.day) {
           const day = parseInt(dayElement.dataset.day);
           const month = instance?.currentMonth || 0;
           const year = instance?.currentYear || new Date().getFullYear();
-          clickedDate = new Date(year, month, day).toISOString().slice(0, 10);
+          clickedDate = formatLocalDate(new Date(year, month, day));
         }
         // 방법 2: flatpickr 인스턴스에서 선택된 날짜 확인 (약간의 지연 후)
         else if (instance) {
           setTimeout(() => {
             if (instance.selectedDates && instance.selectedDates.length > 0) {
-              clickedDate = instance.selectedDates[0].toISOString().slice(0, 10);
+              clickedDate = formatLocalDate(instance.selectedDates[0]);
               processDateClick(clickedDate);
             }
           }, 100);
@@ -1990,19 +2000,27 @@ function openTodoDatePicker(todoId, currentDate, selectedDate, profile, timezone
       // instance.selectedDates는 비동기로 업데이트되어 타이밍 이슈가 있음
       let newDate = null;
       
+      // 로컬 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+      const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
       // 1순위: dateStr 사용 (가장 신뢰할 수 있음)
       if (dateStr) {
         newDate = dateStr;
         console.log('[TodoDatePicker] Using dateStr (primary)', { newDate });
       } 
-      // 2순위: dates 배열 사용
+      // 2순위: dates 배열 사용 (로컬 날짜로 변환)
       else if (dates && dates.length > 0 && dates[0]) {
-        newDate = dates[0].toISOString().slice(0, 10);
+        newDate = formatLocalDate(dates[0]);
         console.log('[TodoDatePicker] Using dates[0]', { newDate });
       } 
-      // 3순위: instance.selectedDates 사용 (비동기 업데이트로 인해 부정확할 수 있음)
+      // 3순위: instance.selectedDates 사용 (로컬 날짜로 변환)
       else if (instance && instance.selectedDates && instance.selectedDates.length > 0) {
-        newDate = instance.selectedDates[0].toISOString().slice(0, 10);
+        newDate = formatLocalDate(instance.selectedDates[0]);
         console.log('[TodoDatePicker] Using instance.selectedDates[0] (fallback)', { newDate });
       }
       
@@ -2191,8 +2209,17 @@ function openTodoDuplicatePicker(todoId, currentDate, selectedDate, profile, tim
     onReady: (dates, dateStr, instance) => {
       console.log('[TodoDuplicatePicker] onReady called', { dates, dateStr, instance });
       isReady = true;
+      
+      // 로컬 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+      const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
       if (dates && dates[0]) {
-        lastSelectedDate = dates[0].toISOString().slice(0, 10);
+        lastSelectedDate = formatLocalDate(dates[0]);
       }
       
       // flatpickr 캘린더의 날짜 클릭 이벤트 직접 리스닝
@@ -2208,11 +2235,11 @@ function openTodoDuplicatePicker(todoId, currentDate, selectedDate, profile, tim
           const day = parseInt(dayElement.dataset.day);
           const month = instance?.currentMonth || 0;
           const year = instance?.currentYear || new Date().getFullYear();
-          clickedDate = new Date(year, month, day).toISOString().slice(0, 10);
+          clickedDate = formatLocalDate(new Date(year, month, day));
         } else if (instance) {
           setTimeout(() => {
             if (instance.selectedDates && instance.selectedDates.length > 0) {
-              clickedDate = instance.selectedDates[0].toISOString().slice(0, 10);
+              clickedDate = formatLocalDate(instance.selectedDates[0]);
               processDateClick(clickedDate);
             }
           }, 100);
@@ -2265,14 +2292,22 @@ function openTodoDuplicatePicker(todoId, currentDate, selectedDate, profile, tim
       
       let newDate = null;
       
+      // 로컬 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+      const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
       if (dateStr) {
         newDate = dateStr;
         console.log('[TodoDuplicatePicker] Using dateStr (primary)', { newDate });
       } else if (dates && dates.length > 0 && dates[0]) {
-        newDate = dates[0].toISOString().slice(0, 10);
+        newDate = formatLocalDate(dates[0]);
         console.log('[TodoDuplicatePicker] Using dates[0]', { newDate });
       } else if (instance && instance.selectedDates && instance.selectedDates.length > 0) {
-        newDate = instance.selectedDates[0].toISOString().slice(0, 10);
+        newDate = formatLocalDate(instance.selectedDates[0]);
         console.log('[TodoDuplicatePicker] Using instance.selectedDates[0] (fallback)', { newDate });
       }
       

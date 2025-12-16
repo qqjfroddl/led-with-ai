@@ -12,6 +12,12 @@ let projectEventsBound = false;
 // 수정 모드 관리
 let editingProjectTaskId = null;
 
+// 현재 활성 탭 (in_progress / completed)
+let activeProjectTab = 'in_progress';
+
+// 현재 펼쳐진 프로젝트 ID
+let expandedProjectId = null;
+
 export async function renderProjects() {
   const profile = await getCurrentProfile();
   if (!profile) {
@@ -34,50 +40,64 @@ export async function renderProjects() {
             </div>
             <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;">프로젝트를 관리하고 할일을 등록하세요</p>
           </div>
+          <button id="add-project-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            추가
+          </button>
         </div>
       </div>
 
       <div id="projects-content" style="display: block;">
-        <div id="projects-list" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
+        <!-- 탭 영역 -->
+        <div id="projects-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+          <button id="tab-in-progress" class="project-tab active" data-tab="in_progress" style="flex: 1; padding: 0.75rem; border: 2px solid #3b82f6; border-radius: 8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            <i data-lucide="loader" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            진행중 (<span id="in-progress-count">0</span>)
+          </button>
+          <button id="tab-completed" class="project-tab" data-tab="completed" style="flex: 1; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; background: #f3f4f6; color: #6b7280; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            <i data-lucide="check-circle" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            완료 (<span id="completed-count">0</span>)
+          </button>
+        </div>
+
+        <!-- 카드 그리드 -->
+        <div id="projects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;"></div>
+        
+        <!-- 빈 상태 -->
         <div id="projects-empty" style="text-align: center; padding: 3rem 1rem; color: #9ca3af; display: none;">
           <i data-lucide="folder-x" style="width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.5;"></i>
-          <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">등록된 프로젝트가 없습니다</p>
-          <p style="font-size: 0.9rem;">새 프로젝트를 추가하여 시작하세요</p>
+          <p id="projects-empty-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">진행중인 프로젝트가 없습니다</p>
+          <p id="projects-empty-desc" style="font-size: 0.9rem;">새 프로젝트를 추가하여 시작하세요</p>
         </div>
-        <button id="add-project-btn" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;">
-          <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
-          프로젝트 추가
-        </button>
+
+        <!-- 펼쳐진 프로젝트 상세 영역 -->
+        <div id="project-detail" style="display: none; margin-top: 1rem;"></div>
       </div>
     </div>
 
-    <!-- 프로젝트 추가/수정 모달 -->
-    <div id="project-modal" class="modal-overlay" style="display: none;">
-      <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-          <h3 id="project-modal-title">프로젝트 추가</h3>
-          <button id="project-modal-close" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    <!-- 프로젝트 추가/수정 모달 (심플 버전) -->
+    <div id="project-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; display: none; align-items: center; justify-content: center;">
+      <div style="background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 520px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+          <h3 id="project-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">프로젝트 추가</h3>
+          <button id="project-modal-close" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer; color: #9ca3af; transition: color 0.2s;">
+            <i data-lucide="x" style="width: 24px; height: 24px;"></i>
           </button>
         </div>
-        <div class="modal-body">
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">프로젝트 이름</label>
-            <input type="text" id="project-name-input" placeholder="프로젝트 이름을 입력하세요" style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1rem;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">프로젝트 종류</label>
-            <select id="project-category-input" style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1rem;">
-              <option value="self_dev">자기계발</option>
-              <option value="relationship">가족/관계</option>
-              <option value="work_finance">업무/재정</option>
-            </select>
-          </div>
+        
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="project-name-input" placeholder="프로젝트 이름" style="flex: 1; min-width: 180px; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+          <select id="project-category-input" style="padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer; min-width: 120px;">
+            <option value="self_dev">자기계발</option>
+            <option value="relationship">가족/관계</option>
+            <option value="work_finance">업무/재정</option>
+          </select>
+          <button id="project-modal-save" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(99, 102, 241, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.3)'">
+            <i data-lucide="check" style="width: 18px; height: 18px; margin-right: 0.25rem; vertical-align: -3px;"></i>
+            저장
+          </button>
         </div>
-        <div class="modal-footer">
-          <button id="project-modal-cancel" class="btn btn-secondary">취소</button>
-          <button id="project-modal-save" class="btn btn-primary">저장</button>
-        </div>
+        <button id="project-modal-cancel" style="display: none;"></button>
       </div>
     </div>
 
@@ -115,6 +135,7 @@ export async function renderProjects() {
 
 async function loadProjects(profile) {
   try {
+    // 모든 프로젝트 조회
     const { data: projects, error } = await supabase
       .from('projects')
       .select('*')
@@ -124,153 +145,252 @@ async function loadProjects(profile) {
 
     if (error) throw error;
 
-    const projectsList = document.getElementById('projects-list');
-    const projectsEmpty = document.getElementById('projects-empty');
+    // 각 프로젝트의 할일 통계 조회
+    const projectsWithStats = await Promise.all(
+      (projects || []).map(async (project) => {
+        const { data: tasks } = await supabase
+          .from('project_tasks')
+          .select('id, is_done, due_date')
+          .eq('project_id', project.id)
+          .is('deleted_at', null);
 
-    if (!projects || projects.length === 0) {
-      if (projectsList) projectsList.style.display = 'none';
+        const tasksList = tasks || [];
+        const totalCount = tasksList.length;
+        const completedCount = tasksList.filter(t => t.is_done).length;
+        const isCompleted = totalCount > 0 && completedCount === totalCount;
+        
+        // 가장 가까운 마감일 계산
+        const upcomingDueDate = tasksList
+          .filter(t => !t.is_done && t.due_date)
+          .map(t => t.due_date)
+          .sort()[0] || null;
+
+        return {
+          ...project,
+          totalCount,
+          completedCount,
+          isCompleted,
+          upcomingDueDate
+        };
+      })
+    );
+
+    // 진행중/완료 분류
+    const inProgressProjects = projectsWithStats.filter(p => !p.isCompleted);
+    const completedProjects = projectsWithStats.filter(p => p.isCompleted);
+
+    // 카운트 업데이트
+    const inProgressCountEl = document.getElementById('in-progress-count');
+    const completedCountEl = document.getElementById('completed-count');
+    if (inProgressCountEl) inProgressCountEl.textContent = inProgressProjects.length;
+    if (completedCountEl) completedCountEl.textContent = completedProjects.length;
+
+    // 현재 탭에 따라 표시할 프로젝트 결정
+    const projectsToShow = activeProjectTab === 'in_progress' ? inProgressProjects : completedProjects;
+
+    const projectsGrid = document.getElementById('projects-grid');
+    const projectsEmpty = document.getElementById('projects-empty');
+    const emptyTitle = document.getElementById('projects-empty-title');
+    const emptyDesc = document.getElementById('projects-empty-desc');
+
+    if (projectsToShow.length === 0) {
+      if (projectsGrid) projectsGrid.style.display = 'none';
       if (projectsEmpty) projectsEmpty.style.display = 'block';
+      if (emptyTitle) {
+        emptyTitle.textContent = activeProjectTab === 'in_progress' 
+          ? '진행중인 프로젝트가 없습니다' 
+          : '완료된 프로젝트가 없습니다';
+      }
+      if (emptyDesc) {
+        emptyDesc.textContent = activeProjectTab === 'in_progress'
+          ? '새 프로젝트를 추가하여 시작하세요'
+          : '프로젝트를 완료하면 여기에 표시됩니다';
+      }
+      // 상세 영역 숨김
+      const projectDetail = document.getElementById('project-detail');
+      if (projectDetail) projectDetail.style.display = 'none';
+      expandedProjectId = null;
       if (window.lucide?.createIcons) window.lucide.createIcons();
       return;
     }
 
-    if (projectsList) projectsList.style.display = 'flex';
+    if (projectsGrid) projectsGrid.style.display = 'grid';
     if (projectsEmpty) projectsEmpty.style.display = 'none';
 
-    const projectsHtml = await Promise.all(
-      projects.map(project => renderProjectCard(project, profile))
-    );
-    
-    if (projectsList) {
-      projectsList.innerHTML = projectsHtml.join('');
+    // 카드 그리드 렌더링
+    const cardsHtml = projectsToShow.map(project => renderProjectCardCompact(project)).join('');
+    if (projectsGrid) {
+      projectsGrid.innerHTML = cardsHtml;
+    }
+
+    // 펼쳐진 프로젝트가 있으면 상세 영역 렌더링
+    if (expandedProjectId) {
+      const expandedProject = projectsToShow.find(p => p.id === expandedProjectId);
+      if (expandedProject) {
+        await renderProjectDetail(expandedProject, profile);
+      } else {
+        // 현재 탭에 해당 프로젝트가 없으면 접기
+        expandedProjectId = null;
+        const projectDetail = document.getElementById('project-detail');
+        if (projectDetail) projectDetail.style.display = 'none';
+      }
     }
 
     if (window.lucide?.createIcons) window.lucide.createIcons();
 
-    // 수정 모드 입력 필드에 Enter/Escape 키 이벤트 바인딩
-    document.querySelectorAll('.project-task-edit-input').forEach(input => {
-      // 기존 이벤트 리스너 제거 (중복 방지)
-      const newInput = input.cloneNode(true);
-      input.parentNode.replaceChild(newInput, input);
-      
-      // 새 이벤트 리스너 등록
-      newInput.addEventListener('keydown', async (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
-          const taskId = newInput.closest('.project-task-item')?.dataset?.taskId;
-          if (taskId) {
-            await saveProjectTaskEdit(taskId, newInput.value.trim(), profile);
-          }
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          editingProjectTaskId = null;
-          await loadProjects(profile);
-        }
-      });
-      
-      // 포커스 및 선택
-      setTimeout(() => {
-        newInput.focus();
-        newInput.select();
-      }, 10);
-    });
-
-    // 할일 추가 입력 필드에 Enter 키 이벤트 바인딩
-    document.querySelectorAll('[id^="project-task-input-"]').forEach(input => {
-      const newInput = input.cloneNode(true);
-      input.parentNode.replaceChild(newInput, input);
-      
-      newInput.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
-          const projectId = newInput.id.replace('project-task-input-', '');
-          if (newInput.value.trim()) {
-            await addProjectTask(projectId, newInput.value.trim(), profile);
-            // addProjectTask 내부에서 입력 필드 초기화 및 포커스 처리
-          }
-        }
-      });
-    });
   } catch (error) {
     console.error('Error loading projects:', error);
     alert('프로젝트를 불러오는 중 오류가 발생했습니다.');
   }
 }
 
-async function renderProjectCard(project, profile) {
-  try {
-    const { data: tasks, error } = await supabase
-      .from('project_tasks')
-      .select('*')
-      .eq('project_id', project.id)
-      .is('deleted_at', null)
-      .order('is_done', { ascending: true })
-      .order('display_order', { ascending: true, nullsFirst: false })
-      .order('due_date', { ascending: true, nullsFirst: false })
-      .order('created_at', { ascending: true });
+// 카드 그리드용 컴팩트 카드 렌더링
+function renderProjectCardCompact(project) {
+  const categoryLabels = {
+    self_dev: '자기계발',
+    relationship: '가족/관계',
+    work_finance: '업무/재정'
+  };
 
-    if (error) {
-      console.error('Error loading project tasks:', error);
-      return '';
+  const categoryIcons = {
+    self_dev: 'book-open',
+    relationship: 'heart',
+    work_finance: 'briefcase'
+  };
+
+  const categoryColors = {
+    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)', shadow: 'rgba(167, 139, 250, 0.3)' },
+    relationship: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)', shadow: 'rgba(244, 114, 182, 0.3)' },
+    work_finance: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)', shadow: 'rgba(251, 146, 60, 0.3)' }
+  };
+
+  const colors = categoryColors[project.category] || categoryColors.self_dev;
+  const icon = categoryIcons[project.category] || 'folder';
+  const progress = project.totalCount > 0 ? Math.round((project.completedCount / project.totalCount) * 100) : 0;
+  const isExpanded = expandedProjectId === project.id;
+
+  // D-Day 계산
+  let dDayText = '';
+  let diffDays = null;
+  if (project.upcomingDueDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(project.upcomingDueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) {
+      dDayText = 'D-Day';
+    } else if (diffDays > 0) {
+      dDayText = `D-${diffDays}`;
+    } else {
+      dDayText = `D+${Math.abs(diffDays)}`;
     }
+  }
 
-    const categoryLabels = {
-      self_dev: '자기계발',
-      relationship: '가족/관계',
-      work_finance: '업무/재정'
-    };
-
-    const categoryColors = {
-      self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)' },
-      relationship: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)' },
-      work_finance: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)' }
-    };
-
-    const colors = categoryColors[project.category] || categoryColors.self_dev;
-    const tasksList = tasks || [];
-    const completedCount = tasksList.filter(t => t.is_done).length;
-    const totalCount = tasksList.length;
-    const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-    return `
-      <div class="project-card" data-project-id="${project.id}" style="background: ${colors.bg}; border: 2px solid ${colors.border}; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-          <div style="flex: 1;">
-            <h3 style="color: #1f2937; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem 0;">${project.name}</h3>
-            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${colors.gradient}; color: white; border-radius: 999px; font-size: 0.875rem; font-weight: 600;">${categoryLabels[project.category]}</span>
+  return `
+    <div class="project-card-compact ${isExpanded ? 'expanded' : ''}" data-project-id="${project.id}" 
+         style="background: ${project.isCompleted ? '#f3f4f6' : colors.bg}; 
+                border: 2px solid ${project.isCompleted ? '#d1d5db' : colors.border}; 
+                border-radius: 12px; 
+                padding: 1rem; 
+                cursor: pointer; 
+                transition: all 0.2s;
+                box-shadow: ${isExpanded ? `0 8px 24px ${colors.shadow}` : '0 2px 8px rgba(0, 0, 0, 0.08)'};
+                ${isExpanded ? `transform: scale(1.02);` : ''}
+                ${project.isCompleted ? 'opacity: 0.8;' : ''}">
+      <div style="display: flex; align-items: start; gap: 0.75rem;">
+        <div style="width: 36px; height: 36px; background: ${project.isCompleted ? '#9ca3af' : colors.gradient}; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i data-lucide="${project.isCompleted ? 'check-circle' : icon}" style="width: 20px; height: 20px; color: white;"></i>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <h4 style="color: ${project.isCompleted ? '#6b7280' : '#1f2937'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${project.name}</h4>
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${project.isCompleted ? '#e5e7eb' : colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[project.category]}</span>
+            ${dDayText ? `<span style="font-size: 0.75rem; color: ${diffDays !== null && diffDays <= 3 ? '#ef4444' : '#6b7280'}; font-weight: 600;">${dDayText}</span>` : ''}
           </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="edit-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: #6b7280; cursor: pointer; padding: 0.25rem;">
-              <i data-lucide="pencil" style="width: 18px; height: 18px;"></i>
+        </div>
+        <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" style="width: 18px; height: 18px; color: #9ca3af; flex-shrink: 0;"></i>
+      </div>
+      
+      <div style="margin-top: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+          <span style="font-size: 0.75rem; color: #6b7280;">${project.completedCount} / ${project.totalCount}</span>
+          <span style="font-size: 0.75rem; font-weight: 600; color: ${project.isCompleted ? '#10b981' : '#1f2937'};">${progress}%</span>
+        </div>
+        <div style="width: 100%; height: 6px; background: #e5e7eb; border-radius: 999px; overflow: hidden;">
+          <div style="width: ${progress}%; height: 100%; background: ${project.isCompleted ? '#10b981' : colors.gradient}; transition: width 0.3s;"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 프로젝트 상세 영역 렌더링
+async function renderProjectDetail(project, profile) {
+  const projectDetail = document.getElementById('project-detail');
+  if (!projectDetail) return;
+
+  // 할일 목록 조회
+  const { data: tasks, error } = await supabase
+    .from('project_tasks')
+    .select('*')
+    .eq('project_id', project.id)
+    .is('deleted_at', null)
+    .order('is_done', { ascending: true })
+    .order('display_order', { ascending: true, nullsFirst: false })
+    .order('due_date', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error loading project tasks:', error);
+    return;
+  }
+
+  const categoryColors = {
+    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)' },
+    relationship: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)' },
+    work_finance: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)' }
+  };
+
+  const colors = categoryColors[project.category] || categoryColors.self_dev;
+  const tasksList = tasks || [];
+
+  projectDetail.innerHTML = `
+    <div style="background: ${project.isCompleted ? '#f9fafb' : colors.bg}; border: 2px solid ${project.isCompleted ? '#e5e7eb' : colors.border}; border-radius: 12px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px dashed ${project.isCompleted ? '#d1d5db' : colors.border};">
+        <h3 style="color: #1f2937; font-size: 1.1rem; font-weight: 700; margin: 0;">
+          <i data-lucide="list-checks" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: -3px;"></i>
+          ${project.name} 할일 목록
+        </h3>
+        <div style="display: flex; gap: 0.5rem;">
+          ${project.isCompleted ? `
+            <button class="reopen-project-btn" data-project-id="${project.id}" style="padding: 0.375rem 0.75rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+              <i data-lucide="rotate-ccw" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+              다시 진행
             </button>
-            <button class="delete-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem;">
-              <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
-            </button>
-          </div>
+          ` : ''}
+          <button class="edit-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: #6b7280; cursor: pointer; padding: 0.25rem;">
+            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          </button>
+          <button class="delete-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem;">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+          </button>
         </div>
+      </div>
 
-        <div style="margin-bottom: 1rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <span style="font-size: 0.875rem; color: #6b7280;">진행률</span>
-            <span style="font-size: 0.875rem; font-weight: 600; color: #1f2937;">${completedCount} / ${totalCount} (${progress}%)</span>
+      <div id="project-tasks-${project.id}" style="margin-bottom: 1rem; max-height: 400px; overflow-y: auto;">
+        ${tasksList.map(task => renderProjectTask(task, project.category)).join('')}
+        ${tasksList.length === 0 ? `
+          <div style="text-align: center; padding: 2rem 1rem; color: #9ca3af;">
+            <i data-lucide="clipboard-list" style="width: 32px; height: 32px; margin: 0 auto 0.5rem; opacity: 0.5;"></i>
+            <p style="font-size: 0.9rem; margin: 0;">등록된 할일이 없습니다</p>
           </div>
-          <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden;">
-            <div style="width: ${progress}%; height: 100%; background: ${colors.gradient}; transition: width 0.3s;"></div>
-          </div>
-        </div>
+        ` : ''}
+      </div>
 
-        <div id="project-tasks-${project.id}" style="margin-bottom: 1rem;">
-          ${tasksList.map(task => renderProjectTask(task, project.category)).join('')}
-          <div id="project-tasks-empty-${project.id}" style="text-align: center; padding: 1rem; color: #9ca3af; font-size: 0.9rem; display: ${tasksList.length === 0 ? 'block' : 'none'};">
-            등록된 할일이 없습니다
-          </div>
-        </div>
-
+      ${!project.isCompleted ? `
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-          <input type="text" id="project-task-input-${project.id}" placeholder="할일을 입력하세요..." style="flex: 1; padding: 0.625rem; border: 2px solid ${colors.border}; border-radius: 8px; font-size: 0.95rem;">
+          <input type="text" id="project-task-input-${project.id}" placeholder="할일을 입력하세요... (Enter로 추가)" style="flex: 1; padding: 0.625rem; border: 2px solid ${colors.border}; border-radius: 8px; font-size: 0.95rem; background: white;">
           <button class="add-project-task-btn" data-project-id="${project.id}" style="padding: 0.625rem 1rem; background: ${colors.gradient}; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
             <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
           </button>
@@ -280,11 +400,56 @@ async function renderProjectCard(project, profile) {
           <i data-lucide="calendar-check" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
           오늘 할일 등록하기
         </button>
-      </div>
-    `;
-  } catch (error) {
-    console.error('Error rendering project card:', error);
-    return '';
+      ` : ''}
+    </div>
+  `;
+
+  projectDetail.style.display = 'block';
+
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+
+  // 수정 모드 입력 필드에 Enter/Escape 키 이벤트 바인딩
+  document.querySelectorAll('.project-task-edit-input').forEach(input => {
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+    
+    newInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        const taskId = newInput.closest('.project-task-item')?.dataset?.taskId;
+        if (taskId) {
+          await saveProjectTaskEdit(taskId, newInput.value.trim(), profile);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        editingProjectTaskId = null;
+        await loadProjects(profile);
+      }
+    });
+    
+    setTimeout(() => {
+      newInput.focus();
+      newInput.select();
+    }, 10);
+  });
+
+  // 할일 추가 입력 필드에 Enter 키 이벤트 바인딩
+  const taskInput = document.getElementById(`project-task-input-${project.id}`);
+  if (taskInput) {
+    const newInput = taskInput.cloneNode(true);
+    taskInput.parentNode.replaceChild(newInput, taskInput);
+    
+    newInput.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (newInput.value.trim()) {
+          await addProjectTask(project.id, newInput.value.trim(), profile);
+        }
+      }
+    });
   }
 }
 
@@ -352,11 +517,68 @@ function setupEventHandlers(profile) {
     newAddBtn.addEventListener('click', () => openProjectModal(null, profile));
   }
 
+  // 탭 전환 버튼
+  const tabInProgress = document.getElementById('tab-in-progress');
+  const tabCompleted = document.getElementById('tab-completed');
+  
+  if (tabInProgress) {
+    const newTab = tabInProgress.cloneNode(true);
+    tabInProgress.parentNode.replaceChild(newTab, tabInProgress);
+    newTab.addEventListener('click', async () => {
+      activeProjectTab = 'in_progress';
+      expandedProjectId = null;
+      updateTabStyles();
+      await loadProjects(profile);
+    });
+  }
+  
+  if (tabCompleted) {
+    const newTab = tabCompleted.cloneNode(true);
+    tabCompleted.parentNode.replaceChild(newTab, tabCompleted);
+    newTab.addEventListener('click', async () => {
+      activeProjectTab = 'completed';
+      expandedProjectId = null;
+      updateTabStyles();
+      await loadProjects(profile);
+    });
+  }
+
   // 이벤트 위임: 프로젝트 카드 내부 버튼들 (한 번만 등록)
   if (projectEventsBound) return;
   projectEventsBound = true;
 
   document.addEventListener('click', async (e) => {
+    // 프로젝트 추가 버튼
+    if (e.target.closest('#add-project-btn')) {
+      openProjectModal(null, profile);
+      return;
+    }
+
+    // 프로젝트 카드 클릭 (펼치기/접기)
+    const cardCompact = e.target.closest('.project-card-compact');
+    if (cardCompact && !e.target.closest('button') && !e.target.closest('input') && !e.target.closest('.project-task-checkbox')) {
+      const projectId = cardCompact.dataset.projectId;
+      if (expandedProjectId === projectId) {
+        // 이미 펼쳐진 카드 클릭 시 접기
+        expandedProjectId = null;
+        const projectDetail = document.getElementById('project-detail');
+        if (projectDetail) projectDetail.style.display = 'none';
+      } else {
+        // 다른 카드 클릭 시 펼치기
+        expandedProjectId = projectId;
+      }
+      await loadProjects(profile);
+      return;
+    }
+
+    // 다시 진행하기 버튼
+    if (e.target.closest('.reopen-project-btn')) {
+      const btn = e.target.closest('.reopen-project-btn');
+      const projectId = btn.dataset.projectId;
+      await reopenProject(projectId, profile);
+      return;
+    }
+
     // 프로젝트 할일 추가
     if (e.target.closest('.add-project-task-btn')) {
       const btn = e.target.closest('.add-project-task-btn');
@@ -470,11 +692,29 @@ function setupProjectModalEvents(profile) {
 
   if (closeBtn) closeBtn.onclick = closeModal;
   if (cancelBtn) cancelBtn.onclick = closeModal;
+  
+  // 모달 배경 클릭 시 닫기
+  if (modal) {
+    modal.onclick = (e) => {
+      if (e.target === modal) closeModal();
+    };
+  }
+
+  // Enter 키로 저장
+  if (nameInput) {
+    nameInput.onkeypress = (e) => {
+      if (e.key === 'Enter' && saveBtn) {
+        e.preventDefault();
+        saveBtn.click();
+      }
+    };
+  }
 
   if (saveBtn) {
     saveBtn.onclick = async () => {
       if (!nameInput || !nameInput.value.trim()) {
         alert('프로젝트 이름을 입력해주세요.');
+        nameInput?.focus();
         return;
       }
 
@@ -540,6 +780,9 @@ function setupProjectModalEvents(profile) {
     }
 
     if (window.lucide?.createIcons) window.lucide.createIcons();
+    
+    // 입력 필드에 포커스
+    setTimeout(() => nameInput?.focus(), 100);
   };
 }
 
@@ -867,6 +1110,79 @@ async function registerProjectTasksToTodos(projectId, profile) {
   } catch (error) {
     console.error('Error registering project tasks:', error);
     alert('할일 등록 중 오류가 발생했습니다.');
+  }
+}
+
+// 탭 스타일 업데이트
+function updateTabStyles() {
+  const tabInProgress = document.getElementById('tab-in-progress');
+  const tabCompleted = document.getElementById('tab-completed');
+  
+  if (tabInProgress) {
+    if (activeProjectTab === 'in_progress') {
+      tabInProgress.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+      tabInProgress.style.borderColor = '#3b82f6';
+      tabInProgress.style.color = 'white';
+    } else {
+      tabInProgress.style.background = '#f3f4f6';
+      tabInProgress.style.borderColor = '#d1d5db';
+      tabInProgress.style.color = '#6b7280';
+    }
+  }
+  
+  if (tabCompleted) {
+    if (activeProjectTab === 'completed') {
+      tabCompleted.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      tabCompleted.style.borderColor = '#10b981';
+      tabCompleted.style.color = 'white';
+    } else {
+      tabCompleted.style.background = '#f3f4f6';
+      tabCompleted.style.borderColor = '#d1d5db';
+      tabCompleted.style.color = '#6b7280';
+    }
+  }
+  
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+}
+
+// 프로젝트 다시 진행하기 (완료 → 진행중)
+async function reopenProject(projectId, profile) {
+  try {
+    // 첫 번째 미완료 할일 찾기 또는 마지막 할일을 미완료로 변경
+    const { data: tasks, error: tasksError } = await supabase
+      .from('project_tasks')
+      .select('id')
+      .eq('project_id', projectId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (tasksError) throw tasksError;
+
+    if (tasks && tasks.length > 0) {
+      // 마지막 할일을 미완료로 변경
+      const { error: updateError } = await supabase
+        .from('project_tasks')
+        .update({ is_done: false, done_at: null })
+        .eq('id', tasks[0].id);
+
+      if (updateError) throw updateError;
+
+      // 연결된 todos도 미완료로 변경
+      await supabase
+        .from('todos')
+        .update({ is_done: false, done_at: null })
+        .eq('project_task_id', tasks[0].id);
+    }
+
+    // 진행중 탭으로 전환
+    activeProjectTab = 'in_progress';
+    expandedProjectId = projectId;
+    updateTabStyles();
+    await loadProjects(profile);
+  } catch (error) {
+    console.error('Error reopening project:', error);
+    alert('프로젝트 다시 진행 중 오류가 발생했습니다.');
   }
 }
 
