@@ -33,11 +33,14 @@ body {
 .card {
   background: var(--bg-primary);
   border-radius: 12px;
-  padding: 1.5rem; /* 상하좌우 모두 1.5rem */
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 1.75rem; /* 1.5rem → 1.75rem (더 넉넉한 여백) */
+  margin-bottom: 2rem; /* 1.5rem → 2rem (카드 간 간격 증가) */
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 16px rgba(0, 0, 0, 0.06); /* 레이어드 섀도우 */
   width: 100%; /* 좌우 크기 동일하게 */
   box-sizing: border-box; /* padding 포함 전체 너비 계산 */
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-header {
@@ -45,9 +48,11 @@ body {
 }
 
 .card-title {
-  font-size: 1.5rem;
+  font-size: 1.65rem; /* 1.5rem → 1.65rem (조금 더 크게) */
   font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.02em; /* 타이트한 자간 */
+  line-height: 1.2;
 }
 
 
@@ -59,18 +64,23 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  letter-spacing: -0.005em; /* 버튼 텍스트 자간 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 
+    0 2px 4px rgba(99, 102, 241, 0.15),
+    0 6px 12px rgba(99, 102, 241, 0.25); /* 레이어드 섀도우 */
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 
+    0 4px 8px rgba(99, 102, 241, 0.2),
+    0 12px 20px rgba(99, 102, 241, 0.3); /* 호버 시 더 깊은 그림자 */
 }
 
 .btn-secondary {
@@ -194,12 +204,14 @@ body {
   /* position: fixed 제거 - 일반 흐름으로 변경하여 스크롤 시 사라지도록 */
   background: linear-gradient(135deg, #f4f4f5 0%, #fafafa 100%); /* 현재 배경색 유지 */
   border-radius: 12px; /* 카드와 동일한 둥근 모서리 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* 카드 기본 스타일과 동일 */
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.03),
+    0 6px 12px rgba(0, 0, 0, 0.05); /* 레이어드 섀도우 */
   z-index: 1000;
   max-width: 1200px;
   margin: 0 auto;
   margin-top: 0.5rem; /* 상단 여백 */
-  margin-bottom: 1.5rem; /* 헤더와 콘텐츠 사이 간격 */
+  margin-bottom: 2rem; /* 1.5rem → 2rem (헤더와 콘텐츠 사이 간격 증가) */
   padding: 1rem; /* #app과 정확히 동일한 좌우 패딩 */
   box-sizing: border-box; /* 패딩 포함 너비 계산 */
 }
@@ -232,6 +244,7 @@ body {
   font-size: 1.75rem;
   font-weight: 700;
   color: #6366f1;
+  letter-spacing: -0.02em; /* 브랜드 텍스트 자간 */
 }
 
 /* 네비게이션 탭 (컨테이너 내부) */
@@ -274,7 +287,9 @@ body {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   border: transparent;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 
+    0 2px 4px rgba(99, 102, 241, 0.2),
+    0 4px 12px rgba(99, 102, 241, 0.25); /* 레이어드 섀도우 */
 }
 
 .nav-item i {
@@ -344,7 +359,9 @@ body {
 
 .nav-item-new:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 6px 12px rgba(0, 0, 0, 0.08); /* 레이어드 섀도우 */
 }
 
 .nav-item-new i {
@@ -518,7 +535,9 @@ body {
 .date-modal {
   background: white;
   border-radius: 1rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    0 20px 48px rgba(0, 0, 0, 0.15); /* 레이어드 모달 섀도우 */
   width: min(400px, 90vw);
   max-height: 90vh;
   overflow: hidden;
@@ -736,7 +755,9 @@ body {
   background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
   color: white;
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);
+  box-shadow: 
+    0 2px 4px rgba(251, 146, 60, 0.2),
+    0 4px 12px rgba(251, 146, 60, 0.25); /* 레이어드 섀도우 */
 }
 
 /* Job 활성 상태 */
@@ -744,7 +765,9 @@ body {
   background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
   color: white;
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(34, 211, 238, 0.3);
+  box-shadow: 
+    0 2px 4px rgba(34, 211, 238, 0.2),
+    0 4px 12px rgba(34, 211, 238, 0.25); /* 레이어드 섀도우 */
 }
 
 /* Growth 활성 상태 */
@@ -752,7 +775,9 @@ body {
   background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
   color: white;
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+  box-shadow: 
+    0 2px 4px rgba(167, 139, 250, 0.2),
+    0 4px 12px rgba(167, 139, 250, 0.25); /* 레이어드 섀도우 */
 }
 
 /* Personal 활성 상태 */
@@ -760,7 +785,9 @@ body {
   background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
   color: white;
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(244, 114, 182, 0.3);
+  box-shadow: 
+    0 2px 4px rgba(244, 114, 182, 0.2),
+    0 4px 12px rgba(244, 114, 182, 0.25); /* 레이어드 섀도우 */
 }
 
 /* 입력 필드 */
@@ -771,13 +798,15 @@ input[type="date"] {
   border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 전환 */
 }
 
 input[type="text"]:focus,
 input[type="date"]:focus {
   outline: none;
   border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08); /* 포커스 글로우 효과 */
+  transform: scale(1.005); /* 미세 확대 */
 }
 
 /* 에러 메시지 */
