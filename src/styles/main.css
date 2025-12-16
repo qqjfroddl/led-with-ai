@@ -11,6 +11,21 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
   --border-color: #e5e7eb;
+  
+  /* 프리미엄 색상 팔레트 */
+  --primary-blue: #5B5FC7; /* 기존 #6366f1 → 더 깊은 인디고 */
+  --primary-purple: #9284BE; /* 기존 #a78bfa → 더 차분한 라벤더 */
+  --primary-gradient: linear-gradient(135deg, #5B5FC7 0%, #8B7AB8 100%);
+  
+  /* 카테고리 색상 (조금 더 차분하게) */
+  --work-primary: #F59E42; /* 기존 #fb923c → 약간 차분한 오렌지 */
+  --work-secondary: #E8922E;
+  --job-primary: #22C7DD; /* 기존 #22d3ee → 약간 차분한 시안 */
+  --job-secondary: #1AACBE;
+  --growth-primary: #9B8CD9; /* 기존 #a78bfa → 더 차분한 보라 */
+  --growth-secondary: #8678C7;
+  --personal-primary: #E66BA4; /* 기존 #f472b6 → 약간 차분한 핑크 */
+  --personal-secondary: #D65590;
 }
 
 body {
@@ -69,18 +84,18 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--primary-gradient);
   color: white;
   box-shadow: 
-    0 2px 4px rgba(99, 102, 241, 0.15),
-    0 6px 12px rgba(99, 102, 241, 0.25); /* 레이어드 섀도우 */
+    0 2px 4px rgba(91, 95, 199, 0.15),
+    0 6px 12px rgba(91, 95, 199, 0.25); /* 레이어드 섀도우 */
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 
-    0 4px 8px rgba(99, 102, 241, 0.2),
-    0 12px 20px rgba(99, 102, 241, 0.3); /* 호버 시 더 깊은 그림자 */
+    0 4px 8px rgba(91, 95, 199, 0.2),
+    0 12px 20px rgba(91, 95, 199, 0.3); /* 호버 시 더 깊은 그림자 */
 }
 
 .btn-secondary {
@@ -236,14 +251,14 @@ body {
 .brand-mark {
   width: 28px;
   height: 28px;
-  color: #6366f1;
+  color: var(--primary-blue);
   stroke-width: 2.5;
 }
 
 .brand-text {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #6366f1;
+  color: var(--primary-blue);
   letter-spacing: -0.02em; /* 브랜드 텍스트 자간 */
 }
 
@@ -284,12 +299,12 @@ body {
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--primary-gradient);
   color: white;
   border: transparent;
   box-shadow: 
-    0 2px 4px rgba(99, 102, 241, 0.2),
-    0 4px 12px rgba(99, 102, 241, 0.25); /* 레이어드 섀도우 */
+    0 2px 4px rgba(91, 95, 199, 0.2),
+    0 4px 12px rgba(91, 95, 199, 0.25); /* 레이어드 섀도우 */
 }
 
 .nav-item i {
@@ -397,7 +412,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -464,7 +479,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #6366f1;
+  background: var(--primary-blue);
   color: white;
   border: none;
   border-radius: 999px;
@@ -475,7 +490,7 @@ body {
 }
 
 .date-display-btn:hover {
-  background: #4f46e5;
+  background: #4A4EB0; /* 더 어두운 인디고 */
   transform: translateY(-1px);
 }
 
@@ -497,16 +512,16 @@ body {
   gap: 0.375rem;
   padding: 0.375rem 0.875rem;
   font-size: 0.875rem;
-  background: #e0e7ff;
+  background: #E8EBFA; /* 더 차분한 연보라 */
   color: #1f2937;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(91, 95, 199, 0.2);
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .date-today-btn:hover {
-  background: #c7d2fe;
+  background: #D4D9F5;
   transform: translateY(-1px);
 }
 
@@ -752,42 +767,42 @@ body {
 
 /* Work 활성 상태 */
 .category-tab[data-category="work"].active {
-  background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+  background: linear-gradient(135deg, var(--work-primary) 0%, var(--work-secondary) 100%);
   color: white;
   border-color: transparent;
   box-shadow: 
-    0 2px 4px rgba(251, 146, 60, 0.2),
-    0 4px 12px rgba(251, 146, 60, 0.25); /* 레이어드 섀도우 */
+    0 2px 4px rgba(245, 158, 66, 0.2),
+    0 4px 12px rgba(245, 158, 66, 0.25); /* 레이어드 섀도우 */
 }
 
 /* Job 활성 상태 */
 .category-tab[data-category="job"].active {
-  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, var(--job-primary) 0%, var(--job-secondary) 100%);
   color: white;
   border-color: transparent;
   box-shadow: 
-    0 2px 4px rgba(34, 211, 238, 0.2),
-    0 4px 12px rgba(34, 211, 238, 0.25); /* 레이어드 섀도우 */
+    0 2px 4px rgba(34, 199, 221, 0.2),
+    0 4px 12px rgba(34, 199, 221, 0.25); /* 레이어드 섀도우 */
 }
 
 /* Growth 활성 상태 */
 .category-tab[data-category="self_dev"].active {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, var(--growth-primary) 0%, var(--growth-secondary) 100%);
   color: white;
   border-color: transparent;
   box-shadow: 
-    0 2px 4px rgba(167, 139, 250, 0.2),
-    0 4px 12px rgba(167, 139, 250, 0.25); /* 레이어드 섀도우 */
+    0 2px 4px rgba(155, 140, 217, 0.2),
+    0 4px 12px rgba(155, 140, 217, 0.25); /* 레이어드 섀도우 */
 }
 
 /* Personal 활성 상태 */
 .category-tab[data-category="personal"].active {
-  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, var(--personal-primary) 0%, var(--personal-secondary) 100%);
   color: white;
   border-color: transparent;
   box-shadow: 
-    0 2px 4px rgba(244, 114, 182, 0.2),
-    0 4px 12px rgba(244, 114, 182, 0.25); /* 레이어드 섀도우 */
+    0 2px 4px rgba(230, 107, 164, 0.2),
+    0 4px 12px rgba(230, 107, 164, 0.25); /* 레이어드 섀도우 */
 }
 
 /* 입력 필드 */
@@ -804,8 +819,8 @@ input[type="date"] {
 input[type="text"]:focus,
 input[type="date"]:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08); /* 포커스 글로우 효과 */
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.08); /* 포커스 글로우 효과 */
   transform: scale(1.005); /* 미세 확대 */
 }
 
