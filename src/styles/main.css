@@ -26,6 +26,15 @@
   --growth-secondary: #8678C7;
   --personal-primary: #E66BA4; /* 기존 #f472b6 → 약간 차분한 핑크 */
   --personal-secondary: #D65590;
+  
+  /* 여백 시스템 (8px 기반) */
+  --spacing-xs: 0.5rem;   /* 8px */
+  --spacing-sm: 0.75rem;  /* 12px */
+  --spacing-md: 1rem;     /* 16px */
+  --spacing-lg: 1.5rem;   /* 24px */
+  --spacing-xl: 2rem;     /* 32px */
+  --spacing-2xl: 2.5rem;  /* 40px */
+  --spacing-3xl: 3rem;    /* 48px */
 }
 
 body {
@@ -48,18 +57,26 @@ body {
 .card {
   background: var(--bg-primary);
   border-radius: 12px;
-  padding: 1.75rem; /* 1.5rem → 1.75rem (더 넉넉한 여백) */
-  margin-bottom: 2rem; /* 1.5rem → 2rem (카드 간 간격 증가) */
+  padding: 1.75rem;
+  margin-bottom: var(--spacing-xl); /* 카드 간 간격 시스템화 */
   box-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.04),
     0 8px 16px rgba(0, 0, 0, 0.06); /* 레이어드 섀도우 */
   width: 100%; /* 좌우 크기 동일하게 */
   box-sizing: border-box; /* padding 포함 전체 너비 계산 */
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 카드 호버 효과 (프리미엄 인터랙션) */
+.card:hover {
+  transform: translateY(-2px) scale(1.002); /* 미세한 스케일 추가 */
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.09); /* 호버 시 더 깊은 그림자 */
 }
 
 .card-header {
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
 }
 
 .card-title {
@@ -81,6 +98,27 @@ body {
   cursor: pointer;
   letter-spacing: -0.005em; /* 버튼 텍스트 자간 */
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+  position: relative;
+  overflow: hidden;
+}
+
+/* 버튼 호버 시 미묘한 빛나는 효과 */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-primary {
@@ -101,14 +139,19 @@ body {
 .btn-secondary {
   background: #e5e7eb;
   color: var(--text-primary);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-secondary:hover {
   background: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.12); /* 세컨더리 버튼에도 호버 섀도우 */
 }
 
 .btn-sm {
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-xs) var(--spacing-md);
   font-size: 0.875rem;
 }
 
@@ -217,7 +260,7 @@ body {
 /* 앱 헤더 컨테이너 (통합) */
 .app-header-container {
   /* position: fixed 제거 - 일반 흐름으로 변경하여 스크롤 시 사라지도록 */
-  background: linear-gradient(135deg, #f4f4f5 0%, #fafafa 100%); /* 현재 배경색 유지 */
+  background: linear-gradient(160deg, #f4f4f5 0%, #fafafa 100%); /* 각도 변경: 135deg → 160deg (더 부드러운 각도) */
   border-radius: 12px; /* 카드와 동일한 둥근 모서리 */
   box-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.03),
@@ -225,9 +268,9 @@ body {
   z-index: 1000;
   max-width: 1200px;
   margin: 0 auto;
-  margin-top: 0.5rem; /* 상단 여백 */
-  margin-bottom: 2rem; /* 1.5rem → 2rem (헤더와 콘텐츠 사이 간격 증가) */
-  padding: 1rem; /* #app과 정확히 동일한 좌우 패딩 */
+  margin-top: var(--spacing-sm); /* 상단 여백 */
+  margin-bottom: var(--spacing-xl); /* 헤더와 콘텐츠 사이 간격 */
+  padding: var(--spacing-md); /* 패딩 시스템화 */
   box-sizing: border-box; /* 패딩 포함 너비 계산 */
 }
 
@@ -236,15 +279,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-xs);
   flex-shrink: 0;
 }
 
@@ -280,14 +323,14 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
   text-decoration: none;
   color: #1f2937;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   background: #e5e7eb;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
   font-size: 0.95rem;
 }
@@ -295,7 +338,10 @@ body {
 .nav-item:hover {
   background: #d1d5db;
   border-color: #9ca3af;
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.01); /* 미세 스케일 추가 */
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 4px 8px rgba(0, 0, 0, 0.08); /* 호버 섀도우 추가 */
 }
 
 .nav-item.active {
@@ -388,7 +434,7 @@ body {
 .user-box {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
   flex-shrink: 0;
 }
 
@@ -396,7 +442,7 @@ body {
   display: flex;
   flex-direction: row; /* 가로 배치: 프로필 이미지 + 이름 */
   align-items: center;
-  gap: 0.75rem; /* 이미지와 이름 사이 간격 */
+  gap: var(--spacing-sm); /* 이미지와 이름 사이 간격 */
 }
 
 .user-avatar {
@@ -454,19 +500,22 @@ body {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 0.5rem;
+  padding: var(--spacing-xs);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: #6b7280;
 }
 
 .date-nav-btn:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.05); /* 미세 스케일 추가 */
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 4px 8px rgba(0, 0, 0, 0.1); /* 호버 섀도우 */
 }
 
 .date-nav-btn i {
@@ -477,8 +526,8 @@ body {
 .date-display-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
   background: var(--primary-blue);
   color: white;
   border: none;
@@ -486,12 +535,15 @@ body {
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .date-display-btn:hover {
   background: #4A4EB0; /* 더 어두운 인디고 */
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02); /* 미세 스케일 추가 */
+  box-shadow: 
+    0 2px 4px rgba(91, 95, 199, 0.2),
+    0 6px 12px rgba(91, 95, 199, 0.3); /* 호버 섀도우 */
 }
 
 .date-display-btn i {
@@ -767,7 +819,7 @@ body {
 
 /* Work 활성 상태 */
 .category-tab[data-category="work"].active {
-  background: linear-gradient(135deg, var(--work-primary) 0%, var(--work-secondary) 100%);
+  background: linear-gradient(120deg, var(--work-primary) 0%, var(--work-secondary) 100%); /* 각도 변경 */
   color: white;
   border-color: transparent;
   box-shadow: 
@@ -777,7 +829,7 @@ body {
 
 /* Job 활성 상태 */
 .category-tab[data-category="job"].active {
-  background: linear-gradient(135deg, var(--job-primary) 0%, var(--job-secondary) 100%);
+  background: linear-gradient(120deg, var(--job-primary) 0%, var(--job-secondary) 100%); /* 각도 변경 */
   color: white;
   border-color: transparent;
   box-shadow: 
@@ -787,7 +839,7 @@ body {
 
 /* Growth 활성 상태 */
 .category-tab[data-category="self_dev"].active {
-  background: linear-gradient(135deg, var(--growth-primary) 0%, var(--growth-secondary) 100%);
+  background: linear-gradient(120deg, var(--growth-primary) 0%, var(--growth-secondary) 100%); /* 각도 변경 */
   color: white;
   border-color: transparent;
   box-shadow: 
@@ -797,7 +849,7 @@ body {
 
 /* Personal 활성 상태 */
 .category-tab[data-category="personal"].active {
-  background: linear-gradient(135deg, var(--personal-primary) 0%, var(--personal-secondary) 100%);
+  background: linear-gradient(120deg, var(--personal-primary) 0%, var(--personal-secondary) 100%); /* 각도 변경 */
   color: white;
   border-color: transparent;
   box-shadow: 
@@ -857,11 +909,20 @@ input[type="date"]:focus {
 /* 반응형 */
 @media (max-width: 768px) {
   #app {
-    padding: 0.75rem;
+    padding: var(--spacing-sm);
   }
 
   .card {
-    padding: 1rem;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg); /* 모바일에서 간격 축소 */
+  }
+  
+  /* 모바일에서 카드 호버 효과 비활성화 (터치 디바이스) */
+  .card:hover {
+    transform: none;
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 8px 16px rgba(0, 0, 0, 0.06);
   }
 
   .bottom-navigation {
@@ -875,12 +936,12 @@ input[type="date"]:focus {
 
   .category-tabs {
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: var(--spacing-xs);
   }
 
   .category-tab {
-    flex: 1 1 calc(50% - 0.25rem);
+    flex: 1 1 calc(50% - var(--spacing-xs));
     font-size: 0.85rem;
-    padding: 0.4rem 0.75rem;
+    padding: 0.4rem var(--spacing-sm);
   }
 }
