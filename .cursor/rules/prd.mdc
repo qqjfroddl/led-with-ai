@@ -1163,24 +1163,46 @@ alwaysApply: true
 - **부드러움**: 파스텔 톤 + 그라데이션
 - **레이아웃**: 중앙 정렬, 균등 분배
 
-## B2) 색상 시스템
+## B2) 색상 시스템 ✅ 2025-01-21 업데이트
 
-### 카테고리 색상
-| 카테고리 | 메인 색상 | 그라데이션 | 배경 | 보더 | Lucide 아이콘 |
-|---------|----------|-----------|------|------|---------------|
-| Work | #fb923c | #fb923c → #f59e0b | #fff7e6 | #f5d38f | `briefcase` |
-| Job | #22d3ee | #22d3ee → #06b6d4 | #e7f8ff | #b5e6ff | `clipboard-list` |
-| Growth | #a78bfa | #a78bfa → #8b5cf6 | #f4e9ff | #d8c7ff | `book-open` |
-| Personal | #f472b6 | #f472b6 → #ec4899 | #ffe9f0 | #f8c7d6 | `home` |
+### 프리미엄 색상 팔레트 (CSS 변수)
+```css
+/* Primary 색상 - 더 깊고 차분한 톤 */
+--primary-blue: #5B5FC7;      /* 기존 #6366f1 → 더 깊은 인디고 */
+--primary-purple: #9284BE;    /* 기존 #a78bfa → 더 차분한 라벤더 */
+--primary-gradient: linear-gradient(135deg, #5B5FC7 0%, #8B7AB8 100%);
 
-### 섹션별 색상 (구현됨)
+/* 카테고리 색상 - 약간 더 성숙한 톤 */
+--work-primary: #F59E42;      /* 기존 #fb923c → 차분한 오렌지 */
+--work-secondary: #E8922E;
+--job-primary: #22C7DD;       /* 기존 #22d3ee → 차분한 시안 */
+--job-secondary: #1AACBE;
+--growth-primary: #9B8CD9;    /* 기존 #a78bfa → 더 차분한 보라 */
+--growth-secondary: #8678C7;
+--personal-primary: #E66BA4;  /* 기존 #f472b6 → 차분한 핑크 */
+--personal-secondary: #D65590;
+```
+
+### 카테고리 색상 (업데이트됨)
+| 카테고리 | 메인 색상 | 그라데이션 (120deg) | 배경 | 보더 | Lucide 아이콘 |
+|---------|----------|-------------------|------|------|---------------|
+| Work | #F59E42 | #F59E42 → #E8922E | #fff7e6 | #f5d38f | `briefcase` |
+| Job | #22C7DD | #22C7DD → #1AACBE | #e7f8ff | #b5e6ff | `clipboard-list` |
+| Growth | #9B8CD9 | #9B8CD9 → #8678C7 | #f4e9ff | #d8c7ff | `book-open` |
+| Personal | #E66BA4 | #E66BA4 → #D65590 | #ffe9f0 | #f8c7d6 | `home` |
+
+**그라데이션 각도**: 카테고리 탭은 120deg (기본 135deg보다 더 부드러운 각도)
+
+### 섹션별 색상 (업데이트됨)
 | 섹션 | 배경 그라데이션 | 보더 | 아이콘 배경 | 아이콘 |
 |---|---|---|---|---|
-| 앱 헤더 | #f4f4f5 → #fafafa | #e5e7eb | - | `sparkles` |
+| 앱 헤더 | 160deg: #f4f4f5 → #fafafa | #e5e7eb | - | `sparkles` |
 | 오늘 루틴 | #e0f7f4 → #f0fdf4 | #14b8a6 | #14b8a6 → #10b981 | `target` |
-| 오늘 할일 | #eef2ff → #f5f3ff | #6366f1 | #6366f1 → #8b5cf6 | `list-checks` |
-| 월간 데일리 루틴 | #f0e7ff → #fce7f3 | #a78bfa | #a78bfa → #c084fc | `repeat` |
-| 하루 성찰 | #f3e8ff → #fce7f3 | #a78bfa | #a78bfa → #c084fc | `pen-square` |
+| 오늘 할일 | #eef2ff → #f5f3ff | #5B5FC7 | #5B5FC7 → #8B7AB8 | `list-checks` |
+| 월간 데일리 루틴 | #f0e7ff → #fce7f3 | #9B8CD9 | #9B8CD9 → #8678C7 | `repeat` |
+| 하루 성찰 | #f3e8ff → #fce7f3 | #9B8CD9 | #9B8CD9 → #8678C7 | `pen-square` |
+
+**그라데이션 각도 다양화**: 헤더 160deg (더 부드러운 각도), 카드는 135deg 유지
 
 ### 상태 색상
 | 상태 | 색상 | 용도 |
@@ -1189,14 +1211,63 @@ alwaysApply: true
 | 포기 | #ef4444 (빨강) | "× 포기함" 배지 |
 | 완료 | #6b7280 (회색) | 체크된 할일 |
 | 모닝 | #f59e0b (주황) | 모닝루틴 아이콘 |
-| 나이트 | #6366f1 (인디고) | 나이트루틴 아이콘 |
+| 나이트 | #5B5FC7 (인디고) | 나이트루틴 아이콘 |
 
-## B3) 타이포그래피
-- **브랜드 이름**: 1.75rem, font-weight: 700, color: #6366f1
-- **제목**: 1.5rem, font-weight: 700
+## B3) 타이포그래피 ✅ 2025-01-21 업데이트
+- **브랜드 이름**: 1.75rem, font-weight: 700, color: #5B5FC7, letter-spacing: -0.02em
+- **제목**: 1.65rem (기존 1.5rem), font-weight: 700, letter-spacing: -0.02em, line-height: 1.2
+- **버튼**: 1rem, font-weight: 600, letter-spacing: -0.005em
 - **카테고리**: 0.95rem, font-weight: 600
 - **본문**: 1rem, font-weight: 500
 - **보조**: 0.85rem, color: #6b7280
+
+**타이트한 자간 (letter-spacing)**: 모던하고 세련된 느낌을 위해 음수 자간 적용
+
+## B3-1) 여백 시스템 ✅ 2025-01-21 추가
+```css
+/* 8px 기반 여백 시스템 (CSS 변수) */
+--spacing-xs:  0.5rem   /* 8px */
+--spacing-sm:  0.75rem  /* 12px */
+--spacing-md:  1rem     /* 16px */
+--spacing-lg:  1.5rem   /* 24px */
+--spacing-xl:  2rem     /* 32px */
+--spacing-2xl: 2.5rem   /* 40px */
+--spacing-3xl: 3rem     /* 48px */
+```
+
+**사용 예시:**
+- 카드 패딩: `var(--spacing-xl)` 또는 1.75rem
+- 카드 간격: `var(--spacing-xl)` (2rem)
+- 버튼 패딩: `var(--spacing-xs) var(--spacing-md)`
+- 헤더 간격: `var(--spacing-lg)`
+
+## B3-2) 레이어드 섀도우 시스템 ✅ 2025-01-21 추가
+```css
+/* Level 1: 카드 기본 */
+box-shadow: 
+  0 2px 4px rgba(0, 0, 0, 0.04),
+  0 8px 16px rgba(0, 0, 0, 0.06);
+
+/* Level 2: 버튼/탭 활성 */
+box-shadow: 
+  0 2px 4px rgba(색상, 0.15),
+  0 6px 12px rgba(색상, 0.25);
+
+/* Level 3: 모달 */
+box-shadow: 
+  0 8px 16px rgba(0, 0, 0, 0.1),
+  0 20px 48px rgba(0, 0, 0, 0.15);
+
+/* 호버 효과: 그림자 더 깊게 */
+box-shadow: 
+  0 4px 8px rgba(0, 0, 0, 0.06),
+  0 12px 24px rgba(0, 0, 0, 0.09);
+```
+
+**레이어드 섀도우 원칙:**
+1. 가까운 그림자 (작은 blur, 진한 투명도)
+2. 먼 그림자 (큰 blur, 연한 투명도)
+3. 두 레이어로 입체감 극대화
 
 ## B4) 컴포넌트
 
@@ -1230,28 +1301,40 @@ alwaysApply: true
   - border-radius: 8px
   
 선택 (활성): 
-  - 배경: 카테고리별 그라데이션
-    * Work: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)
-    * Job: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)
-    * Growth: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)
-    * Personal: linear-gradient(135deg, #f472b6 0%, #ec4899 100%)
+  - 배경: 카테고리별 그라데이션 (120deg 각도)
+    * Work: linear-gradient(120deg, #F59E42 0%, #E8922E 100%)
+    * Job: linear-gradient(120deg, #22C7DD 0%, #1AACBE 100%)
+    * Growth: linear-gradient(120deg, #9B8CD9 0%, #8678C7 100%)
+    * Personal: linear-gradient(120deg, #E66BA4 0%, #D65590 100%)
   - 보더: transparent
   - 텍스트: white
-  - box-shadow: 0 2px 8px rgba(색상, 0.3)
+  - box-shadow (레이어드): 
+    * 0 2px 4px rgba(색상, 0.2)
+    * 0 4px 12px rgba(색상, 0.25)
   
 호버 (비활성): 
   - 배경: #d1d5db
   - 보더: #9ca3af
-  - transform: translateY(-1px)
+  - transform: translateY(-1px) scale(1.01)  /* 미세 스케일 추가 */
+  - box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.08)
 ```
 
-### 카드 (Cards)
+### 카드 (Cards) ✅ 2025-01-21 업데이트
 ```css
 배경: 카테고리별 파스텔 배경색 + 그라데이션
 보더: 카테고리별 보더 색상 (2px solid)
-그림자: 0 8px 24px rgba(색상, 0.15)
+그림자 (레이어드): 
+  - 0 2px 4px rgba(0, 0, 0, 0.04)  /* 가까운 그림자 */
+  - 0 8px 16px rgba(0, 0, 0, 0.06)  /* 먼 그림자 */
 둥근 모서리: 12px
+패딩: 1.75rem (기존 1.5rem → 더 넉넉)
+간격: 2rem (기존 1.5rem → 더 넉넉)
 아이콘 배경: 그라데이션 박스 (40px × 40px, border-radius: 12px)
+전환: cubic-bezier(0.4, 0, 0.2, 1) 0.3s
+
+호버 효과:
+  - transform: translateY(-2px) scale(1.002)  /* 미세 스케일 */
+  - box-shadow: 0 4px 8px rgba(0,0,0,0.06), 0 12px 24px rgba(0,0,0,0.09)
 ```
 
 ### 할일 카테고리 섹션 (구현됨)
@@ -1297,26 +1380,38 @@ padding: 12px
 둥근 모서리: 999px (완전 둥글게)
 ```
 
-### 버튼 (Buttons)
+### 버튼 (Buttons) ✅ 2025-01-21 업데이트
 ```css
 기본 버튼 (.btn):
-  - padding: 0.625rem 1.25rem
+  - padding: 0.75rem 1.5rem
   - font-size: 1rem
   - font-weight: 600
+  - letter-spacing: -0.005em
   - border-radius: 8px
-  - transition: all 0.2s
-  - 호버: transform: translateY(-1px), box-shadow 증가
+  - transition: cubic-bezier(0.4, 0, 0.2, 1) 0.25s
+  - 호버: transform: translateY(-2px), box-shadow 증가
+  - 물결 효과: ::before 가상 요소로 빛나는 효과
 
 Primary 버튼 (.btn-primary):
-  - 배경: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)
+  - 배경: var(--primary-gradient) (135deg)
   - 색상: white
+  - box-shadow (레이어드): 
+    * 0 2px 4px rgba(91, 95, 199, 0.15)
+    * 0 6px 12px rgba(91, 95, 199, 0.25)
+  - 호버: translateY(-2px), 더 깊은 그림자
+
+Secondary 버튼 (.btn-secondary):
+  - 배경: #e5e7eb
+  - 호버: 
+    * transform: translateY(-1px)
+    * box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.12)
 
 하루 성찰 작성 버튼:
-  - 배경: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)
+  - 배경: linear-gradient(135deg, #9B8CD9 0%, #8678C7 100%)
   - 색상: white
   - border-radius: 12px
-  - box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3)
-  - 호버: transform: translateY(-2px), box-shadow: 0 6px 16px rgba(167, 139, 250, 0.4)
+  - box-shadow: 레이어드
+  - 호버: transform: translateY(-2px), 더 깊은 그림자
   - 아이콘: pen-square (20px × 20px)
 ```
 
@@ -1373,6 +1468,53 @@ Primary 버튼 (.btn-primary):
   - 호버: 배경 #4b5563, transform: translateY(-2px)
   - 활성: 배경 #1f2937
   - 중앙 정렬: left: 50%, transform: translateX(-50%)
+```
+
+## B4-1) 인터랙션 가이드라인 ✅ 2025-01-21 추가
+
+### 애니메이션 이징
+```css
+/* 모든 전환에 사용 */
+transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* 카드는 더 느리게 */
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+### 호버 효과 패턴
+```css
+/* 카드 */
+transform: translateY(-2px) scale(1.002);
+box-shadow: 더 깊은 레이어드 그림자;
+
+/* 버튼 */
+transform: translateY(-2px);
+box-shadow: 더 깊은 레이어드 그림자;
+::before 물결 효과 (width/height 0 → 300px);
+
+/* 네비게이션 탭 */
+transform: translateY(-1px) scale(1.01);
+box-shadow: 0 2px 4px, 0 4px 8px;
+
+/* 날짜 버튼 */
+transform: translateY(-1px) scale(1.02-1.05);
+box-shadow: 레이어드;
+
+/* 입력 필드 포커스 */
+border-color: var(--primary-blue);
+box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.08); /* 글로우 */
+transform: scale(1.005); /* 미세 확대 */
+```
+
+### 모바일 최적화
+```css
+/* 터치 디바이스에서 호버 효과 비활성화 */
+@media (max-width: 768px) {
+  .card:hover {
+    transform: none;
+    box-shadow: 원래 그림자 유지;
+  }
+}
 ```
 
 ## B5) 아이콘 사용 규칙
