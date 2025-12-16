@@ -7,9 +7,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    target: 'esnext', // Top-level await 지원
+    minify: 'esbuild'
   }
 });
+
 
 
 
