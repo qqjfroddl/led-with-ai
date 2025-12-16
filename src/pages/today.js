@@ -554,6 +554,7 @@ async function toggleRoutineCheck(routineId, date, profile, checked) {
 let todos = []; // 전역 변수로 todos 저장 (순서 변경 함수에서 사용)
 let currentFilter = 'today'; // 현재 필터 상태 (today/future/past)
 let addingTodo = false; // 중복 방지 플래그
+let syncingTodo = false; // 동기화 플래그 (무한 루프 방지)
 
 async function loadTodos(date, profile, timezone = 'Asia/Seoul') {
   try {
@@ -1051,19 +1052,71 @@ function bindTodoEvents(date, profile, timezone) {
 }
 
 async function toggleTodoDone(todoId, isDone) {
+  if (syncingTodo) return; // 동기화 중이면 무시
+  
   try {
-    const { error } = await supabase
+    syncingTodo = true;
+    
+    // todos 업데이트
+    const { data: todo, error: todoError } = await supabase
       .from('todos')
       .update({
         is_done: isDone,
         done_at: isDone ? new Date().toISOString() : null
       })
-      .eq('id', todoId);
+      .eq('id', todoId)
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (todoError) throw todoError;
+
+    // 동기화: project_task_id가 있으면 프로젝트 할일도 업데이트
+    if (todo && todo.project_task_id) {
+      // 모든 연결된 todos 조회
+      const { data: allTodos, error: todosError } = await supabase
+        .from('todos')
+        .select('is_done')
+        .eq('project_task_id', todo.project_task_id)
+        .is('deleted_at', null);
+
+      if (todosError) {
+        console.error('Error fetching todos for sync:', todosError);
+      } else if (allTodos && allTodos.length > 0) {
+        // 모든 todos가 완료되었는지 확인
+        const allDone = allTodos.every(t => t.is_done);
+        
+        const { error: projectTaskError } = await supabase
+          .from('project_tasks')
+          .update({
+            is_done: allDone,
+            done_at: allDone ? new Date().toISOString() : null
+          })
+          .eq('id', todo.project_task_id);
+
+        if (projectTaskError) {
+          console.error('Error syncing project task:', projectTaskError);
+          // 프로젝트 할일 동기화 실패해도 계속 진행
+        }
+      } else {
+        // todos가 없으면 프로젝트 할일도 미완료로 설정
+        const { error: projectTaskError } = await supabase
+          .from('project_tasks')
+          .update({
+            is_done: false,
+            done_at: null
+          })
+          .eq('id', todo.project_task_id);
+
+        if (projectTaskError) {
+          console.error('Error syncing project task (no todos):', projectTaskError);
+        }
+      }
+    }
   } catch (error) {
     console.error('Error toggling todo:', error);
     alert('할일 상태 변경 중 오류가 발생했습니다.');
+  } finally {
+    syncingTodo = false;
   }
 }
 
@@ -1088,12 +1141,28 @@ async function saveTodoEdit(todoId, newTitle, date, profile, timezone = 'Asia/Se
   }
 
   try {
-    const { error } = await supabase
+    // todos 업데이트
+    const { data: todo, error: todoError } = await supabase
       .from('todos')
       .update({ title: newTitle.trim() })
-      .eq('id', todoId);
+      .eq('id', todoId)
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (todoError) throw todoError;
+
+    // 동기화: project_task_id가 있으면 프로젝트 할일도 업데이트
+    if (todo && todo.project_task_id) {
+      const { error: projectTaskError } = await supabase
+        .from('project_tasks')
+        .update({ title: newTitle.trim() })
+        .eq('id', todo.project_task_id);
+
+      if (projectTaskError) {
+        console.error('Error syncing project task title:', projectTaskError);
+        // 프로젝트 할일 동기화 실패해도 계속 진행
+      }
+    }
 
     editingTodoId = null;
     editingTodoValue = '';
@@ -1255,6 +1324,7 @@ async function fetchCarryoverTodos(profile, timezone = 'Asia/Seoul') {
       .is('deleted_at', null)
       .is('carried_over_at', null)
       .is('skipped_at', null)
+      // project_task_id 조건 제거 - 프로젝트 할일도 포함
       .order('date', { ascending: false })
       .order('created_at', { ascending: true });
 
@@ -1438,7 +1508,59 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
       return;
     }
 
-    // 오늘로 복제 (새 ID 생성)
+    // 프로젝트 할일인 경우: 오늘 날짜에 이미 등록된 할일이 있는지 확인
+    if (originalTodo.project_task_id) {
+      const { data: existingTodo } = await supabase
+        .from('todos')
+        .select('id')
+        .eq('project_task_id', originalTodo.project_task_id)
+        .eq('date', today)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (existingTodo) {
+        // 이미 등록되어 있으면 새로 생성하지 않고 원본만 처리
+        const { error: updateError } = await supabase
+          .from('todos')
+          .update({ carried_over_at: new Date().toISOString() })
+          .eq('id', todoId);
+
+        if (updateError) throw updateError;
+        
+        // 모달에서 해당 항목 처리 표시
+        const todoItem = document.querySelector(`.carryover-todo-item[data-todo-id="${todoId}"]`);
+        if (todoItem) {
+          todoItem.setAttribute('data-processed', 'true');
+          todoItem.style.opacity = '0.5';
+          todoItem.style.pointerEvents = 'none';
+          const carryBtn = todoItem.querySelector('.carryover-carry-btn');
+          const skipBtn = todoItem.querySelector('.carryover-skip-btn');
+          if (carryBtn) {
+            carryBtn.textContent = '이미 등록됨';
+            carryBtn.style.background = '#d1fae5';
+            carryBtn.style.color = '#059669';
+            carryBtn.disabled = true;
+          }
+          if (skipBtn) skipBtn.style.display = 'none';
+        }
+
+        // 오늘 할일 목록 새로고침
+        await loadTodos(today, profile, timezone);
+
+        // 남은 항목이 없으면 모달 닫기
+        setTimeout(() => {
+          const remainingItems = document.querySelectorAll('.carryover-todo-item:not([data-processed="true"])');
+          if (remainingItems.length === 0) {
+            markCarryoverModalShown(timezone);
+            const modal = document.getElementById('carryover-modal');
+            if (modal) modal.style.display = 'none';
+          }
+        }, 100);
+        return;
+      }
+    }
+
+    // 일반 할일 또는 프로젝트 할일(중복 없음) - 오늘로 복제
     const { data: newTodo, error: insertError } = await supabase
       .from('todos')
       .insert({
@@ -1452,12 +1574,41 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
         pinned: originalTodo.pinned,
         is_done: false,
         done_at: null,
-        display_order: null
+        display_order: null,
+        project_task_id: originalTodo.project_task_id || null  // 프로젝트 할일인 경우 동기화 유지
       })
       .select()
       .single();
 
     if (insertError) throw insertError;
+
+    // 프로젝트 할일인 경우: 마감날짜가 지난 날짜면 오늘로 업데이트
+    if (originalTodo.project_task_id) {
+      // project_tasks 테이블에서 실제 마감날짜 조회
+      const { data: projectTask, error: taskFetchError } = await supabase
+        .from('project_tasks')
+        .select('due_date')
+        .eq('id', originalTodo.project_task_id)
+        .single();
+
+      if (!taskFetchError && projectTask && projectTask.due_date) {
+        const originalDueDate = new Date(projectTask.due_date);
+        const todayDate = new Date(today);
+        
+        // 마감날짜가 오늘 이전이면 오늘로 업데이트
+        if (originalDueDate < todayDate) {
+          const { error: dateUpdateError } = await supabase
+            .from('project_tasks')
+            .update({ due_date: today })
+            .eq('id', originalTodo.project_task_id);
+
+          if (dateUpdateError) {
+            console.error('Error updating project task due_date:', dateUpdateError);
+            // 마감날짜 업데이트 실패해도 계속 진행 (치명적이지 않음)
+          }
+        }
+      }
+    }
 
     // 원본에 carried_over_at 기록
     const { error: updateError } = await supabase
@@ -1540,6 +1691,15 @@ async function carryOverAllTodos(profile, timezone = 'Asia/Seoul') {
 // 할일 포기 (원본에 skipped_at 기록)
 async function skipTodo(todoId, profile, timezone = 'Asia/Seoul') {
   try {
+    // 원본 할일 조회 (project_task_id 확인용)
+    const { data: todo, error: fetchError } = await supabase
+      .from('todos')
+      .select('project_task_id')
+      .eq('id', todoId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
     // 원본에 skipped_at 기록
     const { error } = await supabase
       .from('todos')
@@ -1547,6 +1707,19 @@ async function skipTodo(todoId, profile, timezone = 'Asia/Seoul') {
       .eq('id', todoId);
 
     if (error) throw error;
+
+    // 프로젝트 할일인 경우: 마감날짜를 NULL로 변경 (포기 처리)
+    if (todo && todo.project_task_id) {
+      const { error: dateUpdateError } = await supabase
+        .from('project_tasks')
+        .update({ due_date: null })
+        .eq('id', todo.project_task_id);
+
+      if (dateUpdateError) {
+        console.error('Error updating project task due_date (skip):', dateUpdateError);
+        // 마감날짜 업데이트 실패해도 계속 진행
+      }
+    }
 
     // 모달에서 해당 항목 처리 표시
     const todoItem = document.querySelector(`.carryover-todo-item[data-todo-id="${todoId}"]`);
@@ -1920,12 +2093,36 @@ function openTodoDatePicker(todoId, currentDate, selectedDate, profile, timezone
 async function moveTodoDate(todoId, newDate, currentSelectedDate, profile, timezone = 'Asia/Seoul') {
   try {
     console.log('[moveTodoDate] Starting', { todoId, newDate, currentSelectedDate });
+    
+    // 원본 할일 조회 (project_task_id 확인용)
+    const { data: todo, error: fetchError } = await supabase
+      .from('todos')
+      .select('project_task_id')
+      .eq('id', todoId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // todos 날짜 업데이트
     const { error } = await supabase
       .from('todos')
       .update({ date: newDate })
       .eq('id', todoId);
 
     if (error) throw error;
+
+    // 프로젝트 할일인 경우: 마감날짜도 동기화
+    if (todo && todo.project_task_id) {
+      const { error: dateUpdateError } = await supabase
+        .from('project_tasks')
+        .update({ due_date: newDate })
+        .eq('id', todo.project_task_id);
+
+      if (dateUpdateError) {
+        console.error('Error syncing project task due_date:', dateUpdateError);
+        // 마감날짜 동기화 실패해도 계속 진행
+      }
+    }
 
     console.log('[moveTodoDate] Success, reloading todos');
     // 현재 선택된 날짜의 할일 목록 새로고침

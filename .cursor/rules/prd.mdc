@@ -24,8 +24,9 @@ alwaysApply: true
   - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
   - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
+  - 프로젝트 관리 (DB 스키마) - 프로젝트/프로젝트 할일 테이블, Soft Delete, RLS 정책 완료
 - 🚧 **부분**: 
-  - (현재 없음)
+  - 프로젝트 관리 (UI/기능) - DB 스키마 완료, 프론트엔드 구현 예정
 
 ---
 
@@ -710,6 +711,66 @@ alwaysApply: true
 
 ---
 
+## I. 프로젝트 관리 (Projects)
+### I-0 개요
+- **목적**: 연간 목표를 달성하기 위한 구체적인 프로젝트를 관리하고 추적
+- **범위**: 프로젝트 생성/관리, 프로젝트별 할일(Tasks) 추적, 일일 할일(Todos)과 연결
+- **카테고리 연동**: 연간 목표의 3영역(자기계발/관계/업무재정)과 동일하게 분류
+
+### I-1 프로젝트 (Projects) FR-IP
+#### 구조 (DB 스키마 완료)
+- **위치**: Goals 탭 내 별도 섹션 (월간 실천계획 아래 예정)
+- **제목**: "프로젝트" (그라데이션 배경: 인디고/청록)
+- **아이콘**: `folder-kanban` (제목)
+- **모드**: 보기 모드 / 편집 모드 (토글)
+- **카테고리 구분**: 자기계발(self_dev) / 관계(relationship) / 업무재정(work_finance)
+
+#### FR-IP (DB 스키마 완료, UI 미구현)
+- FR-IP1. 프로젝트 생성/수정/삭제(Soft Delete) ✅ 스키마 완료
+  - 필수: `name`, `category`
+  - Soft Delete: `deleted_at` 타임스탬프
+- FR-IP2. 카테고리별 필터링 (자기계발/관계/업무재정) 🚧 미구현
+- FR-IP3. 프로젝트 목록 조회 (deleted_at IS NULL) 🚧 미구현
+- FR-IP4. 프로젝트별 진행률 표시 (완료 Tasks / 전체 Tasks) 🚧 미구현
+
+### I-2 프로젝트 할일 (Project Tasks) FR-IPT
+#### 구조 (DB 스키마 완료)
+- **위치**: 프로젝트 상세 화면 (확장 시)
+- **구성**: 프로젝트당 0~N개의 Tasks
+- **수동 순서 변경**: `display_order` 컬럼으로 사용자 정의 순서 지원
+
+#### FR-IPT (DB 스키마 완료, UI 미구현)
+- FR-IPT1. Task 생성/수정/삭제(Soft Delete) ✅ 스키마 완료
+  - 필수: `title`, `project_id`
+  - 선택: `due_date`, `is_done`, `display_order`
+- FR-IPT2. Task 완료/미완료 토글 (`is_done`, `done_at`) 🚧 미구현
+- FR-IPT3. Task 수동 순서 변경 (`display_order`) 🚧 미구현
+  - Todos와 동일한 인덱스 기반 재할당 방식 `(인덱스 + 1) * 10`
+- FR-IPT4. 일일 할일(Todos)과 연결 (`todos.project_task_id`) 🚧 미구현
+  - Task를 Todos로 "오늘 할일로 추가" 기능
+  - 연결된 Todo 완료 시 Task도 자동 완료 (선택적)
+
+### I-3 통합 기능 FR-IPI
+#### FR-IPI (미구현)
+- FR-IPI1. 프로젝트 → Task → Todo 연결 흐름 🚧 미구현
+  - 프로젝트 생성 → Task 추가 → "오늘 할일로 추가" 버튼으로 Todo 생성
+  - Todo에 `project_task_id` 저장하여 출처 추적
+- FR-IPI2. 프로젝트 진행률 추적 🚧 미구현
+  - 완료 Tasks / 전체 Tasks 비율 표시
+  - 프로젝트 카드에 진행바 표시
+- FR-IPI3. 카테고리별 프로젝트 통계 🚧 미구현
+  - Goals 탭에서 카테고리별 프로젝트 수, 완료율 요약 표시
+
+### AC-I (미검증)
+- AC-IP1. PC/모바일 동일 프로젝트 목록 조회 🚧
+- AC-IP2. Soft Delete 정책으로 삭제된 프로젝트 숨김 🚧
+- AC-IP3. 프로젝트 삭제 시 관련 Tasks도 CASCADE 삭제 ✅ 스키마 완료
+- AC-IPT1. Task 순서 변경 시 인덱스 기반 재할당 정상 작동 🚧
+- AC-IPT2. Todo에서 연결된 Task 정보 확인 가능 🚧
+- AC-IPI1. 프로젝트 진행률이 실시간 업데이트됨 🚧
+
+---
+
 # 9. 비기능 요구사항(NFR)
 
 ## 9.1 동기화/일관성
@@ -763,6 +824,30 @@ alwaysApply: true
 - created_at timestamptz not null default now()
 - updated_at timestamptz not null default now()
 
+### projects
+- id uuid PK default gen_random_uuid()
+- user_id uuid not null FK → profiles(id) ON DELETE CASCADE
+- name text not null
+- category text not null CHECK (category IN ('self_dev', 'relationship', 'work_finance'))
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+- deleted_at timestamptz
+- 인덱스: (user_id) WHERE deleted_at IS NULL
+
+### project_tasks
+- id uuid PK default gen_random_uuid()
+- project_id uuid not null FK → projects(id) ON DELETE CASCADE
+- user_id uuid not null FK → profiles(id) ON DELETE CASCADE
+- title text not null
+- due_date date
+- is_done boolean not null default false
+- done_at timestamptz
+- display_order integer                     -- 수동 순서 변경 (NULL 허용)
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+- deleted_at timestamptz
+- 인덱스: (project_id) WHERE deleted_at IS NULL, (user_id) WHERE deleted_at IS NULL, (project_id, display_order NULLS LAST) WHERE deleted_at IS NULL
+
 ### todos
 - id uuid PK default gen_random_uuid()
 - user_id uuid not null FK → profiles(id)
@@ -776,12 +861,13 @@ alwaysApply: true
 - is_done boolean not null default false
 - done_at timestamptz
 - carried_over_at timestamptz               -- carry-over 처리 시 원본에 기록
-- skipped_at timestamptz                    -- 포기 처리 시 원본에 기록 (NEW!)
+- skipped_at timestamptz                    -- 포기 처리 시 원본에 기록
 - deleted_at timestamptz
 - display_order integer                     -- 수동 순서 변경 (같은 완료 상태 내에서만 적용, NULL 허용)
+- project_task_id uuid FK → project_tasks(id) ON DELETE SET NULL  -- 프로젝트 Task 연결 (선택)
 - created_at timestamptz not null default now()
 - updated_at timestamptz not null default now()
-- 인덱스: (user_id, date), (user_id, date, category), (user_id, deleted_at), (user_id, skipped_at), (user_id, date, category, display_order NULLS LAST) WHERE deleted_at IS NULL
+- 인덱스: (user_id, date), (user_id, date, category), (user_id, deleted_at), (user_id, skipped_at), (user_id, date, category, display_order NULLS LAST) WHERE deleted_at IS NULL, (project_task_id) WHERE project_task_id IS NOT NULL
 
 ### routines
 - id uuid PK default gen_random_uuid()
@@ -911,10 +997,16 @@ alwaysApply: true
   - `status`, `role` 변경: **admin만 허용**
 - INSERT: auth 트리거로만 생성(클라이언트 직접 INSERT 금지)
 
-## 11.3 사용자 데이터 테이블(todos/routines/logs/reflections/goals/plans/ai 결과)
+## 11.3 사용자 데이터 테이블(todos/routines/logs/reflections/goals/plans/projects/project_tasks/ai 결과)
 - SELECT/INSERT/UPDATE/DELETE:
   - row.user_id = auth.uid()
   - AND approved 조건
+
+## 11.4 프로젝트 관련 테이블 정책 (추가)
+- projects: 본인 프로젝트만 CRUD, approved 조건 필수
+- project_tasks: 본인 Tasks만 CRUD, approved 조건 필수
+- 삭제: CASCADE (projects 삭제 시 관련 Tasks 자동 삭제)
+- todos.project_task_id: SET NULL (Task 삭제 시 연결만 해제, Todo는 유지)
 
 ---
 
