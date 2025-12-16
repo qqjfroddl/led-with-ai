@@ -126,3 +126,5 @@ WHERE table_schema = 'public'
   AND table_name = 'yearly_ai_reflections'
 ORDER BY ordinal_position;
 
+
+

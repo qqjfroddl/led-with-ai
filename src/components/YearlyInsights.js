@@ -332,3 +332,5 @@ function getCategoryLabel(category) {
   return labels[category] || category;
 }
 
+
+
