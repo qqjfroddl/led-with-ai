@@ -88,5 +88,31 @@ async function initSupabase() {
   throw new Error('Supabase client not available. Please:\n1. Load CDN scripts in index.html\n2. Set window.SUPABASE_CONFIG in config.js with url and anonKey\n3. Or use Vite with .env.local file');
 }
 
-export const supabase = await initSupabase();
+// Top-level await을 제거하고 lazy initialization 패턴 사용
+let supabaseClient = null;
+let initPromise = null;
+
+// Supabase 클라이언트를 가져오는 함수 (Promise 반환)
+export const getSupabase = async () => {
+  if (supabaseClient) {
+    return supabaseClient;
+  }
+  
+  if (!initPromise) {
+    initPromise = initSupabase();
+  }
+  
+  supabaseClient = await initPromise;
+  return supabaseClient;
+};
+
+// 동기적으로 사용하기 위한 export (주의: 초기화 전에는 null)
+export let supabase = null;
+
+// 앱 시작 시 즉시 초기화
+getSupabase().then(client => {
+  supabase = client;
+}).catch(err => {
+  console.error('Failed to initialize Supabase:', err);
+});
 
