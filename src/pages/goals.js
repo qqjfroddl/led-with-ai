@@ -2252,9 +2252,34 @@ export async function renderGoals() {
           }
         });
       }
-      document.getElementById('ai-suggest-monthly-plan-btn')?.addEventListener('click', handleAISuggestMonthlyPlan);
-      document.getElementById('cancel-monthly-plans-btn')?.addEventListener('click', handleCancelMonthlyPlan);
-      document.getElementById('save-monthly-plans-btn')?.addEventListener('click', handleSaveMonthlyPlan);
+      
+      // AI 제안받기 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
+      const aiSuggestMonthlyPlanBtn = document.getElementById('ai-suggest-monthly-plan-btn');
+      if (aiSuggestMonthlyPlanBtn) {
+        const newAiSuggestBtn = aiSuggestMonthlyPlanBtn.cloneNode(true);
+        aiSuggestMonthlyPlanBtn.parentNode?.replaceChild(newAiSuggestBtn, aiSuggestMonthlyPlanBtn);
+        newAiSuggestBtn.addEventListener('click', handleAISuggestMonthlyPlan);
+        // Lucide 아이콘 다시 렌더링
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+      
+      // 취소 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
+      const cancelMonthlyPlanBtn = document.getElementById('cancel-monthly-plans-btn');
+      if (cancelMonthlyPlanBtn) {
+        const newCancelBtn = cancelMonthlyPlanBtn.cloneNode(true);
+        cancelMonthlyPlanBtn.parentNode?.replaceChild(newCancelBtn, cancelMonthlyPlanBtn);
+        newCancelBtn.addEventListener('click', handleCancelMonthlyPlan);
+      }
+      
+      // 저장 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
+      const saveMonthlyPlanBtn = document.getElementById('save-monthly-plans-btn');
+      if (saveMonthlyPlanBtn) {
+        const newSaveBtn = saveMonthlyPlanBtn.cloneNode(true);
+        saveMonthlyPlanBtn.parentNode?.replaceChild(newSaveBtn, saveMonthlyPlanBtn);
+        newSaveBtn.addEventListener('click', handleSaveMonthlyPlan);
+      }
 
       // 월 레이블 초기화 및 초기 로드
       updateMonthLabel();
