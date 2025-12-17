@@ -69,10 +69,10 @@ body {
 
 /* 카드 호버 효과 (프리미엄 인터랙션) */
 .card:hover {
-  transform: translateY(-2px) scale(1.002); /* 미세한 스케일 추가 */
+  /* transform: translateY(-2px) scale(1.002); 제거 - 움직임 효과 제거 */
   box-shadow: 
     0 4px 8px rgba(0, 0, 0, 0.06),
-    0 12px 24px rgba(0, 0, 0, 0.09); /* 호버 시 더 깊은 그림자 */
+    0 12px 24px rgba(0, 0, 0, 0.09); /* 호버 시 더 깊은 그림자만 유지 */
 }
 
 .card-header {

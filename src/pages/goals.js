@@ -856,41 +856,121 @@ export async function renderGoals() {
             console.log('[Sync] ℹ️ No existing active routines to deactivate');
           }
 
-          // B. 새 루틴 생성 (오늘부터 적용되도록 active_from_date 설정)
+          // B. 새 루틴 생성 또는 재활성화 (오늘부터 적용되도록 active_from_date 설정)
+          // 중복 방지: 기존에 동일한 제목의 루틴이 있으면 재활성화, 없으면 새로 생성
+          
+          // 먼저 기존 비활성 루틴 중 동일 제목이 있는지 확인
+          const { data: allRoutines, error: allRoutinesError } = await supabase
+            .from('routines')
+            .select('id, title, schedule, is_active, deleted_at')
+            .eq('user_id', userId)
+            .eq('schedule->>type', 'monthly')
+            .eq('schedule->>month', monthStart);
+          
+          if (allRoutinesError) {
+            console.error('[Sync Error] Failed to fetch all routines:', allRoutinesError);
+            throw new Error('기존 루틴 조회 실패: ' + allRoutinesError.message);
+          }
+          
           const routinesToInsert = [];
-
+          const routinesToReactivate = [];
+          
+          // 모닝루틴 처리
           morning.forEach((title, index) => {
-            routinesToInsert.push({
-              user_id: userId,
-              title: title.trim(),
-              schedule: {
-                type: 'monthly',
-                month: monthStart,
-                source: 'monthly_goal',
-                category: 'morning',
-                order: index,
-                active_from_date: activeFromDate  // 오늘부터 적용
-              },
-              is_active: true
-            });
+            const trimmedTitle = title.trim();
+            const existingRoutine = allRoutines?.find(r => 
+              r.title === trimmedTitle && 
+              r.schedule?.category === 'morning'
+            );
+            
+            if (existingRoutine && !existingRoutine.is_active) {
+              // 비활성 루틴이 있으면 재활성화
+              routinesToReactivate.push({
+                id: existingRoutine.id,
+                schedule: {
+                  ...existingRoutine.schedule,
+                  order: index,
+                  active_from_date: activeFromDate
+                }
+              });
+            } else if (!existingRoutine) {
+              // 루틴이 없으면 새로 생성
+              routinesToInsert.push({
+                user_id: userId,
+                title: trimmedTitle,
+                schedule: {
+                  type: 'monthly',
+                  month: monthStart,
+                  source: 'monthly_goal',
+                  category: 'morning',
+                  order: index,
+                  active_from_date: activeFromDate
+                },
+                is_active: true
+              });
+            }
           });
-
+          
+          // 나이트루틴 처리
           night.forEach((title, index) => {
-            routinesToInsert.push({
-              user_id: userId,
-              title: title.trim(),
-              schedule: {
-                type: 'monthly',
-                month: monthStart,
-                source: 'monthly_goal',
-                category: 'night',
-                order: index,
-                active_from_date: activeFromDate  // 오늘부터 적용
-              },
-              is_active: true
-            });
+            const trimmedTitle = title.trim();
+            const existingRoutine = allRoutines?.find(r => 
+              r.title === trimmedTitle && 
+              r.schedule?.category === 'night'
+            );
+            
+            if (existingRoutine && !existingRoutine.is_active) {
+              // 비활성 루틴이 있으면 재활성화
+              routinesToReactivate.push({
+                id: existingRoutine.id,
+                schedule: {
+                  ...existingRoutine.schedule,
+                  order: index,
+                  active_from_date: activeFromDate
+                }
+              });
+            } else if (!existingRoutine) {
+              // 루틴이 없으면 새로 생성
+              routinesToInsert.push({
+                user_id: userId,
+                title: trimmedTitle,
+                schedule: {
+                  type: 'monthly',
+                  month: monthStart,
+                  source: 'monthly_goal',
+                  category: 'night',
+                  order: index,
+                  active_from_date: activeFromDate
+                },
+                is_active: true
+              });
+            }
           });
-
+          
+          // 재활성화할 루틴이 있으면 업데이트
+          if (routinesToReactivate.length > 0) {
+            console.log(`[Sync] 🔄 Reactivating ${routinesToReactivate.length} existing routines`);
+            
+            for (const routine of routinesToReactivate) {
+              const { error: updateError } = await supabase
+                .from('routines')
+                .update({
+                  is_active: true,
+                  deleted_at: null,
+                  schedule: routine.schedule
+                })
+                .eq('id', routine.id);
+              
+              if (updateError) {
+                console.error('[Sync Error] Failed to reactivate routine:', updateError);
+                throw new Error('루틴 재활성화 실패: ' + updateError.message);
+              }
+            }
+            
+            console.log(`[Sync] ✅ Successfully reactivated ${routinesToReactivate.length} routines`);
+          }
+          
+          // 새로 생성할 루틴이 있으면 INSERT
           if (routinesToInsert.length > 0) {
             const { error: insertError } = await supabase
               .from('routines')

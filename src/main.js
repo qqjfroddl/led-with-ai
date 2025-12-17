@@ -1,4 +1,4 @@
-import { supabase } from './config/supabase.js';
+import { getSupabase } from './config/supabase.js';
 import { getCurrentProfile, signInWithGoogle, signOut } from './utils/auth.js';
 import { router } from './router.js';
 
@@ -6,26 +6,29 @@ import { router } from './router.js';
 let currentUser = null;
 let currentProfile = null;
 
-// 인증 상태 변경 감지
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-    currentUser = session?.user || null;
-    if (currentUser) {
-      currentProfile = await getCurrentProfile();
-    }
-    router.handleRoute();
-  } else if (event === 'SIGNED_OUT') {
-    currentUser = null;
-    currentProfile = null;
-    router.handleRoute();
-  }
-});
-
 // 초기 로드
 async function init() {
   try {
     console.log('Main: Initializing...');
+    
+    // Supabase 클라이언트 초기화 대기
+    const supabase = await getSupabase();
     console.log('Main: Supabase client:', supabase ? 'available' : 'missing');
+    
+    // 인증 상태 변경 감지 (Supabase 초기화 후)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        currentUser = session?.user || null;
+        if (currentUser) {
+          currentProfile = await getCurrentProfile();
+        }
+        router.handleRoute();
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        currentProfile = null;
+        router.handleRoute();
+      }
+    });
     
     // 세션 조회 (타임아웃: 5초)
     console.log('Main: Getting session...');
