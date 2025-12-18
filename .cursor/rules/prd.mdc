@@ -1470,6 +1470,26 @@ Secondary 버튼 (.btn-secondary):
   - 중앙 정렬: left: 50%, transform: translateX(-50%)
 ```
 
+### 파비콘 (Favicon) ✅ 2025-12-19 구현 완료
+```css
+브랜드 Sparkles 아이콘 (심플 버전):
+  - 아이콘: Lucide `sparkles`
+  - 색상: #5B5FC7 (브랜드 프라이머리 블루)
+  - 형식: SVG Data URI
+  - stroke-width: 2.5
+  - viewBox: 0 0 24 24
+  - 브랜드 일관성: 헤더 아이콘과 동일한 디자인
+
+옵션별 스타일:
+  - 옵션 1 (채택): 심플 선 아이콘 (배경 없음) ✅
+  - 옵션 2: 브랜드 색상 원형 배경 + 흰색 아이콘
+  - 옵션 3: 그라데이션 배경 (#5B5FC7 → #8B7AB8) + 흰색 아이콘
+
+위치:
+  - index.html <head> 섹션 내 <link rel="icon"> 태그
+  - 브라우저 탭에 표시
+```
+
 ## B4-1) 인터랙션 가이드라인 ✅ 2025-01-21 추가
 
 ### 애니메이션 이징
