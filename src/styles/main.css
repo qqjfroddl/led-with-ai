@@ -830,6 +830,34 @@ body {
     font-size: 0.9rem;
     flex-shrink: 0;
   }
+
+  /* 주간 선택 버튼: 텍스트 줄바꿈 방지 */
+  #week-selector-btn {
+    gap: 0.375rem !important; /* 간격 줄이기 (기존 0.5rem) */
+    padding: 0.375rem !important; /* 패딩 줄이기 (기존 0.5rem) */
+  }
+
+  #week-selector-btn span {
+    white-space: nowrap !important;
+    font-size: 0.9rem !important; /* 모바일에서 폰트 크기 줄이기 (기존 1rem) */
+    flex-shrink: 0;
+  }
+
+  #week-selector-btn i[data-lucide="calendar"] {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  #week-selector-btn i[data-lucide="chevron-down"] {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* 주간 선택 컨테이너 간격 조정 */
+  .week-selector {
+    gap: 0.75rem !important; /* 간격 줄이기 (기존 1rem) */
+    padding: 0.75rem !important; /* 패딩 줄이기 (기존 1rem) */
+  }
 }
 
 /* 카테고리 탭 */
