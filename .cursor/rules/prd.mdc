@@ -25,6 +25,8 @@ alwaysApply: true
   - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인)
   - **프로젝트 관리 (완료)** - 프로젝트 CRUD, 프로젝트 할일 관리, 진행중/완료 탭 분류, 카드 그리드 + 아코디언 UI, 오늘 할일 연동, 양방향 동기화, 마감날짜 관리, 다시 진행하기 기능
+  - **배포 및 저장소 관리 (완료)** - GitHub 저장소 이름 변경 (`led-with-ai`), Vercel 자동 배포 설정, Git → GitHub → Vercel 자동 배포 파이프라인 구축
+  - **모바일 레이아웃 최적화 (완료)** - 로그인 화면: 로고 크기 조정 (100% 너비), 버튼 크기 축소 및 이미지와 분리, 한 줄 표시 유지 / 헤더: 모바일에서 사용자 이름 숨김, 로그아웃 버튼 크기 축소 / 오늘 할일: 제목 줄바꿈 방지 (`white-space: nowrap`), 카테고리 탭 가로 스크롤 지원 (한 줄 표시) / 순서 조정 버튼: PC는 가로 배치, 모바일은 세로 배치 (반응형)
 - 🚧 **부분**: 
   - (없음)
 
@@ -219,7 +221,9 @@ alwaysApply: true
 - FR-B9. 동일 화면에서 추가/완료/삭제 즉시 반영(optimistic UI 가능하나 실패 시 롤백)
 - FR-B10. **수정 시 Enter 키로 저장**: 수정 모드에서 Enter 키 누르면 즉시 저장, Escape 키로 취소
 - FR-B11. **카테고리 탭 위치**: 헤더 오른쪽에 배치 (진행률 배지처럼)
+  - **모바일 최적화**: 가로 스크롤 지원 (`overflow-x: auto`, `flex-wrap: nowrap`), 모든 탭이 한 줄에 표시되도록 최적화
 - FR-B12. **토글 기능**: 헤더 제목 옆 토글 버튼으로 내용 접기/펼치기 (기본값: 펼침, 상태 localStorage 저장)
+  - **모바일 최적화**: 제목 줄바꿈 방지 (`white-space: nowrap`), 모바일에서 폰트 크기 조정 (1.25rem)
 - FR-B13. **수동 순서 변경**: 미완료 항목에만 위/아래 화살표 버튼 표시, 같은 카테고리 내 미완료 항목끼리만 순서 변경 가능
   - 완료된 항목은 순서 변경 불가 (항상 아래에 표시)
   - `display_order` 컬럼으로 순서 저장 (NULL 허용)
@@ -229,6 +233,7 @@ alwaysApply: true
   - **인덱스 기반 재할당**: 값 교환 대신 인덱스 기반으로 `display_order` 재할당 `(인덱스 + 1) * 10` 방식으로 안정적 유지
     - 여러 번 이동해도 값이 계속 증가하지 않아 정렬이 안정적
     - 10 단위 간격으로 중간 삽입 가능
+  - **반응형 레이아웃**: PC는 가로 배치 (`flex-direction: row, gap: 0`), 모바일은 세로 배치 (`flex-direction: column, gap: 0.1rem`)로 최적화
 - FR-B14. **지난 날짜 할일 수정/삭제 제한**: 지난 날짜(오늘 이전) 화면에서 기존 할일만 수정/삭제 불가
   - 지난 날짜에서도 새로운 할일 추가는 가능 (테스트 및 이월 기능을 위해)
   - 기존 할일: `todo.date < actualToday`인 할일 (실제로 그 날짜에 생성된 할일)
@@ -1450,24 +1455,25 @@ Secondary 버튼 (.btn-secondary):
 ```css
 로고 이미지:
   - 파일명: /logo.png
-  - 크기: 데스크톱 max-width: 260%, 모바일 max-width: 240%
+  - 크기: 데스크톱/모바일 모두 max-width: 100%, width: 85-90% (최적화됨)
   - 위치: 화면 중앙
-  - 레이아웃: flex 중앙 정렬
+  - 레이아웃: flex 중앙 정렬, margin: 0 auto
 
 구글 로그인 버튼:
-  - 위치: 로고 이미지 하단에 오버레이 (position: absolute, bottom: 2rem)
-  - 크기: min-width: 216px, max-width: 288px (모바일: 180px~252px)
+  - 위치: 로고 이미지 아래 분리 배치 (flex-direction: column, gap: 1.5rem)
+  - 크기: min-width: 180px, max-width: 240px (모바일: 160px~220px)
   - 배경: #374151 (짙은 회색)
   - 텍스트: white
   - 보더: 1px solid #4b5563
-  - border-radius: 24px (모바일: 20px)
-  - padding: 0.6rem 1.3rem (모바일: 0.525rem 1.125rem)
-  - font-size: 1.2rem (모바일: 1.125rem)
+  - border-radius: 20px (모바일: 18px)
+  - padding: 0.5rem 1rem (모바일: 0.45rem 0.9rem)
+  - font-size: 0.95rem (모바일: 0.9rem)
   - box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2)
   - Google 아이콘: 20px × 20px SVG
+  - white-space: nowrap (한 줄 표시 보장)
   - 호버: 배경 #4b5563, transform: translateY(-2px)
   - 활성: 배경 #1f2937
-  - 중앙 정렬: left: 50%, transform: translateX(-50%)
+  - 중앙 정렬: flex 컨테이너로 중앙 정렬
 ```
 
 ### 파비콘 (Favicon) ✅ 2025-12-19 구현 완료
@@ -1574,6 +1580,7 @@ transform: scale(1.005); /* 미세 확대 */
 - **사용자 정보 박스** (헤더 오른쪽):
   - 사용자 이름 + 이메일 표시
   - 로그아웃 버튼
+  - **모바일 최적화**: 모바일에서 사용자 이름 숨김 (`display: none`), 아바타만 표시, 로그아웃 버튼 크기 축소 (padding: 0.4rem 0.6rem, font-size: 0.8rem)
 - **날짜 선택 버튼 (Chip)**:
   - border-radius: 999px (완전 둥근 형태)
   - 기본: 흰색 배경 + 회색 보더
