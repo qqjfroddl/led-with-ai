@@ -196,10 +196,12 @@ body {
 
 /* 로그인 화면 로고 이미지 */
 .auth-logo {
-  max-width: 260%;
+  max-width: 100%;
+  width: 85%;
   height: auto;
   display: block;
   object-fit: contain;
+  margin: 0 auto;
 }
 
 /* 이미지 하단에 겹쳐지는 로그인 버튼 */
@@ -210,10 +212,10 @@ body {
   transform: translateX(-50%);
   z-index: 10;
   margin-left: 0;
-  min-width: 216px;
-  max-width: 288px;
+  min-width: 240px;
+  max-width: 320px;
   padding: 0.6rem 1.3rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   background: #374151 !important;
   color: white !important;
   border: 1px solid #4b5563 !important;
@@ -226,6 +228,7 @@ body {
   gap: 0.6rem;
   transition: all 0.2s ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .auth-login-btn:hover {
@@ -244,16 +247,18 @@ body {
 /* 반응형: 모바일에서 이미지 크기 조정 */
 @media (max-width: 768px) {
   .auth-logo {
-    max-width: 240%;
+    max-width: 100%;
+    width: 90%;
   }
   
   .auth-login-btn {
-    min-width: 180px;
-    max-width: 252px;
+    min-width: 200px;
+    max-width: 280px;
     bottom: 1.5rem;
-    font-size: 1.125rem;
-    padding: 0.525rem 1.125rem;
+    font-size: 1rem;
+    padding: 0.55rem 1.2rem;
     border-radius: 20px;
+    white-space: nowrap;
   }
 }
 
