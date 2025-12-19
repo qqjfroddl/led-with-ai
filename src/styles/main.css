@@ -816,6 +816,20 @@ body {
     font-size: 0.8rem;
     white-space: nowrap;
   }
+
+  /* 루틴 섹션 헤더: 나이트루틴 줄바꿈 방지 */
+  #night-routines h4 {
+    white-space: nowrap;
+    font-size: 0.9rem; /* 모바일에서 폰트 크기 약간 줄이기 */
+    flex-shrink: 0; /* 텍스트가 압축되지 않도록 */
+  }
+
+  /* 모닝루틴도 동일하게 적용 (일관성) */
+  #morning-routines h4 {
+    white-space: nowrap;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
 }
 
 /* 카테고리 탭 */
