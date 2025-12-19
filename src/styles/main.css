@@ -748,6 +748,18 @@ body {
     gap: 0.25rem;
   }
 
+  /* 실행 그룹: 오늘 버튼을 50% 크기로 가운데 배치 */
+  .nav-group[data-group="do"] .nav-group-items {
+    align-items: center; /* 가운데 정렬 */
+  }
+
+  .nav-group[data-group="do"] .nav-item-new {
+    flex: 0 0 50%; /* 50% 고정 크기 */
+    width: 50%; /* 명시적 너비 지정 */
+    min-width: 50px;
+    min-height: 0;
+  }
+
   .nav-item-new {
     flex: 1; /* 각 항목이 남은 공간을 균등하게 채우기 */
     min-width: 50px;
