@@ -750,7 +750,8 @@ body {
 
   /* 실행 그룹: 오늘 버튼을 높이 50%로 가운데 배치 */
   .nav-group[data-group="do"] .nav-group-items {
-    align-items: center; /* 가운데 정렬 */
+    align-items: center; /* 가로 가운데 정렬 */
+    justify-content: center; /* 세로 가운데 정렬 */
   }
 
   .nav-group[data-group="do"] .nav-item-new {
