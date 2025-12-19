@@ -988,4 +988,20 @@ input[type="date"]:focus {
     flex-direction: column !important;
     gap: 0.1rem !important;
   }
+
+  /* 모바일에서 재생성 버튼 최적화 */
+  .btn-regenerate {
+    white-space: nowrap !important;
+    min-width: fit-content;
+    padding: 0.5rem 0.9rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* 모바일에서 생성 버튼 최적화 */
+  .btn-generate {
+    white-space: nowrap !important;
+    min-width: fit-content;
+    padding: 0.65rem 1.2rem !important;
+    font-size: 0.9rem !important;
+  }
 }

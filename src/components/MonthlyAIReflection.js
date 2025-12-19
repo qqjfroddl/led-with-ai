@@ -160,11 +160,11 @@ function renderExistingReflection(reflection, timezone = 'Asia/Seoul') {
         <button 
           id="regenerate-ai-reflection-btn"
           class="btn-regenerate"
-          style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;"
+          style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 0.25rem;"
           onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(167, 139, 250, 0.3)';"
           onmouseout="this.style.transform='none'; this.style.boxShadow='none';"
         >
-          <i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5; margin-right: 0.25rem;"></i>
+          <i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
           다시 생성
         </button>
       </div>
@@ -190,11 +190,11 @@ function renderEmptyState(monthStart) {
       <button 
         id="generate-ai-reflection-btn"
         class="btn-generate"
-        style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);"
+        style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3); white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; margin: 0 auto;"
         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(167, 139, 250, 0.4)';"
         onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 12px rgba(167, 139, 250, 0.3)';"
       >
-        <i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5; margin-right: 0.5rem;"></i>
+        <i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i>
         AI 성찰 생성하기
       </button>
     </div>
@@ -650,7 +650,7 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
         console.error('Error generating AI reflection:', error);
         alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         generateBtn.disabled = false;
-        generateBtn.innerHTML = '<i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5; margin-right: 0.5rem;"></i> AI 성찰 생성하기';
+        generateBtn.innerHTML = '<i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i> AI 성찰 생성하기';
         
         // Lucide 아이콘 다시 렌더링
         if (window.lucide) {
@@ -690,7 +690,7 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
       }
       
       regenerateBtn.disabled = true;
-      regenerateBtn.innerHTML = '<i data-lucide="loader-2" style="width: 16px; height: 16px; stroke-width: 2.5; margin-right: 0.25rem; animation: spin 1s linear infinite;"></i> 생성 중...';
+      regenerateBtn.innerHTML = '<i data-lucide="loader-2" style="width: 16px; height: 16px; stroke-width: 2.5; animation: spin 1s linear infinite;"></i> 생성 중...';
       
       if (window.lucide) {
         window.lucide.createIcons();
@@ -702,7 +702,7 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
         console.error('Error regenerating AI reflection:', error);
         alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         regenerateBtn.disabled = false;
-        regenerateBtn.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5; margin-right: 0.25rem;"></i> 다시 생성';
+        regenerateBtn.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i> 다시 생성';
         
         // Lucide 아이콘 다시 렌더링
         if (window.lucide) {
