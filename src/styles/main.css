@@ -85,6 +85,7 @@ body {
   color: var(--text-primary);
   letter-spacing: -0.02em; /* 타이트한 자간 */
   line-height: 1.2;
+  white-space: nowrap; /* 줄바꿈 방지 */
 }
 
 
@@ -936,14 +937,49 @@ input[type="date"]:focus {
     max-width: none;
   }
 
-  .category-tabs {
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
+  .category-tabs,
+  #category-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap; /* 줄바꿈 방지 - 한 줄로 표시 */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .category-tabs::-webkit-scrollbar,
+  #category-tabs::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .category-tabs::-webkit-scrollbar-track,
+  #category-tabs::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .category-tabs::-webkit-scrollbar-thumb,
+  #category-tabs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
   }
 
   .category-tab {
-    flex: 1 1 calc(50% - var(--spacing-xs));
-    font-size: 0.85rem;
-    padding: 0.4rem var(--spacing-sm);
+    flex: 0 0 auto; /* 고정 크기 - 줄바꿈 방지 */
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    min-width: fit-content; /* 내용에 맞게 최소 너비 */
+  }
+
+  /* 모바일에서 카드 헤더 레이아웃 조정 */
+  .card-header {
+    flex-wrap: wrap; /* 필요시 줄바꿈 */
+    gap: 0.75rem;
+  }
+
+  .card-title {
+    font-size: 1.25rem; /* 모바일에서 조금 작게 */
   }
 }
