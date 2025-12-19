@@ -748,14 +748,14 @@ body {
     gap: 0.25rem;
   }
 
-  /* 실행 그룹: 오늘 버튼을 50% 크기로 가운데 배치 */
+  /* 실행 그룹: 오늘 버튼을 높이 50%로 가운데 배치 */
   .nav-group[data-group="do"] .nav-group-items {
     align-items: center; /* 가운데 정렬 */
   }
 
   .nav-group[data-group="do"] .nav-item-new {
-    flex: 0 0 50%; /* 50% 고정 크기 */
-    width: 50%; /* 명시적 너비 지정 */
+    flex: 0 0 50%; /* 높이만 50%로 제한 */
+    width: 100%; /* 가로는 전체 너비 (다른 버튼들처럼) */
     min-width: 50px;
     min-height: 0;
   }
