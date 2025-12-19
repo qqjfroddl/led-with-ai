@@ -640,7 +640,7 @@ function renderTodos(todosList, date, profile, timezone) {
       return `
         <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           ${canMove ? `
-            <div style="display: flex; flex-direction: row; gap: 0; align-items: center;">
+            <div class="move-todo-buttons" style="display: flex; flex-direction: row; gap: 0; align-items: center;">
               <button class="move-todo-btn" data-move-up="${todo.id}" style="background: transparent; border: none; color: #6b7280; cursor: pointer; padding: 0.25rem;" title="위로 이동">
                 <i data-lucide="chevron-up" style="width: 16px; height: 16px;"></i>
               </button>

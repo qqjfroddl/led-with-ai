@@ -982,4 +982,10 @@ input[type="date"]:focus {
   .card-title {
     font-size: 1.25rem; /* 모바일에서 조금 작게 */
   }
+
+  /* 모바일에서 순서 조정 버튼 세로 배치 */
+  .move-todo-buttons {
+    flex-direction: column !important;
+    gap: 0.1rem !important;
+  }
 }
