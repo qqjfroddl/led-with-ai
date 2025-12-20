@@ -1,4 +1,4 @@
-import { supabase } from './config/supabase.js';
+import { supabase, getSupabase } from './config/supabase.js';
 import { getCurrentProfile, isAdmin, signOut } from './utils/auth.js';
 import { createIcons, icons } from 'https://unpkg.com/lucide@latest?module';
 import { getTodosStats, getRoutinesStats, getReflectionsStats } from './utils/weeklyStats.js';
@@ -20,6 +20,21 @@ async function init() {
   if (!app) return;
 
   try {
+    // Supabase 클라이언트 초기화 보장
+    const supabaseClient = await getSupabase();
+    if (!supabaseClient) {
+      app.innerHTML = `
+        <div class="error" style="margin: 2rem;">
+          <h2>Supabase 초기화 오류</h2>
+          <p>Supabase 클라이언트를 초기화할 수 없습니다.</p>
+          <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">
+            새로고침
+          </button>
+        </div>
+      `;
+      return;
+    }
+
     // Supabase 환경 변수 확인 (CDN 또는 Vite 방식)
     const config = window.SUPABASE_CONFIG || {};
     const hasConfig = (config.url && config.anonKey) || 
@@ -40,7 +55,8 @@ window.SUPABASE_CONFIG = {
       return;
     }
 
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // 초기화된 클라이언트 사용
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
     
     if (sessionError) {
       console.error('Session error:', sessionError);

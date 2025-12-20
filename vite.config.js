@@ -9,7 +9,13 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     target: 'esnext', // Top-level await 지원
-    minify: 'esbuild'
+    minify: 'esbuild',
+    rollupOptions: {
+      input: {
+        main: './index.html',
+        admin: './admin.html'
+      }
+    }
   }
 });
 
