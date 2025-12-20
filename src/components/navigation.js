@@ -80,13 +80,16 @@ export async function renderNavigation(currentRoute, profile) {
         ? `background: ${group.color.active}; color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.15);`
         : `background: white; color: #374151; border-color: ${group.color.border};`;
       
-      // 관리자 탭은 새 탭에서 열기
+      // 관리자 탭: 모바일에서는 같은 탭에서 열기 (target="_blank"는 모바일에서 제대로 작동하지 않을 수 있음)
       if (route.external) {
+        // 모바일에서는 같은 탭에서 열고, PC에서는 새 탭에서 열기
+        // 모바일 감지를 위해 클라이언트 사이드에서 처리하도록 data 속성 사용
         return `
-          <a href="${route.url}" target="_blank" rel="noopener noreferrer" 
-             class="nav-item-new ${isActive ? 'active' : ''}" 
+          <a href="${route.url}" target="_blank" rel="noopener noreferrer"
+             class="nav-item-new nav-item-external ${isActive ? 'active' : ''}" 
              style="${activeStyle}"
-             data-route="${route.path}">
+             data-route="${route.path}"
+             data-external-url="${route.url}">
             <i data-lucide="${route.icon}"></i>
             <span>${route.label}</span>
           </a>

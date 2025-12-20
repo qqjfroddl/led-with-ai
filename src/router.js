@@ -153,6 +153,24 @@ class Router {
     }
   }
 
+  // 모바일에서 외부 링크 클릭 핸들러 (target="_blank"가 모바일에서 작동하지 않을 수 있음)
+  bindExternalNavLinks() {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) return; // PC에서는 기본 동작 사용
+
+    const externalLinks = document.querySelectorAll('.nav-item-external');
+    externalLinks.forEach(link => {
+      // 기본 클릭 동작 방지하고 같은 탭에서 열기
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = link.getAttribute('href') || link.getAttribute('data-external-url');
+        if (url) {
+          window.location.href = url;
+        }
+      });
+    });
+  }
+
   async handleRoute() {
     const app = document.getElementById('app');
     if (!app) {
@@ -285,6 +303,8 @@ class Router {
         if (hash === '/today') {
           this.bindDateBar(profile);
         }
+        // 모바일에서 관리자 탭 클릭 핸들러 추가 (target="_blank"가 모바일에서 작동하지 않을 수 있음)
+        this.bindExternalNavLinks();
         // 후처리(onMount) 실행
         if (result && typeof result === 'object' && typeof result.onMount === 'function') {
           await result.onMount();
