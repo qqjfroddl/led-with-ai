@@ -398,7 +398,7 @@ function renderUserTable(users, type) {
             <th>프로필</th>
             <th>이름</th>
             <th>이메일</th>
-            ${type === 'approved' || type === 'challenge' ? '<th>사용 현황</th>' : ''}
+            ${type === 'approved' || type === 'challenge' ? '<th>이번주 사용현황</th>' : ''}
             <th>요청일시</th>
             <th>사용 기한</th>
             <th>작업</th>
