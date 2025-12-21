@@ -500,11 +500,11 @@ window.showTab = function(tab) {
   }
   
   // ?�성 ???�시
-  const activeTab = Array.from(document.querySelectorAll('.tab')).find(t => {
-    if (tab === 'pending') return t.textContent.includes('?�인 ?��?);
-    if (tab === 'approved') return t.textContent.includes('?�인???�용??);
-    if (tab === 'challenge') return t.textContent.includes('챌린지 참�???);
-    return false;
+  // ?쒖꽦 ???쒖떆
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  const activeTab = tabs.find(t => {
+    const onclick = t.getAttribute('onclick') || '';
+    return onclick.includes(`showTab('${tab}')`);
   });
   if (activeTab) activeTab.classList.add('active');
   
@@ -1021,7 +1021,7 @@ window.saveBulkExpiryDate = async function() {
     return;
   }
 
-  const dateText = expiryDate ? new Date(expiryDate).toLocaleDateString('ko-KR') : '무제??;
+  const dateText = expiryDate ? new Date(expiryDate).toLocaleDateString('ko-KR') : '무제한';
   if (!confirm(`?�택??${selectedIds.length}명의 ?�용 기한??${dateText}?�로 ?�정?�시겠습?�까?`)) {
     return;
   }
