@@ -639,7 +639,7 @@ function renderTodos(todosList, date, profile, timezone) {
       const canMove = !todo.is_done && !isReadOnly && !isEditing;
 
       return `
-        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="${canMove ? 'true' : 'false'}" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); ${canMove ? 'cursor: move;' : ''}">
+        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           ${canMove ? `
             <div class="todo-drag-handle" draggable="true" style="display: flex; align-items: center; padding: 0.25rem 0.5rem; cursor: grab; color: #9ca3af; border-radius: 4px; transition: all 0.2s ease; user-select: none;" title="드래그하여 순서 변경">
               <i data-lucide="grip-vertical" style="width: 18px; height: 18px; pointer-events: none;"></i>
@@ -1058,8 +1058,10 @@ function bindTodoEvents(date, profile, timezone) {
     }
   });
   
-  // 드래그 앤 드롭 이벤트 설정 (한 번만 등록)
-  if (!dragAndDropInitialized) {
+  // 드래그 앤 드롭 이벤트 설정 (PC에서만, 한 번만 등록)
+  // 모바일 감지: 화면 너비 768px 이하 또는 터치 이벤트 지원
+  const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  if (!dragAndDropInitialized && !isMobile) {
     setupDragAndDrop(date, profile, timezone);
     dragAndDropInitialized = true;
   }
@@ -1189,9 +1191,13 @@ function setupDragAndDrop(date, profile, timezone) {
   });
 
   // 드래그 오버 (드롭 가능 영역 표시) - document에 등록하여 모든 요소에서 발생하도록
-  document.addEventListener('dragover', (e) => {
+  const handleDragOver = (e) => {
+    // 디버깅: 모든 dragover 이벤트 로그
+    console.log('[Drag] dragover triggered', e.target, 'draggedTodoId:', draggedTodoId);
+    
     // todos-content 내부 요소에만 적용
-    if (!e.target.closest('#todos-content')) {
+    const todosContent = document.getElementById('todos-content');
+    if (!todosContent || !todosContent.contains(e.target)) {
       return;
     }
     
@@ -1199,10 +1205,11 @@ function setupDragAndDrop(date, profile, timezone) {
     e.dataTransfer.dropEffect = 'move';
     
     if (!draggedTodoId) {
+      console.log('[Drag] dragover: no draggedTodoId');
       return;
     }
     
-    console.log('[Drag] dragover', e.target, e.target.classList, draggedTodoId);
+    console.log('[Drag] dragover processing', e.target, e.target.classList, draggedTodoId);
     
     // 드래그 핸들 위에 있을 수도 있으므로 todo-item 찾기
     let todoItem = e.target.closest('.todo-item');
@@ -1285,10 +1292,12 @@ function setupDragAndDrop(date, profile, timezone) {
       
       document.body.appendChild(insertionLine);
     }
-  });
+  };
   
   // 드래그 리브 (스타일 복원 및 삽입 지시선 제거)
-  todosContent.addEventListener('dragleave', (e) => {
+  const handleDragLeave = (e) => {
+    const todosContent = document.getElementById('todos-content');
+    if (!todosContent) return;
     const todoItem = e.target.closest('.todo-item');
     if (todoItem && todoItem.dataset.todoId !== draggedTodoId) {
       todoItem.style.opacity = '';
@@ -1310,10 +1319,10 @@ function setupDragAndDrop(date, profile, timezone) {
         }
       });
     }
-  });
+  };
 
   // 드롭 처리 - document에 등록하여 모든 요소에서 발생하도록
-  document.addEventListener('drop', async (e) => {
+  const handleDrop = async (e) => {
     // todos-content 내부 요소에만 적용
     if (!e.target.closest('#todos-content')) {
       return;
@@ -1370,7 +1379,24 @@ function setupDragAndDrop(date, profile, timezone) {
     // 드롭 위치에 따라 순서 업데이트
     const insertBefore = todoItem.dataset.insertBefore === 'true';
     await handleDragDrop(draggedTodoId, targetTodoId, insertBefore, date, profile, timezone);
-  });
+  };
+
+  // 이벤트 리스너 등록
+  todosContent.addEventListener('dragstart', handleDragStart);
+  todosContent.addEventListener('dragend', handleDragEnd);
+  document.addEventListener('dragover', handleDragOver);
+  document.addEventListener('dragleave', handleDragLeave);
+  document.addEventListener('drop', handleDrop);
+  
+  // 핸들러 저장 (나중에 제거하기 위해)
+  window._dragDropHandlers = {
+    todosContent: todosContent,
+    dragstart: handleDragStart,
+    dragend: handleDragEnd,
+    dragover: handleDragOver,
+    dragleave: handleDragLeave,
+    drop: handleDrop
+  };
 }
 
 // 드롭 처리 함수

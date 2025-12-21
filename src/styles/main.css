@@ -1120,4 +1120,9 @@ input[type="date"]:focus {
     padding: 0.65rem 1.2rem !important;
     font-size: 0.9rem !important;
   }
+
+  /* 모바일에서 드래그 핸들 숨기기 */
+  .todo-drag-handle {
+    display: none !important;
+  }
 }
