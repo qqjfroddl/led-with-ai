@@ -8,6 +8,7 @@ let syncingProjectTask = false;
 
 // 이벤트 리스너 중복 등록 방지 플래그
 let projectEventsBound = false;
+let projectEventHandler = null; // 이벤트 핸들러 참조 저장
 
 // 수정 모드 관리
 let editingProjectTaskId = null;
@@ -127,6 +128,8 @@ export async function renderProjects() {
   return {
     html,
     onMount: async () => {
+      // 이벤트 바인딩 플래그 초기화 (페이지가 다시 렌더링될 때마다)
+      projectEventsBound = false;
       await loadProjects(profile);
       setupEventHandlers(profile);
     }
@@ -543,11 +546,17 @@ function setupEventHandlers(profile) {
     });
   }
 
-  // 이벤트 위임: 프로젝트 카드 내부 버튼들 (한 번만 등록)
-  if (projectEventsBound) return;
+  // 이벤트 위임: 프로젝트 카드 내부 버튼들
+  // 기존 이벤트 리스너 제거 (중복 방지)
+  if (projectEventHandler) {
+    document.removeEventListener('click', projectEventHandler);
+    projectEventHandler = null;
+  }
+  
   projectEventsBound = true;
 
-  document.addEventListener('click', async (e) => {
+  // 이벤트 핸들러 함수 정의
+  projectEventHandler = async (e) => {
     // 프로젝트 추가 버튼
     if (e.target.closest('#add-project-btn')) {
       openProjectModal(null, profile);
@@ -667,7 +676,10 @@ function setupEventHandlers(profile) {
       const projectId = btn.dataset.projectId;
       await registerProjectTasksToTodos(projectId, profile);
     }
-  });
+  };
+  
+  // 이벤트 리스너 등록
+  document.addEventListener('click', projectEventHandler);
 
   // 프로젝트 모달 이벤트
   setupProjectModalEvents(profile);
@@ -980,11 +992,26 @@ async function updateProjectTaskDate(taskId, dueDate, profile) {
 
 async function deleteProjectTask(taskId, profile) {
   try {
-    // 연결된 todos의 project_task_id를 NULL로 설정 (동기화 해제)
-    await supabase
+    console.log('[DeleteProjectTask] Starting deletion for task:', taskId);
+    
+    // 연결된 todos를 soft delete (반복업무와 동일하게)
+    const { data: deletedTodos, error: todosError } = await supabase
       .from('todos')
-      .update({ project_task_id: null })
-      .eq('project_task_id', taskId);
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('project_task_id', taskId)
+      .is('deleted_at', null)
+      .select('id');
+    
+    if (todosError) {
+      console.error('[DeleteProjectTask] Error deleting todos:', todosError);
+      // 에러가 발생해도 프로젝트 할일 삭제는 계속 진행
+      console.warn('[DeleteProjectTask] Continuing with task deletion despite todos error');
+    } else {
+      console.log('[DeleteProjectTask] Deleted todos count:', deletedTodos?.length || 0);
+      if (deletedTodos && deletedTodos.length > 0) {
+        console.log('[DeleteProjectTask] Successfully deleted todos:', deletedTodos.map(t => t.id));
+      }
+    }
 
     // 프로젝트 할일 soft delete
     const { error } = await supabase
@@ -993,15 +1020,30 @@ async function deleteProjectTask(taskId, profile) {
       .eq('id', taskId);
 
     if (error) throw error;
+    
+    console.log('[DeleteProjectTask] Task deleted successfully');
     await loadProjects(profile);
+    
+    // 오늘 탭이 열려있으면 자동 새로고침 (프로젝트 전체 삭제와 동일하게)
+    const currentHash = location.hash;
+    if (currentHash === '#/today' || currentHash === '' || currentHash === '#/') {
+      console.log('[DeleteProjectTask] Refreshing today page...');
+      const { router } = await import('../router.js');
+      if (router) {
+        router.handleRoute();
+      }
+    }
   } catch (error) {
-    console.error('Error deleting project task:', error);
-    alert('할일 삭제 중 오류가 발생했습니다.');
+    console.error('[DeleteProjectTask] Error deleting project task:', error);
+    console.error('[DeleteProjectTask] Error details:', JSON.stringify(error, null, 2));
+    alert('할일 삭제 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
   }
 }
 
 async function deleteProject(projectId, profile) {
   try {
+    console.log('[DeleteProject] Starting deletion for project:', projectId);
+    
     // 연결된 project_tasks 조회 (프로젝트 삭제 전에 조회해야 함)
     const { data: tasks, error: tasksError } = await supabase
       .from('project_tasks')
@@ -1010,10 +1052,13 @@ async function deleteProject(projectId, profile) {
       .is('deleted_at', null);
 
     if (tasksError) {
-      console.error('Error fetching project tasks:', tasksError);
-      throw tasksError;
+      console.error('[DeleteProject] Error fetching project tasks:', tasksError);
+      // 에러가 발생해도 todos 삭제는 시도
     }
 
+    console.log('[DeleteProject] Found project tasks:', tasks?.length || 0);
+
+    // project_tasks가 있으면 해당 taskIds로 todos 삭제 (반복업무와 동일한 패턴)
     if (tasks && tasks.length > 0) {
       const taskIds = tasks.map(t => t.id);
       console.log('[DeleteProject] Deleting todos for taskIds:', taskIds);
@@ -1024,40 +1069,54 @@ async function deleteProject(projectId, profile) {
         .update({ deleted_at: new Date().toISOString() })
         .in('project_task_id', taskIds)
         .is('deleted_at', null)
-        .select('id'); // 삭제된 항목 수 확인용
+        .select('id');
       
       if (todosError) {
         console.error('[DeleteProject] Error deleting todos:', todosError);
-        throw todosError;
+        console.error('[DeleteProject] Todos error details:', JSON.stringify(todosError, null, 2));
+        // 에러가 발생해도 프로젝트 삭제는 계속 진행 (사용자 경험을 위해)
+        console.warn('[DeleteProject] Continuing with project deletion despite todos error');
+      } else {
+        console.log('[DeleteProject] Deleted todos count:', deletedTodos?.length || 0);
+        if (!deletedTodos || deletedTodos.length === 0) {
+          console.warn('[DeleteProject] No todos were deleted. This might indicate a problem.');
+          console.warn('[DeleteProject] TaskIds used:', taskIds);
+        } else {
+          console.log('[DeleteProject] Successfully deleted todos:', deletedTodos.map(t => t.id));
+        }
       }
-      
-      console.log('[DeleteProject] Deleted todos count:', deletedTodos?.length || 0);
+    } else {
+      console.log('[DeleteProject] No project tasks found, skipping todos deletion');
     }
 
-    // 프로젝트 soft delete (CASCADE로 project_tasks도 함께 처리됨)
+    // 프로젝트 soft delete
     const { error } = await supabase
       .from('projects')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', projectId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('[DeleteProject] Error deleting project:', error);
+      throw error;
+    }
+
+    console.log('[DeleteProject] Project deleted successfully');
 
     await loadProjects(profile);
     
-    // 오늘 탭이 열려있으면 자동 새로고침
-    if (location.hash === '#/today' || location.hash === '') {
-      // 오늘 탭을 다시 렌더링하여 삭제된 할일 반영
-      const { renderToday } = await import('../pages/today.js');
-      if (renderToday) {
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) {
-          mainContent.innerHTML = await renderToday();
-        }
+    // 오늘 탭이 열려있으면 자동 새로고침 (반복업무처럼 router를 통해)
+    const currentHash = location.hash;
+    if (currentHash === '#/today' || currentHash === '' || currentHash === '#/') {
+      console.log('[DeleteProject] Refreshing today page...');
+      const { router } = await import('../router.js');
+      if (router) {
+        router.handleRoute();
       }
     }
   } catch (error) {
-    console.error('Error deleting project:', error);
-    alert('프로젝트 삭제 중 오류가 발생했습니다.');
+    console.error('[DeleteProject] Error deleting project:', error);
+    console.error('[DeleteProject] Error details:', JSON.stringify(error, null, 2));
+    alert('프로젝트 삭제 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
   }
 }
 

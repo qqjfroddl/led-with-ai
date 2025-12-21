@@ -826,6 +826,11 @@ alwaysApply: true
   - 프로젝트 삭제 시 연결된 todos도 soft delete (반복업무와 동일하게)
   - 오늘 탭 자동 새로고침으로 삭제된 할일 즉시 반영
   - 에러 처리 및 로깅 강화
+- FR-IPI8. 프로젝트 할일 삭제 시 동기화 ✅
+  - 프로젝트 할일 삭제 시 연결된 todos도 soft delete (반복업무와 동일하게)
+  - `project_task_id`를 NULL로 설정하는 대신 todos를 soft delete하여 오늘할일에서도 삭제됨
+  - 오늘 탭 자동 새로고침으로 삭제된 할일 즉시 반영
+  - 에러 처리 및 로깅 강화
 
 ### AC-I (검증됨)
 - AC-IP1. PC/모바일 동일 프로젝트 목록 조회 ✅
@@ -838,6 +843,7 @@ alwaysApply: true
 - AC-IPI2. 양방향 동기화 정상 작동 (무한 루프 없음) ✅
 - AC-IPI3. Carry-over 시 Project Task due_date 업데이트 정상 ✅
 - AC-IPI4. 날짜 이동/포기 시 동기화 정상 ✅
+- AC-IPI5. 프로젝트 할일 삭제 시 연결된 todos도 오늘할일에서 삭제됨 ✅
 
 ---
 
