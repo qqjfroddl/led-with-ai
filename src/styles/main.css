@@ -1047,7 +1047,64 @@ input[type="date"]:focus {
     flex-direction: column !important;
     gap: 0.1rem !important;
   }
+}
 
+/* 드래그 앤 드롭 스타일 */
+.todo-item {
+  user-select: none;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.todo-item:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+/* 드래그 핸들 스타일 */
+.todo-drag-handle {
+  transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.todo-drag-handle:hover {
+  color: #6366f1 !important;
+  background-color: #eef2ff;
+  transform: scale(1.15);
+}
+
+.todo-drag-handle:active {
+  cursor: grabbing !important;
+  transform: scale(0.9);
+  background-color: #e0e7ff;
+}
+
+.todo-item:hover .todo-drag-handle {
+  color: #6366f1;
+}
+
+.drag-insertion-line {
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.5);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 드래그 중인 항목 스타일 */
+.todo-item.dragging {
+  opacity: 0.4 !important;
+  cursor: grabbing !important;
+  transform: rotate(2deg) scale(0.98);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+  z-index: 1000;
+  position: relative;
+}
+
+@media (max-width: 768px) {
   /* 모바일에서 재생성 버튼 최적화 */
   .btn-regenerate {
     white-space: nowrap !important;
