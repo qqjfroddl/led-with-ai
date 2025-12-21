@@ -23,7 +23,7 @@ alwaysApply: true
   - 주간 리포트 (통계 지표 + 주간 분석 + AI 주간 성찰) - 주차 선택, 실천율/완료율/성찰 작성률, 전주 대비 변화, 주간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원)
   - 월간 리포트 (통계 지표 + 월간 분석 + AI 월간 성찰) - 월 선택, 실천율/완료율/성찰 작성률, 전월 대비 변화, 월간 패턴 분석, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 월 2회)
   - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 2회)
-  - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인), 관리자 페이지 배포 설정 (Vite 다중 HTML 빌드, Vercel rewrites 설정)
+  - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인), 관리자 페이지 배포 설정 (Vite 다중 HTML 빌드, Vercel rewrites 설정), 관리자 통계 조회 RLS 정책 (todos/routines/routine_logs/daily_reflections 테이블에 admin_select_all 정책 추가)
   - **프로젝트 관리 (완료)** - 프로젝트 CRUD, 프로젝트 할일 관리, 진행중/완료 탭 분류, 카드 그리드 + 아코디언 UI, 오늘 할일 연동, 양방향 동기화, 마감날짜 관리, 다시 진행하기 기능
   - **배포 및 저장소 관리 (완료)** - GitHub 저장소 이름 변경 (`led-with-ai`), Vercel 자동 배포 설정, Git → GitHub → Vercel 자동 배포 파이프라인 구축, 관리자 페이지(`admin.html`) 배포 문제 해결 (vite.config.js rollupOptions.input 설정, vercel.json rewrites에서 admin.html 제외)
   - **모바일 레이아웃 최적화 (완료)** - 로그인 화면: 로고 크기 조정 (100% 너비), 버튼 크기 축소 및 이미지와 분리, 한 줄 표시 유지 / 헤더: 모바일에서 사용자 이름 숨김, 로그아웃 버튼 크기 축소 / 오늘 할일: 제목 줄바꿈 방지 (`white-space: nowrap`), 카테고리 탭 가로 스크롤 지원 (한 줄 표시) / 순서 조정 버튼: PC는 가로 배치, 모바일은 세로 배치 (반응형) / 네비게이션 메뉴: 계획/실행/리뷰 그룹 균형 조정 (모바일에서 세로 배치, 각 항목이 균등하게 공간 차지), "오늘" 버튼 높이 50%로 조정 및 가운데 정렬 / 루틴 섹션: "나이트루틴" 텍스트 줄바꿈 방지 (`white-space: nowrap`, 폰트 크기 0.9rem) / 주간 리포트: 주간 선택 버튼 텍스트 줄바꿈 방지 (`white-space: nowrap`, 폰트 크기 0.9rem, 간격 조정)
@@ -712,6 +712,7 @@ alwaysApply: true
 - FR-H6. 만료된 사용자 접근 제어 - `expires_at < CURRENT_DATE`인 경우 서비스 접근 불가
 - FR-H7. 챌린지 참가자 관리 - 승인된 사용자 중에서 챌린지 참가자 추가/제외 (개별/일괄), 챌린지 참가자 목록 조회 및 통계 확인
 - FR-H8. 사용 현황 통계 표시 - 승인된 사용자 및 챌린지 참가자 목록에 이번 주 루틴 실행률, 할일 완료율, 성찰 작성일 표시
+- FR-H9. 관리자 통계 조회 RLS 정책 - 관리자는 `public.is_admin()` 함수를 통해 다른 사용자의 `todos`, `routines`, `routine_logs`, `daily_reflections` 데이터 조회 가능 (통계 계산용)
 
 ### AC-H (보안 최중요)
 - AC-H1. 일반 사용자는 어떤 방식으로도 `profiles.status/role` 변경 불가(RLS)
@@ -722,6 +723,7 @@ alwaysApply: true
 - AC-H6. 챌린지 참가자 추가/제외 시 사용자 자체는 삭제되지 않음 (is_challenge_participant만 변경)
 - AC-H7. 사용 현황 통계는 이번 주(월~일) 기준으로 계산되어 표시됨
 - AC-H8. 챌린지 참가자 탭에서도 일괄 제외 기능 사용 가능
+- AC-H9. 관리자 통계 조회 정상 작동 - 관리자 페이지에서 모든 승인된 사용자의 이번 주 통계가 정확하게 표시됨 (RLS 정책 `{table}_admin_select_all` 적용) ✅
 
 ---
 
@@ -1044,6 +1046,10 @@ alwaysApply: true
 - SELECT/INSERT/UPDATE/DELETE:
   - row.user_id = auth.uid()
   - AND approved 조건
+- **관리자 예외 (SELECT만)**:
+  - 관리자는 `public.is_admin()` 함수를 통해 모든 사용자의 데이터 조회 가능
+  - 적용 테이블: `todos`, `routines`, `routine_logs`, `daily_reflections` (관리자 페이지 통계 조회용)
+  - 정책명: `{table}_admin_select_all` (예: `todos_admin_select_all`)
 
 ## 11.4 프로젝트 관련 테이블 정책 (추가)
 - projects: 본인 프로젝트만 CRUD, approved 조건 필수

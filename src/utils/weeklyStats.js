@@ -1,5 +1,5 @@
 // 주간 통계 계산 유틸리티
-import { supabase } from '../config/supabase.js';
+import { supabase, getSupabase } from '../config/supabase.js';
 import { getWeekStart, getWeekEnd } from './date.js';
 
 /**
@@ -8,9 +8,14 @@ import { getWeekStart, getWeekEnd } from './date.js';
  * @param {string} timezone - 타임존 (기본: Asia/Seoul)
  * @returns {Promise<Object>} 주간 통계 객체
  */
-export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul') {
+export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul', supabaseClient = null) {
+  const client = supabaseClient || supabase || await getSupabase();
+  if (!client) {
+    throw new Error('Supabase client not available');
+  }
+  
   const weekEnd = getWeekEnd(weekStart, timezone);
-  const userId = (await supabase.auth.getUser()).data?.user?.id;
+  const userId = (await client.auth.getUser()).data?.user?.id;
   
   if (!userId) {
     throw new Error('사용자가 로그인하지 않았습니다.');
@@ -18,10 +23,10 @@ export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul') {
   
   // 병렬로 모든 데이터 조회
   const [todosStats, routinesStats, reflectionsStats, prevWeekStats] = await Promise.all([
-    getTodosStats(userId, weekStart, weekEnd),
-    getRoutinesStats(userId, weekStart, weekEnd),
-    getReflectionsStats(userId, weekStart, weekEnd),
-    getPrevWeekStats(userId, weekStart, timezone) // 전주 통계 (비교용)
+    getTodosStats(userId, weekStart, weekEnd, client),
+    getRoutinesStats(userId, weekStart, weekEnd, client),
+    getReflectionsStats(userId, weekStart, weekEnd, client),
+    getPrevWeekStats(userId, weekStart, timezone, client) // 전주 통계 (비교용)
   ]);
   
   // 종합 통계 계산
@@ -43,10 +48,17 @@ export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul') {
  * @param {string} userId - 사용자 ID
  * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
  * @param {string} weekEnd - 주 종료일 (YYYY-MM-DD)
+ * @param {Object} supabaseClient - Supabase 클라이언트 (옵셔널, 없으면 기본 클라이언트 사용)
  * @returns {Promise<Object>} 할일 통계 객체
  */
-export async function getTodosStats(userId, weekStart, weekEnd) {
-  const { data: todos, error } = await supabase
+export async function getTodosStats(userId, weekStart, weekEnd, supabaseClient = null) {
+  const client = supabaseClient || supabase || await getSupabase();
+  if (!client) {
+    console.error('❌ Supabase config missing: Supabase client not available');
+    return getEmptyTodosStats();
+  }
+  
+  const { data: todos, error } = await client
     .from('todos')
     .select('*')
     .eq('user_id', userId)
@@ -55,7 +67,9 @@ export async function getTodosStats(userId, weekStart, weekEnd) {
     .is('deleted_at', null);
   
   if (error) {
-    console.error('Error fetching todos:', error);
+    console.error(`[getTodosStats] Error fetching todos for user ${userId}:`, error);
+    console.error(`[getTodosStats] Week: ${weekStart} to ${weekEnd}`);
+    console.error(`[getTodosStats] Error code: ${error.code}, message: ${error.message}`);
     return getEmptyTodosStats();
   }
   
@@ -180,11 +194,18 @@ function isRoutineDue(routine, selectedDate) {
  * @param {string} userId - 사용자 ID
  * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
  * @param {string} weekEnd - 주 종료일 (YYYY-MM-DD)
+ * @param {Object} supabaseClient - Supabase 클라이언트 (옵셔널, 없으면 기본 클라이언트 사용)
  * @returns {Promise<Object>} 루틴 통계 객체
  */
-export async function getRoutinesStats(userId, weekStart, weekEnd) {
+export async function getRoutinesStats(userId, weekStart, weekEnd, supabaseClient = null) {
+  const client = supabaseClient || supabase || await getSupabase();
+  if (!client) {
+    console.error('❌ Supabase config missing: Supabase client not available');
+    return getEmptyRoutinesStats();
+  }
+  
   // ✅ PRD 요구사항: is_active 조건 없이 모든 루틴 조회 (비활성화된 루틴 포함)
-  const { data: routines, error: routinesError } = await supabase
+  const { data: routines, error: routinesError } = await client
     .from('routines')
     .select('*')
     .eq('user_id', userId);
@@ -192,12 +213,13 @@ export async function getRoutinesStats(userId, weekStart, weekEnd) {
     // deleted_at 조건 제거 (날짜 기준으로 필터링)
   
   if (routinesError) {
-    console.error('Error fetching routines:', routinesError);
+    console.error(`[getRoutinesStats] Error fetching routines for user ${userId}:`, routinesError);
+    console.error(`[getRoutinesStats] Error code: ${routinesError.code}, message: ${routinesError.message}`);
     return getEmptyRoutinesStats();
   }
   
   // 주간 루틴 로그 조회
-  const { data: logs, error: logsError } = await supabase
+  const { data: logs, error: logsError } = await client
     .from('routine_logs')
     .select('*')
     .eq('user_id', userId)
@@ -206,7 +228,9 @@ export async function getRoutinesStats(userId, weekStart, weekEnd) {
     .eq('checked', true);
   
   if (logsError) {
-    console.error('Error fetching routine logs:', logsError);
+    console.error(`[getRoutinesStats] Error fetching routine logs for user ${userId}:`, logsError);
+    console.error(`[getRoutinesStats] Week: ${weekStart} to ${weekEnd}`);
+    console.error(`[getRoutinesStats] Error code: ${logsError.code}, message: ${logsError.message}`);
     return getEmptyRoutinesStats();
   }
   
@@ -366,10 +390,17 @@ export async function getRoutinesStats(userId, weekStart, weekEnd) {
  * @param {string} userId - 사용자 ID
  * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
  * @param {string} weekEnd - 주 종료일 (YYYY-MM-DD)
+ * @param {Object} supabaseClient - Supabase 클라이언트 (옵셔널, 없으면 기본 클라이언트 사용)
  * @returns {Promise<Object>} 성찰 통계 객체
  */
-export async function getReflectionsStats(userId, weekStart, weekEnd) {
-  const { data: reflections, error } = await supabase
+export async function getReflectionsStats(userId, weekStart, weekEnd, supabaseClient = null) {
+  const client = supabaseClient || supabase || await getSupabase();
+  if (!client) {
+    console.error('❌ Supabase config missing: Supabase client not available');
+    return getEmptyReflectionsStats();
+  }
+  
+  const { data: reflections, error } = await client
     .from('daily_reflections')
     .select('date')
     .eq('user_id', userId)
@@ -377,7 +408,9 @@ export async function getReflectionsStats(userId, weekStart, weekEnd) {
     .lte('date', weekEnd);
   
   if (error) {
-    console.error('Error fetching reflections:', error);
+    console.error(`[getReflectionsStats] Error fetching reflections for user ${userId}:`, error);
+    console.error(`[getReflectionsStats] Week: ${weekStart} to ${weekEnd}`);
+    console.error(`[getReflectionsStats] Error code: ${error.code}, message: ${error.message}`);
     return getEmptyReflectionsStats();
   }
   
@@ -395,7 +428,7 @@ export async function getReflectionsStats(userId, weekStart, weekEnd) {
 /**
  * 전주 통계 (비교용)
  */
-async function getPrevWeekStats(userId, weekStart, timezone) {
+async function getPrevWeekStats(userId, weekStart, timezone, supabaseClient = null) {
   // 전주 시작일 계산
   const prevWeekStart = new Date(weekStart);
   prevWeekStart.setDate(prevWeekStart.getDate() - 7);
@@ -405,9 +438,9 @@ async function getPrevWeekStats(userId, weekStart, timezone) {
   const prevWeekEndStr = prevWeekEnd.toISOString().split('T')[0];
   
   const [todosStats, routinesStats, reflectionsStats] = await Promise.all([
-    getTodosStats(userId, prevWeekStartStr, prevWeekEndStr),
-    getRoutinesStats(userId, prevWeekStartStr, prevWeekEndStr),
-    getReflectionsStats(userId, prevWeekStartStr, prevWeekEndStr)
+    getTodosStats(userId, prevWeekStartStr, prevWeekEndStr, supabaseClient),
+    getRoutinesStats(userId, prevWeekStartStr, prevWeekEndStr, supabaseClient),
+    getReflectionsStats(userId, prevWeekStartStr, prevWeekEndStr, supabaseClient)
   ]);
   
   return {
