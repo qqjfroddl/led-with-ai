@@ -16,7 +16,8 @@ export async function renderNavigation(currentRoute, profile) {
       color: { bg: '#f3e8ff', border: '#c4b5fd', active: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' },
       routes: [
         { path: '/goals', label: '목표', icon: 'target' },
-        { path: '/projects', label: '프로젝트', icon: 'folder-kanban' }
+        { path: '/projects', label: '프로젝트', icon: 'folder-kanban' },
+        { path: '/recurring', label: '반복업무', icon: 'repeat' }
       ]
     },
     {

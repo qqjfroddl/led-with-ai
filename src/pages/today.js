@@ -661,6 +661,7 @@ function renderTodos(todosList, date, profile, timezone) {
               ${todo.pinned ? '<i data-lucide="pin" style="width: 14px; height: 14px; color: #f59e0b; flex-shrink: 0;"></i>' : ''}
               ${todo.priority ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; ${todo.priority === 3 ? 'background: #fee2e2; color: #991b1b;' : todo.priority === 2 ? 'background: #fef3c7; color: #92400e;' : 'background: #dbeafe; color: #1e40af;'}">P${todo.priority}</span>` : ''}
               ${todo.project_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #e0e7ff; color: #4f46e5; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트</span>' : ''}
+              ${todo.recurring_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #f3e8ff; color: #6b21a8; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="repeat" style="width: 12px; height: 12px;"></i>반복업무</span>' : ''}
               <span class="todo-title" data-todo-title="${todo.id}" style="${todo.is_done ? 'text-decoration: line-through; color: #9ca3af;' : ''} ${!isReadOnly && !todo.is_done ? 'cursor: pointer;' : ''}">${todo.title}</span>
               ${todo.due_date ? `<span style="font-size: 0.7rem; color: #6b7280; flex-shrink: 0;">📅 ${todo.due_date}</span>` : ''}
             </div>
@@ -2089,7 +2090,59 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
       }
     }
 
-    // 일반 할일 또는 프로젝트 할일(중복 없음) - 오늘로 복제
+    // 반복업무 할일인 경우: 오늘 날짜에 이미 등록된 할일이 있는지 확인
+    if (originalTodo.recurring_task_id) {
+      const { data: existingTodo } = await supabase
+        .from('todos')
+        .select('id')
+        .eq('recurring_task_id', originalTodo.recurring_task_id)
+        .eq('date', today)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (existingTodo) {
+        // 이미 등록되어 있으면 새로 생성하지 않고 원본만 처리
+        const { error: updateError } = await supabase
+          .from('todos')
+          .update({ carried_over_at: new Date().toISOString() })
+          .eq('id', todoId);
+
+        if (updateError) throw updateError;
+        
+        // 모달에서 해당 항목 처리 표시
+        const todoItem = document.querySelector(`.carryover-todo-item[data-todo-id="${todoId}"]`);
+        if (todoItem) {
+          todoItem.setAttribute('data-processed', 'true');
+          todoItem.style.opacity = '0.5';
+          todoItem.style.pointerEvents = 'none';
+          const carryBtn = todoItem.querySelector('.carryover-carry-btn');
+          const skipBtn = todoItem.querySelector('.carryover-skip-btn');
+          if (carryBtn) {
+            carryBtn.textContent = '이미 등록됨';
+            carryBtn.style.background = '#d1fae5';
+            carryBtn.style.color = '#059669';
+            carryBtn.disabled = true;
+          }
+          if (skipBtn) skipBtn.style.display = 'none';
+        }
+
+        // 오늘 할일 목록 새로고침
+        await loadTodos(today, profile, timezone);
+
+        // 남은 항목이 없으면 모달 닫기
+        setTimeout(() => {
+          const remainingItems = document.querySelectorAll('.carryover-todo-item:not([data-processed="true"])');
+          if (remainingItems.length === 0) {
+            markCarryoverModalShown(timezone);
+            const modal = document.getElementById('carryover-modal');
+            if (modal) modal.style.display = 'none';
+          }
+        }, 100);
+        return;
+      }
+    }
+
+    // 일반 할일 또는 프로젝트/반복업무 할일(중복 없음) - 오늘로 복제
     const { data: newTodo, error: insertError } = await supabase
       .from('todos')
       .insert({
@@ -2104,7 +2157,8 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
         is_done: false,
         done_at: null,
         display_order: null,
-        project_task_id: originalTodo.project_task_id || null  // 프로젝트 할일인 경우 동기화 유지
+        project_task_id: originalTodo.project_task_id || null,  // 프로젝트 할일인 경우 동기화 유지
+        recurring_task_id: originalTodo.recurring_task_id || null  // 반복업무 할일인 경우 동기화 유지
       })
       .select()
       .single();
@@ -2931,7 +2985,9 @@ async function duplicateTodo(todoId, newDate, currentSelectedDate, profile, time
         pinned: todo.pinned || false,
         is_done: false, // 복제된 할일은 미완료 상태로 시작
         done_at: null,
-        display_order: null // 순서는 자동으로 결정됨
+        display_order: null, // 순서는 자동으로 결정됨
+        project_task_id: todo.project_task_id || null,  // 프로젝트 할일인 경우 동기화 유지
+        recurring_task_id: todo.recurring_task_id || null  // 반복업무 할일인 경우 동기화 유지
       });
 
     if (error) throw error;
