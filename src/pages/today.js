@@ -639,9 +639,9 @@ function renderTodos(todosList, date, profile, timezone) {
       const canMove = !todo.is_done && !isReadOnly && !isEditing;
 
       return `
-        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="${canMove ? 'true' : 'false'}" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); ${canMove ? 'cursor: move;' : ''}">
           ${canMove ? `
-            <div class="todo-drag-handle" draggable="true" data-todo-id="${todo.id}" style="display: flex; align-items: center; padding: 0.25rem 0.5rem; cursor: grab; color: #9ca3af; border-radius: 4px; transition: all 0.2s ease; user-select: none;" title="드래그하여 순서 변경">
+            <div class="todo-drag-handle" draggable="true" style="display: flex; align-items: center; padding: 0.25rem 0.5rem; cursor: grab; color: #9ca3af; border-radius: 4px; transition: all 0.2s ease; user-select: none;" title="드래그하여 순서 변경">
               <i data-lucide="grip-vertical" style="width: 18px; height: 18px; pointer-events: none;"></i>
             </div>
             <div class="move-todo-buttons" style="display: flex; flex-direction: row; gap: 0; align-items: center;">
@@ -660,7 +660,7 @@ function renderTodos(todosList, date, profile, timezone) {
             <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               ${todo.pinned ? '<i data-lucide="pin" style="width: 14px; height: 14px; color: #f59e0b; flex-shrink: 0;"></i>' : ''}
               ${todo.priority ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; ${todo.priority === 3 ? 'background: #fee2e2; color: #991b1b;' : todo.priority === 2 ? 'background: #fef3c7; color: #92400e;' : 'background: #dbeafe; color: #1e40af;'}">P${todo.priority}</span>` : ''}
-              ${todo.project_task_id && todo.project_task_id !== null ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #e0e7ff; color: #4f46e5; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트</span>' : ''}
+              ${todo.project_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #e0e7ff; color: #4f46e5; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트</span>' : ''}
               <span class="todo-title" data-todo-title="${todo.id}" style="${todo.is_done ? 'text-decoration: line-through; color: #9ca3af;' : ''} ${!isReadOnly && !todo.is_done ? 'cursor: pointer;' : ''}">${todo.title}</span>
               ${todo.due_date ? `<span style="font-size: 0.7rem; color: #6b7280; flex-shrink: 0;">📅 ${todo.due_date}</span>` : ''}
             </div>
@@ -1069,18 +1069,8 @@ function bindTodoEvents(date, profile, timezone) {
 function setupDragAndDrop(date, profile, timezone) {
   const todosContent = document.getElementById('todos-content');
   if (!todosContent) {
-    console.error('[Drag] todos-content not found');
+    console.error('[Drag] todos-content element not found');
     return;
-  }
-
-  // 기존 이벤트 리스너 제거
-  if (window._dragDropHandlers && window._dragDropHandlers.todosContent) {
-    const oldContent = window._dragDropHandlers.todosContent;
-    oldContent.removeEventListener('dragstart', window._dragDropHandlers.dragstart);
-    oldContent.removeEventListener('dragend', window._dragDropHandlers.dragend);
-    document.removeEventListener('dragover', window._dragDropHandlers.dragover);
-    document.removeEventListener('dragleave', window._dragDropHandlers.dragleave);
-    document.removeEventListener('drop', window._dragDropHandlers.drop);
   }
 
   let draggedElement = null;
@@ -1089,34 +1079,71 @@ function setupDragAndDrop(date, profile, timezone) {
   
   console.log('[Drag] setupDragAndDrop initialized', todosContent);
 
-  // 드래그 시작 - document에 등록하여 이벤트 위임 사용
-  const handleDragStart = (e) => {
+  // 드래그 시작
+  todosContent.addEventListener('dragstart', (e) => {
     console.log('[Drag] dragstart triggered', e.target, e.target.classList);
     
-    // dragstart는 draggable="true"인 요소에서 직접 발생
-    // e.target이 .todo-drag-handle이거나 그 자식일 수 있음
+    // 드래그 핸들에서 dragstart가 발생한 경우
     let dragHandle = null;
+    let todoItem = null;
     
     if (e.target.classList.contains('todo-drag-handle')) {
       dragHandle = e.target;
+      todoItem = dragHandle.parentElement;
     } else {
-      // 자식 요소(아이콘 등)에서 발생한 경우
       dragHandle = e.target.closest('.todo-drag-handle');
+      if (dragHandle) {
+        todoItem = dragHandle.parentElement;
+      }
     }
     
-    if (!dragHandle || dragHandle.draggable !== 'true') {
-      console.log('[Drag] Not a draggable handle', dragHandle);
+    // 드래그 핸들에서 시작된 경우
+    if (dragHandle && dragHandle.draggable === 'true' && todoItem && todoItem.classList.contains('todo-item')) {
+      console.log('[Drag] Starting drag from handle', todoItem.dataset.todoId);
+      
+      draggedElement = todoItem;
+      draggedTodoId = todoItem.dataset.todoId;
+      draggedCategory = todoItem.dataset.category;
+      
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedTodoId);
+      
+      // 드래그 중 시각적 피드백
+      todoItem.classList.add('dragging');
+      todoItem.style.opacity = '0.4';
+      todoItem.style.transform = 'rotate(2deg)';
+      todoItem.style.cursor = 'grabbing';
+      dragHandle.style.cursor = 'grabbing';
+      
       return;
     }
     
-    const todoItem = dragHandle.closest('.todo-item');
-    if (!todoItem) {
-      console.log('[Drag] No todo item found');
+    // todo-item에서 직접 dragstart가 발생한 경우
+    todoItem = e.target.closest('.todo-item');
+    if (!todoItem || (todoItem.draggable !== 'true' && todoItem.draggable !== true)) {
+      console.log('[Drag] No todo item or not draggable');
       e.preventDefault();
       return;
     }
     
-    console.log('[Drag] dragstart from handle', todoItem.dataset.todoId);
+    // 버튼, 체크박스, 입력 필드를 클릭한 경우 드래그 방지
+    if (e.target.closest('button') || 
+        e.target.type === 'checkbox' || 
+        e.target.closest('input') ||
+        e.target.closest('.move-todo-buttons')) {
+      console.log('[Drag] Prevented: button/checkbox/input');
+      e.preventDefault();
+      return;
+    }
+    
+    // 드래그 핸들이 아니면 드래그 방지
+    if (!e.target.closest('.todo-drag-handle')) {
+      console.log('[Drag] Prevented: not from drag handle');
+      e.preventDefault();
+      return;
+    }
+    
+    console.log('[Drag] Starting drag from todo item', todoItem.dataset.todoId);
     
     draggedElement = todoItem;
     draggedTodoId = todoItem.dataset.todoId;
@@ -1127,80 +1154,72 @@ function setupDragAndDrop(date, profile, timezone) {
     
     // 드래그 중 시각적 피드백
     todoItem.classList.add('dragging');
-    todoItem.style.opacity = '0.5';
-    todoItem.style.transform = 'rotate(2deg) scale(0.98)';
-    dragHandle.style.cursor = 'grabbing';
-  };
+    todoItem.style.opacity = '0.4';
+    todoItem.style.transform = 'rotate(2deg)';
+    todoItem.style.cursor = 'grabbing';
+  });
 
-  // 드래그 종료 - document에 등록
-  const handleDragEnd = (e) => {
-    console.log('[Drag] dragend');
+  // 드래그 종료 (시각적 피드백 제거)
+  todosContent.addEventListener('dragend', (e) => {
+    console.log('[Drag] dragend triggered');
     
     if (draggedElement) {
       draggedElement.classList.remove('dragging');
-      draggedElement.style.opacity = '';
+      draggedElement.style.opacity = '1';
       draggedElement.style.transform = '';
+      draggedElement.style.cursor = 'move';
       
+      // 드래그 핸들도 원래대로
       const dragHandle = draggedElement.querySelector('.todo-drag-handle');
       if (dragHandle) {
         dragHandle.style.cursor = 'grab';
       }
     }
-    
-    // 모든 시각적 피드백 제거
-    document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
-    document.querySelectorAll('.todo-item').forEach(el => {
-      delete el.dataset.insertBefore;
-      if (el.dataset.todoId !== draggedTodoId) {
-        el.style.opacity = '';
-        el.style.boxShadow = '';
-      }
-    });
-    
     draggedElement = null;
     draggedTodoId = null;
     draggedCategory = null;
-  };
-
-  // 드래그 오버 - document에 등록
-  const handleDragOver = (e) => {
-    // todos-content 내부가 아니면 무시
-    const todosContent = document.getElementById('todos-content');
-    if (!todosContent || !todosContent.contains(e.target)) {
-      return;
-    }
     
-    if (!draggedTodoId) {
+    // 모든 삽입 지시선 제거
+    document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+    
+    // 모든 todo-item의 insertBefore 속성 제거
+    document.querySelectorAll('.todo-item').forEach(el => {
+      delete el.dataset.insertBefore;
+    });
+  });
+
+  // 드래그 오버 (드롭 가능 영역 표시) - document에 등록하여 모든 요소에서 발생하도록
+  document.addEventListener('dragover', (e) => {
+    // todos-content 내부 요소에만 적용
+    if (!e.target.closest('#todos-content')) {
       return;
     }
     
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     
-    // todo-item 찾기 (여러 방법 시도)
-    let todoItem = e.target.closest('.todo-item');
-    
-    // todo-item을 찾지 못한 경우, 드래그 핸들에서 찾기
-    if (!todoItem) {
-      const dragHandle = e.target.closest('.todo-drag-handle');
-      if (dragHandle) {
-        todoItem = dragHandle.closest('.todo-item');
-      }
+    if (!draggedTodoId) {
+      return;
     }
     
-    // 여전히 찾지 못한 경우, 부모 요소에서 찾기
+    console.log('[Drag] dragover', e.target, e.target.classList, draggedTodoId);
+    
+    // 드래그 핸들 위에 있을 수도 있으므로 todo-item 찾기
+    let todoItem = e.target.closest('.todo-item');
     if (!todoItem) {
-      let current = e.target;
-      while (current && current !== todosContent) {
-        if (current.classList && current.classList.contains('todo-item')) {
-          todoItem = current;
-          break;
+      // 드래그 핸들 위에 있는 경우
+      if (e.target.classList.contains('todo-drag-handle')) {
+        todoItem = e.target.parentElement;
+      } else {
+        const dragHandle = e.target.closest('.todo-drag-handle');
+        if (dragHandle) {
+          todoItem = dragHandle.parentElement;
         }
-        current = current.parentElement;
       }
     }
     
     if (!todoItem || !todoItem.classList.contains('todo-item')) {
+      console.log('[Drag] dragover: no todo item found', e.target);
       // 삽입 지시선 제거
       document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
       return;
@@ -1212,6 +1231,7 @@ function setupDragAndDrop(date, profile, timezone) {
     // 같은 카테고리 내에서만 드롭 가능
     if (targetCategory !== draggedCategory) {
       document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      // 다른 카테고리 항목은 희미하게 표시
       todoItem.style.opacity = '0.3';
       return;
     }
@@ -1222,11 +1242,11 @@ function setupDragAndDrop(date, profile, timezone) {
       return;
     }
     
-    // 드롭 가능한 항목 강조
+    // 드롭 가능한 항목은 강조 표시
     todoItem.style.opacity = '1';
     todoItem.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
     
-    // 삽입 지시선 표시
+    // 드롭 위치 표시 (삽입 지시선)
     const rect = todoItem.getBoundingClientRect();
     const mouseY = e.clientY;
     const itemCenterY = rect.top + rect.height / 2;
@@ -1234,7 +1254,7 @@ function setupDragAndDrop(date, profile, timezone) {
     // 기존 삽입 지시선 제거
     document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
     
-    // 새 삽입 지시선 생성
+    // 위/아래에 삽입 지시선 표시
     const insertionLine = document.createElement('div');
     insertionLine.className = 'drag-insertion-line';
     
@@ -1254,25 +1274,35 @@ function setupDragAndDrop(date, profile, timezone) {
       `;
       
       if (mouseY < itemCenterY) {
+        // 위에 삽입
         insertionLine.style.top = `${rect.top - 1}px`;
         todoItem.dataset.insertBefore = 'true';
       } else {
+        // 아래에 삽입
         insertionLine.style.top = `${rect.bottom - 2}px`;
         todoItem.dataset.insertBefore = 'false';
       }
       
       document.body.appendChild(insertionLine);
     }
-  };
+  });
   
-  // 드래그 리브 - document에 등록
-  const handleDragLeave = (e) => {
-    const todosContent = document.getElementById('todos-content');
-    if (!todosContent) return;
+  // 드래그 리브 (스타일 복원 및 삽입 지시선 제거)
+  todosContent.addEventListener('dragleave', (e) => {
+    const todoItem = e.target.closest('.todo-item');
+    if (todoItem && todoItem.dataset.todoId !== draggedTodoId) {
+      todoItem.style.opacity = '';
+      todoItem.style.boxShadow = '';
+    }
     
-    // todos-content 밖으로 나가는 경우만 처리
-    if (!todosContent.contains(e.relatedTarget)) {
+    // 다른 todo-item으로 이동하는 경우는 제거하지 않음
+    if (e.relatedTarget && e.relatedTarget.closest('.todo-item')) {
+      return;
+    }
+    // todos-content 밖으로 나가는 경우만 제거
+    if (!e.relatedTarget || !todosContent.contains(e.relatedTarget)) {
       document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      // 모든 항목 스타일 복원
       document.querySelectorAll('.todo-item').forEach(item => {
         if (item.dataset.todoId !== draggedTodoId) {
           item.style.opacity = '';
@@ -1280,12 +1310,12 @@ function setupDragAndDrop(date, profile, timezone) {
         }
       });
     }
-  };
+  });
 
-  // 드롭 처리 - document에 등록
-  const handleDrop = async (e) => {
-    const todosContent = document.getElementById('todos-content');
-    if (!todosContent || !todosContent.contains(e.target)) {
+  // 드롭 처리 - document에 등록하여 모든 요소에서 발생하도록
+  document.addEventListener('drop', async (e) => {
+    // todos-content 내부 요소에만 적용
+    if (!e.target.closest('#todos-content')) {
       return;
     }
     
@@ -1295,19 +1325,26 @@ function setupDragAndDrop(date, profile, timezone) {
     console.log('[Drag] drop triggered', e.target, draggedTodoId);
     
     if (!draggedTodoId) {
+      console.log('[Drag] drop: no draggedTodoId');
       return;
     }
     
-    // todo-item 찾기
+    // 드래그 핸들 위에 있을 수도 있으므로 todo-item 찾기
     let todoItem = e.target.closest('.todo-item');
     if (!todoItem) {
-      const dragHandle = e.target.closest('.todo-drag-handle');
-      if (dragHandle) {
-        todoItem = dragHandle.closest('.todo-item');
+      // 드래그 핸들 위에 있는 경우
+      if (e.target.classList.contains('todo-drag-handle')) {
+        todoItem = e.target.parentElement;
+      } else {
+        const dragHandle = e.target.closest('.todo-drag-handle');
+        if (dragHandle) {
+          todoItem = dragHandle.parentElement;
+        }
       }
     }
     
     if (!todoItem || !todoItem.classList.contains('todo-item')) {
+      console.log('[Drag] drop: no todo item found', e.target);
       document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
       return;
     }
@@ -1333,26 +1370,7 @@ function setupDragAndDrop(date, profile, timezone) {
     // 드롭 위치에 따라 순서 업데이트
     const insertBefore = todoItem.dataset.insertBefore === 'true';
     await handleDragDrop(draggedTodoId, targetTodoId, insertBefore, date, profile, timezone);
-  };
-
-  // 이벤트 리스너 등록
-  // dragstart와 dragend는 todos-content에 등록 (이벤트 위임)
-  todosContent.addEventListener('dragstart', handleDragStart);
-  todosContent.addEventListener('dragend', handleDragEnd);
-  // dragover, dragleave, drop은 document에 등록 (더 넓은 범위)
-  document.addEventListener('dragover', handleDragOver);
-  document.addEventListener('dragleave', handleDragLeave);
-  document.addEventListener('drop', handleDrop);
-  
-  // 핸들러 저장 (나중에 제거하기 위해)
-  window._dragDropHandlers = {
-    todosContent: todosContent,
-    dragstart: handleDragStart,
-    dragend: handleDragEnd,
-    dragover: handleDragOver,
-    dragleave: handleDragLeave,
-    drop: handleDrop
-  };
+  });
 }
 
 // 드롭 처리 함수
