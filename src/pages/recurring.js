@@ -26,12 +26,7 @@ export async function renderRecurring() {
             <i data-lucide="repeat" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
           <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="card-title" style="color: #6b21a8; font-size: 1.5rem; margin: 0;">반복업무</div>
-              <button id="toggle-recurring" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-                <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #6b21a8;"></i>
-              </button>
-            </div>
+            <div class="card-title" style="color: #6b21a8; font-size: 1.5rem; margin: 0;">반복업무</div>
             <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;">반복되는 할일을 설정하고 관리하세요</p>
           </div>
           <button id="add-recurring-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
@@ -43,7 +38,7 @@ export async function renderRecurring() {
 
       <div id="recurring-content" style="display: block;">
         <!-- 반복업무 목록 -->
-        <div id="recurring-tasks-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;"></div>
+        <div id="recurring-tasks-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;"></div>
         
         <!-- 빈 상태 -->
         <div id="recurring-empty" style="text-align: center; padding: 3rem 1rem; color: #9ca3af; display: none;">
@@ -175,7 +170,7 @@ async function loadRecurringTasks(profile) {
       return;
     }
 
-    if (tasksList) tasksList.style.display = 'flex';
+    if (tasksList) tasksList.style.display = 'grid';
     if (emptyState) emptyState.style.display = 'none';
 
     // 반복업무 목록 렌더링
@@ -199,14 +194,23 @@ function renderRecurringTaskCard(task) {
     personal: 'Personal'
   };
 
+  const categoryIcons = {
+    work: 'briefcase',
+    job: 'clipboard-list',
+    self_dev: 'book-open',
+    personal: 'home'
+  };
+
   const categoryColors = {
-    work: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #F59E42 0%, #E8922E 100%)' },
-    job: { bg: '#e7f8ff', border: '#b5e6ff', gradient: 'linear-gradient(135deg, #22C7DD 0%, #1AACBE 100%)' },
-    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #9B8CD9 0%, #8678C7 100%)' },
-    personal: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #E66BA4 0%, #D65590 100%)' }
+    work: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #F59E42 0%, #E8922E 100%)', shadow: 'rgba(245, 158, 66, 0.3)' },
+    job: { bg: '#e7f8ff', border: '#b5e6ff', gradient: 'linear-gradient(135deg, #22C7DD 0%, #1AACBE 100%)', shadow: 'rgba(34, 199, 221, 0.3)' },
+    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #9B8CD9 0%, #8678C7 100%)', shadow: 'rgba(155, 140, 217, 0.3)' },
+    personal: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #E66BA4 0%, #D65590 100%)', shadow: 'rgba(230, 107, 164, 0.3)' }
   };
 
   const colors = categoryColors[task.category] || categoryColors.work;
+  const icon = categoryIcons[task.category] || 'repeat';
+  
   const repeatTypeLabels = {
     weekdays: '주중 매일 (월~금)',
     weekly: `매주 ${getDayOfWeekLabel(task.repeat_config.day_of_week)}`,
@@ -227,29 +231,50 @@ function renderRecurringTaskCard(task) {
     const month = String(threeMonthsLater.getMonth() + 1).padStart(2, '0');
     const day = String(threeMonthsLater.getDate()).padStart(2, '0');
     const threeMonthsLaterStr = `${year}-${month}-${day}`;
-    dateRange = `${task.start_date} ~ ${threeMonthsLaterStr} (3개월 후까지 등록)`;
+    dateRange = `${task.start_date} ~ ${threeMonthsLaterStr}`;
   }
 
   return `
     <div class="recurring-task-card" data-task-id="${task.id}" 
-         style="background: ${colors.bg}; border: 2px solid ${colors.border}; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; gap: 0.75rem; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; flex-wrap: wrap;">
-          <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${colors.gradient}; color: white; border-radius: 999px; font-weight: 500; white-space: nowrap; flex-shrink: 0;">${categoryLabels[task.category]}</span>
-          <span style="font-size: 0.75rem; color: #6b7280; white-space: nowrap; flex-shrink: 0;">${repeatLabel}</span>
-          <h4 style="color: #1f2937; font-size: 1rem; font-weight: 600; margin: 0; white-space: nowrap; flex-shrink: 0;">${task.title}</h4>
-          <span style="font-size: 0.85rem; color: #6b7280; white-space: nowrap; flex-shrink: 0;">${dateRange}</span>
+         style="background: ${colors.bg}; 
+                border: 2px solid ${colors.border}; 
+                border-radius: 12px; 
+                padding: 1rem; 
+                transition: all 0.2s;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                display: flex;
+                flex-direction: column;">
+      <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 0.75rem;">
+        <div style="width: 36px; height: 36px; background: ${colors.gradient}; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i data-lucide="${icon}" style="width: 20px; height: 20px; color: white;"></i>
         </div>
-        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
-          <button class="delete-recurring-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem;" title="삭제">
-            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-          </button>
+        <div style="flex: 1; min-width: 0;">
+          <h4 style="color: #1f2937; font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0; line-height: 1.4; word-break: break-word;">${task.title}</h4>
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[task.category]}</span>
+          </div>
         </div>
+        <button class="delete-recurring-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제">
+          <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+        </button>
       </div>
-      <button class="register-recurring-todos-btn" data-task-id="${task.id}" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);">
-        <i data-lucide="calendar-check" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
-        오늘 할일 등록하기
-      </button>
+      
+      <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px dashed ${colors.border};">
+        <div style="margin-bottom: 0.75rem;">
+          <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+            <i data-lucide="repeat" style="width: 12px; height: 12px;"></i>
+            <span>${repeatLabel}</span>
+          </div>
+          <div style="font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 0.25rem;">
+            <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+            <span>${dateRange}</span>
+          </div>
+        </div>
+        <button class="register-recurring-todos-btn" data-task-id="${task.id}" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(99, 102, 241, 0.3)'">
+          <i data-lucide="calendar-check" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+          오늘 할일 등록하기
+        </button>
+      </div>
     </div>
   `;
 }
@@ -260,27 +285,6 @@ function getDayOfWeekLabel(dayOfWeek) {
 }
 
 function setupEventHandlers(profile) {
-  // 토글 버튼
-  const toggleBtn = document.getElementById('toggle-recurring');
-  if (toggleBtn) {
-    const newToggleBtn = toggleBtn.cloneNode(true);
-    toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-    newToggleBtn.addEventListener('click', () => {
-      const content = document.getElementById('recurring-content');
-      const icon = newToggleBtn.querySelector('i');
-      if (content && icon) {
-        if (content.style.display === 'none') {
-          content.style.display = 'block';
-          icon.setAttribute('data-lucide', 'chevron-down');
-        } else {
-          content.style.display = 'none';
-          icon.setAttribute('data-lucide', 'chevron-up');
-        }
-        if (window.lucide?.createIcons) window.lucide.createIcons();
-      }
-    });
-  }
-
   // 반복업무 추가 버튼
   const addBtn = document.getElementById('add-recurring-btn');
   if (addBtn) {

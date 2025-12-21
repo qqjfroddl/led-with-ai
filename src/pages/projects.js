@@ -33,12 +33,7 @@ export async function renderProjects() {
             <i data-lucide="folder-kanban" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
           <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="card-title" style="color: #1e40af; font-size: 1.5rem; margin: 0;">프로젝트</div>
-              <button id="toggle-projects" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-                <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #1e40af;"></i>
-              </button>
-            </div>
+            <div class="card-title" style="color: #1e40af; font-size: 1.5rem; margin: 0;">프로젝트</div>
             <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;">프로젝트를 관리하고 할일을 등록하세요</p>
           </div>
           <button id="add-project-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
@@ -491,27 +486,6 @@ function renderProjectTask(task, projectCategory) {
 }
 
 function setupEventHandlers(profile) {
-  // 토글 버튼
-  const toggleBtn = document.getElementById('toggle-projects');
-  if (toggleBtn) {
-    const newToggleBtn = toggleBtn.cloneNode(true);
-    toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-    newToggleBtn.addEventListener('click', () => {
-      const content = document.getElementById('projects-content');
-      const icon = newToggleBtn.querySelector('i');
-      if (content && icon) {
-        if (content.style.display === 'none') {
-          content.style.display = 'block';
-          icon.setAttribute('data-lucide', 'chevron-down');
-        } else {
-          content.style.display = 'none';
-          icon.setAttribute('data-lucide', 'chevron-up');
-        }
-        if (window.lucide?.createIcons) window.lucide.createIcons();
-      }
-    });
-  }
-
   // 프로젝트 추가 버튼
   const addProjectBtn = document.getElementById('add-project-btn');
   if (addProjectBtn) {
