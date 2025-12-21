@@ -1002,19 +1002,36 @@ async function deleteProjectTask(taskId, profile) {
 
 async function deleteProject(projectId, profile) {
   try {
-    // 연결된 todos의 project_task_id를 NULL로 설정
-    const { data: tasks } = await supabase
+    // 연결된 project_tasks 조회 (프로젝트 삭제 전에 조회해야 함)
+    const { data: tasks, error: tasksError } = await supabase
       .from('project_tasks')
       .select('id')
       .eq('project_id', projectId)
       .is('deleted_at', null);
 
+    if (tasksError) {
+      console.error('Error fetching project tasks:', tasksError);
+      throw tasksError;
+    }
+
     if (tasks && tasks.length > 0) {
       const taskIds = tasks.map(t => t.id);
-      await supabase
+      console.log('[DeleteProject] Deleting todos for taskIds:', taskIds);
+      
+      // 연결된 todos를 soft delete (반복업무와 동일하게)
+      const { data: deletedTodos, error: todosError } = await supabase
         .from('todos')
-        .update({ project_task_id: null })
-        .in('project_task_id', taskIds);
+        .update({ deleted_at: new Date().toISOString() })
+        .in('project_task_id', taskIds)
+        .is('deleted_at', null)
+        .select('id'); // 삭제된 항목 수 확인용
+      
+      if (todosError) {
+        console.error('[DeleteProject] Error deleting todos:', todosError);
+        throw todosError;
+      }
+      
+      console.log('[DeleteProject] Deleted todos count:', deletedTodos?.length || 0);
     }
 
     // 프로젝트 soft delete (CASCADE로 project_tasks도 함께 처리됨)
@@ -1026,6 +1043,18 @@ async function deleteProject(projectId, profile) {
     if (error) throw error;
 
     await loadProjects(profile);
+    
+    // 오늘 탭이 열려있으면 자동 새로고침
+    if (location.hash === '#/today' || location.hash === '') {
+      // 오늘 탭을 다시 렌더링하여 삭제된 할일 반영
+      const { renderToday } = await import('../pages/today.js');
+      if (renderToday) {
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+          mainContent.innerHTML = await renderToday();
+        }
+      }
+    }
   } catch (error) {
     console.error('Error deleting project:', error);
     alert('프로젝트 삭제 중 오류가 발생했습니다.');

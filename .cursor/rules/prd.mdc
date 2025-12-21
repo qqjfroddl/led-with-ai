@@ -822,12 +822,16 @@ alwaysApply: true
 - FR-IPI6. 프로젝트 진행률 추적 ✅
   - 완료 Tasks / 전체 Tasks 비율 표시
   - 프로젝트 카드에 진행바 표시
+- FR-IPI7. 프로젝트 삭제 시 동기화 ✅
+  - 프로젝트 삭제 시 연결된 todos도 soft delete (반복업무와 동일하게)
+  - 오늘 탭 자동 새로고침으로 삭제된 할일 즉시 반영
+  - 에러 처리 및 로깅 강화
 
 ### AC-I (검증됨)
 - AC-IP1. PC/모바일 동일 프로젝트 목록 조회 ✅
 - AC-IP2. Soft Delete 정책으로 삭제된 프로젝트 숨김 ✅
 - AC-IP3. 프로젝트 삭제 시 관련 Tasks도 CASCADE 삭제 ✅
-- AC-IP4. 프로젝트 삭제 시 연결된 Todo의 `project_task_id` NULL 처리 ✅
+- AC-IP4. 프로젝트 삭제 시 연결된 todos도 soft delete됨 ✅
 - AC-IPT1. Task 순서 변경 시 인덱스 기반 재할당 정상 작동 ✅
 - AC-IPT2. Todo에서 연결된 Task 정보 확인 가능 ✅
 - AC-IPI1. 프로젝트 진행률이 실시간 업데이트됨 ✅
