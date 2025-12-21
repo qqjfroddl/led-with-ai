@@ -307,6 +307,7 @@ export async function renderToday() {
       // 이벤트 바인딩 플래그 초기화 (페이지가 다시 렌더링될 때마다)
       todoEventsBound = false;
       todoDatePickerInitialized = false;
+      dragAndDropInitialized = false;
       
       // 루틴과 할일 로드 및 이벤트 바인딩
       await loadRoutines(selectedDate, profile);
@@ -638,8 +639,11 @@ function renderTodos(todosList, date, profile, timezone) {
       const canMove = !todo.is_done && !isReadOnly && !isEditing;
 
       return `
-        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="${canMove ? 'true' : 'false'}" style="background: ${isExistingTodo ? '#f3f4f6' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); ${canMove ? 'cursor: move;' : ''}">
           ${canMove ? `
+            <div class="todo-drag-handle" draggable="true" style="display: flex; align-items: center; padding: 0.25rem 0.5rem; cursor: grab; color: #9ca3af; border-radius: 4px; transition: all 0.2s ease; user-select: none;" title="드래그하여 순서 변경">
+              <i data-lucide="grip-vertical" style="width: 18px; height: 18px; pointer-events: none;"></i>
+            </div>
             <div class="move-todo-buttons" style="display: flex; flex-direction: row; gap: 0; align-items: center;">
               <button class="move-todo-btn" data-move-up="${todo.id}" style="background: transparent; border: none; color: #6b7280; cursor: pointer; padding: 0.25rem;" title="위로 이동">
                 <i data-lucide="chevron-up" style="width: 16px; height: 16px;"></i>
@@ -656,6 +660,7 @@ function renderTodos(todosList, date, profile, timezone) {
             <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               ${todo.pinned ? '<i data-lucide="pin" style="width: 14px; height: 14px; color: #f59e0b; flex-shrink: 0;"></i>' : ''}
               ${todo.priority ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; ${todo.priority === 3 ? 'background: #fee2e2; color: #991b1b;' : todo.priority === 2 ? 'background: #fef3c7; color: #92400e;' : 'background: #dbeafe; color: #1e40af;'}">P${todo.priority}</span>` : ''}
+              ${todo.project_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #e0e7ff; color: #4f46e5; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트</span>' : ''}
               <span class="todo-title" data-todo-title="${todo.id}" style="${todo.is_done ? 'text-decoration: line-through; color: #9ca3af;' : ''} ${!isReadOnly && !todo.is_done ? 'cursor: pointer;' : ''}">${todo.title}</span>
               ${todo.due_date ? `<span style="font-size: 0.7rem; color: #6b7280; flex-shrink: 0;">📅 ${todo.due_date}</span>` : ''}
             </div>
@@ -929,6 +934,7 @@ function setupEventHandlers(date, profile, timezone) {
 // 이벤트 위임을 위한 전역 핸들러 (한 번만 등록)
 let todoEventsBound = false;
 let todoDatePickerInitialized = false;
+let dragAndDropInitialized = false;
 
 function bindTodoEvents(date, profile, timezone) {
   const today = getToday(timezone);
@@ -1051,6 +1057,370 @@ function bindTodoEvents(date, profile, timezone) {
       return;
     }
   });
+  
+  // 드래그 앤 드롭 이벤트 설정 (한 번만 등록)
+  if (!dragAndDropInitialized) {
+    setupDragAndDrop(date, profile, timezone);
+    dragAndDropInitialized = true;
+  }
+}
+
+// 드래그 앤 드롭 설정 함수
+function setupDragAndDrop(date, profile, timezone) {
+  const todosContent = document.getElementById('todos-content');
+  if (!todosContent) {
+    console.error('[Drag] todos-content element not found');
+    return;
+  }
+
+  let draggedElement = null;
+  let draggedTodoId = null;
+  let draggedCategory = null;
+  
+  console.log('[Drag] setupDragAndDrop initialized', todosContent);
+
+  // 드래그 시작
+  todosContent.addEventListener('dragstart', (e) => {
+    console.log('[Drag] dragstart triggered', e.target, e.target.classList);
+    
+    // 드래그 핸들에서 dragstart가 발생한 경우
+    let dragHandle = null;
+    let todoItem = null;
+    
+    if (e.target.classList.contains('todo-drag-handle')) {
+      dragHandle = e.target;
+      todoItem = dragHandle.parentElement;
+    } else {
+      dragHandle = e.target.closest('.todo-drag-handle');
+      if (dragHandle) {
+        todoItem = dragHandle.parentElement;
+      }
+    }
+    
+    // 드래그 핸들에서 시작된 경우
+    if (dragHandle && dragHandle.draggable === 'true' && todoItem && todoItem.classList.contains('todo-item')) {
+      console.log('[Drag] Starting drag from handle', todoItem.dataset.todoId);
+      
+      draggedElement = todoItem;
+      draggedTodoId = todoItem.dataset.todoId;
+      draggedCategory = todoItem.dataset.category;
+      
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedTodoId);
+      
+      // 드래그 중 시각적 피드백
+      todoItem.classList.add('dragging');
+      todoItem.style.opacity = '0.4';
+      todoItem.style.transform = 'rotate(2deg)';
+      todoItem.style.cursor = 'grabbing';
+      dragHandle.style.cursor = 'grabbing';
+      
+      return;
+    }
+    
+    // todo-item에서 직접 dragstart가 발생한 경우
+    todoItem = e.target.closest('.todo-item');
+    if (!todoItem || (todoItem.draggable !== 'true' && todoItem.draggable !== true)) {
+      console.log('[Drag] No todo item or not draggable');
+      e.preventDefault();
+      return;
+    }
+    
+    // 버튼, 체크박스, 입력 필드를 클릭한 경우 드래그 방지
+    if (e.target.closest('button') || 
+        e.target.type === 'checkbox' || 
+        e.target.closest('input') ||
+        e.target.closest('.move-todo-buttons')) {
+      console.log('[Drag] Prevented: button/checkbox/input');
+      e.preventDefault();
+      return;
+    }
+    
+    // 드래그 핸들이 아니면 드래그 방지
+    if (!e.target.closest('.todo-drag-handle')) {
+      console.log('[Drag] Prevented: not from drag handle');
+      e.preventDefault();
+      return;
+    }
+    
+    console.log('[Drag] Starting drag from todo item', todoItem.dataset.todoId);
+    
+    draggedElement = todoItem;
+    draggedTodoId = todoItem.dataset.todoId;
+    draggedCategory = todoItem.dataset.category;
+    
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedTodoId);
+    
+    // 드래그 중 시각적 피드백
+    todoItem.classList.add('dragging');
+    todoItem.style.opacity = '0.4';
+    todoItem.style.transform = 'rotate(2deg)';
+    todoItem.style.cursor = 'grabbing';
+  });
+
+  // 드래그 종료 (시각적 피드백 제거)
+  todosContent.addEventListener('dragend', (e) => {
+    console.log('[Drag] dragend triggered');
+    
+    if (draggedElement) {
+      draggedElement.classList.remove('dragging');
+      draggedElement.style.opacity = '1';
+      draggedElement.style.transform = '';
+      draggedElement.style.cursor = 'move';
+      
+      // 드래그 핸들도 원래대로
+      const dragHandle = draggedElement.querySelector('.todo-drag-handle');
+      if (dragHandle) {
+        dragHandle.style.cursor = 'grab';
+      }
+    }
+    draggedElement = null;
+    draggedTodoId = null;
+    draggedCategory = null;
+    
+    // 모든 삽입 지시선 제거
+    document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+    
+    // 모든 todo-item의 insertBefore 속성 제거
+    document.querySelectorAll('.todo-item').forEach(el => {
+      delete el.dataset.insertBefore;
+    });
+  });
+
+  // 드래그 오버 (드롭 가능 영역 표시) - document에 등록하여 모든 요소에서 발생하도록
+  document.addEventListener('dragover', (e) => {
+    // todos-content 내부 요소에만 적용
+    if (!e.target.closest('#todos-content')) {
+      return;
+    }
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (!draggedTodoId) {
+      return;
+    }
+    
+    console.log('[Drag] dragover', e.target, e.target.classList, draggedTodoId);
+    
+    // 드래그 핸들 위에 있을 수도 있으므로 todo-item 찾기
+    let todoItem = e.target.closest('.todo-item');
+    if (!todoItem) {
+      // 드래그 핸들 위에 있는 경우
+      if (e.target.classList.contains('todo-drag-handle')) {
+        todoItem = e.target.parentElement;
+      } else {
+        const dragHandle = e.target.closest('.todo-drag-handle');
+        if (dragHandle) {
+          todoItem = dragHandle.parentElement;
+        }
+      }
+    }
+    
+    if (!todoItem || !todoItem.classList.contains('todo-item')) {
+      console.log('[Drag] dragover: no todo item found', e.target);
+      // 삽입 지시선 제거
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      return;
+    }
+    
+    const targetTodoId = todoItem.dataset.todoId;
+    const targetCategory = todoItem.dataset.category;
+    
+    // 같은 카테고리 내에서만 드롭 가능
+    if (targetCategory !== draggedCategory) {
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      // 다른 카테고리 항목은 희미하게 표시
+      todoItem.style.opacity = '0.3';
+      return;
+    }
+    
+    // 자기 자신은 드롭 불가
+    if (targetTodoId === draggedTodoId) {
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      return;
+    }
+    
+    // 드롭 가능한 항목은 강조 표시
+    todoItem.style.opacity = '1';
+    todoItem.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+    
+    // 드롭 위치 표시 (삽입 지시선)
+    const rect = todoItem.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const itemCenterY = rect.top + rect.height / 2;
+    
+    // 기존 삽입 지시선 제거
+    document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+    
+    // 위/아래에 삽입 지시선 표시
+    const insertionLine = document.createElement('div');
+    insertionLine.className = 'drag-insertion-line';
+    
+    const listContainer = todoItem.closest('[id^="todos-"]');
+    if (listContainer) {
+      const containerRect = listContainer.getBoundingClientRect();
+      insertionLine.style.cssText = `
+        position: fixed;
+        left: ${containerRect.left + 8}px;
+        width: ${containerRect.width - 16}px;
+        height: 3px;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        z-index: 1000;
+        pointer-events: none;
+        border-radius: 2px;
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+      `;
+      
+      if (mouseY < itemCenterY) {
+        // 위에 삽입
+        insertionLine.style.top = `${rect.top - 1}px`;
+        todoItem.dataset.insertBefore = 'true';
+      } else {
+        // 아래에 삽입
+        insertionLine.style.top = `${rect.bottom - 2}px`;
+        todoItem.dataset.insertBefore = 'false';
+      }
+      
+      document.body.appendChild(insertionLine);
+    }
+  });
+  
+  // 드래그 리브 (스타일 복원 및 삽입 지시선 제거)
+  todosContent.addEventListener('dragleave', (e) => {
+    const todoItem = e.target.closest('.todo-item');
+    if (todoItem && todoItem.dataset.todoId !== draggedTodoId) {
+      todoItem.style.opacity = '';
+      todoItem.style.boxShadow = '';
+    }
+    
+    // 다른 todo-item으로 이동하는 경우는 제거하지 않음
+    if (e.relatedTarget && e.relatedTarget.closest('.todo-item')) {
+      return;
+    }
+    // todos-content 밖으로 나가는 경우만 제거
+    if (!e.relatedTarget || !todosContent.contains(e.relatedTarget)) {
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      // 모든 항목 스타일 복원
+      document.querySelectorAll('.todo-item').forEach(item => {
+        if (item.dataset.todoId !== draggedTodoId) {
+          item.style.opacity = '';
+          item.style.boxShadow = '';
+        }
+      });
+    }
+  });
+
+  // 드롭 처리 - document에 등록하여 모든 요소에서 발생하도록
+  document.addEventListener('drop', async (e) => {
+    // todos-content 내부 요소에만 적용
+    if (!e.target.closest('#todos-content')) {
+      return;
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('[Drag] drop triggered', e.target, draggedTodoId);
+    
+    if (!draggedTodoId) {
+      console.log('[Drag] drop: no draggedTodoId');
+      return;
+    }
+    
+    // 드래그 핸들 위에 있을 수도 있으므로 todo-item 찾기
+    let todoItem = e.target.closest('.todo-item');
+    if (!todoItem) {
+      // 드래그 핸들 위에 있는 경우
+      if (e.target.classList.contains('todo-drag-handle')) {
+        todoItem = e.target.parentElement;
+      } else {
+        const dragHandle = e.target.closest('.todo-drag-handle');
+        if (dragHandle) {
+          todoItem = dragHandle.parentElement;
+        }
+      }
+    }
+    
+    if (!todoItem || !todoItem.classList.contains('todo-item')) {
+      console.log('[Drag] drop: no todo item found', e.target);
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      return;
+    }
+    
+    const targetTodoId = todoItem.dataset.todoId;
+    const targetCategory = todoItem.dataset.category;
+    
+    // 같은 카테고리 내에서만 드롭 가능
+    if (targetCategory !== draggedCategory) {
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      return;
+    }
+    
+    // 자기 자신은 드롭 불가
+    if (targetTodoId === draggedTodoId) {
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      return;
+    }
+    
+    // 삽입 지시선 제거
+    document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+    
+    // 드롭 위치에 따라 순서 업데이트
+    const insertBefore = todoItem.dataset.insertBefore === 'true';
+    await handleDragDrop(draggedTodoId, targetTodoId, insertBefore, date, profile, timezone);
+  });
+}
+
+// 드롭 처리 함수
+async function handleDragDrop(draggedTodoId, targetTodoId, insertBefore, date, profile, timezone) {
+  try {
+    const draggedTodo = todos.find(t => t.id === draggedTodoId);
+    if (!draggedTodo || draggedTodo.is_done) return;
+    
+    const todoCategory = draggedTodo.category;
+    
+    // 같은 카테고리, 미완료, 같은 날짜 필터링
+    const sameCategoryTodos = todos.filter(
+      t => t.category === todoCategory && !t.is_done && t.date === date
+    );
+    
+    // loadTodos와 동일한 정렬 적용
+    const sortedTodos = sortTodosForDisplay(sameCategoryTodos);
+    
+    const draggedIndex = sortedTodos.findIndex(t => t.id === draggedTodoId);
+    const targetIndex = sortedTodos.findIndex(t => t.id === targetTodoId);
+    
+    if (draggedIndex < 0 || targetIndex < 0) return;
+    
+    // 새 인덱스 계산
+    let newIndex;
+    if (draggedIndex < targetIndex) {
+      // 아래로 이동
+      newIndex = insertBefore ? targetIndex - 1 : targetIndex;
+    } else {
+      // 위로 이동
+      newIndex = insertBefore ? targetIndex : targetIndex + 1;
+    }
+    
+    // 범위 체크
+    if (newIndex < 0 || newIndex >= sortedTodos.length) return;
+    
+    // 이미 올바른 위치에 있으면 업데이트하지 않음
+    if (newIndex === draggedIndex) return;
+    
+    // display_order 재할당
+    await supabase
+      .from('todos')
+      .update({ display_order: (newIndex + 1) * 10 })
+      .eq('id', draggedTodoId);
+    
+    await loadTodos(date, profile, timezone);
+  } catch (error) {
+    console.error('Error handling drag drop:', error);
+    alert('순서 변경 중 오류가 발생했습니다.');
+  }
 }
 
 async function toggleTodoDone(todoId, isDone) {
@@ -1175,6 +1545,51 @@ async function saveTodoEdit(todoId, newTitle, date, profile, timezone = 'Asia/Se
   }
 }
 
+// 공통 정렬 함수 (loadTodos와 동일한 정렬 로직)
+// loadTodos의 정렬 순서: display_order → pinned → due_date → priority → created_at
+function sortTodosForDisplay(todos) {
+  return [...todos].sort((a, b) => {
+    // 1. display_order (NULL은 마지막, nullsFirst: false)
+    if (a.display_order !== null && b.display_order !== null) {
+      if (a.display_order !== b.display_order) {
+        return a.display_order - b.display_order;
+      }
+    } else {
+      if (a.display_order !== null) return -1;
+      if (b.display_order !== null) return 1;
+      // 둘 다 NULL이면 다음 기준으로
+    }
+    
+    // 2. pinned (내림차순: true가 먼저)
+    if (a.pinned !== b.pinned) {
+      return b.pinned ? 1 : -1;
+    }
+    
+    // 3. due_date (NULL은 마지막, nullsFirst: false)
+    if (a.due_date !== null && b.due_date !== null) {
+      if (a.due_date !== b.due_date) {
+        return a.due_date.localeCompare(b.due_date);
+      }
+    } else {
+      if (a.due_date !== null) return -1;
+      if (b.due_date !== null) return 1;
+    }
+    
+    // 4. priority (내림차순, NULL은 마지막, nullsFirst: false)
+    if (a.priority !== null && b.priority !== null) {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+    } else {
+      if (a.priority !== null) return -1;
+      if (b.priority !== null) return 1;
+    }
+    
+    // 5. created_at (오름차순)
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+}
+
 async function moveTodoUp(todoId, date, profile, timezone = 'Asia/Seoul') {
   try {
     const todo = todos.find(t => t.id === todoId);
@@ -1183,20 +1598,15 @@ async function moveTodoUp(todoId, date, profile, timezone = 'Asia/Seoul') {
     // todo의 실제 category 사용 (activeTab에 의존하지 않음)
     const todoCategory = todo.category;
     
-    const sameCategoryTodos = todos
-      .filter(t => t.category === todoCategory && !t.is_done && t.date === date)
-      .sort((a, b) => {
-        // display_order로 정렬 (NULL은 마지막)
-        if (a.display_order !== null && b.display_order !== null) {
-          return a.display_order - b.display_order;
-        }
-        if (a.display_order !== null) return -1;
-        if (b.display_order !== null) return 1;
-        // 둘 다 NULL이면 created_at으로 정렬
-        return new Date(a.created_at) - new Date(b.created_at);
-      });
+    // 같은 카테고리, 미완료, 같은 날짜 필터링
+    const sameCategoryTodos = todos.filter(
+      t => t.category === todoCategory && !t.is_done && t.date === date
+    );
+    
+    // loadTodos와 동일한 정렬 적용
+    const sortedTodos = sortTodosForDisplay(sameCategoryTodos);
 
-    const currentIndex = sameCategoryTodos.findIndex(t => t.id === todoId);
+    const currentIndex = sortedTodos.findIndex(t => t.id === todoId);
     if (currentIndex <= 0) return;
 
     const prevIndex = currentIndex - 1;
@@ -1204,7 +1614,7 @@ async function moveTodoUp(todoId, date, profile, timezone = 'Asia/Seoul') {
     // 인덱스 기반으로 display_order 재할당 (10 단위 간격으로 안정적 유지)
     await Promise.all([
       supabase.from('todos').update({ display_order: (prevIndex + 1) * 10 }).eq('id', todoId),
-      supabase.from('todos').update({ display_order: (currentIndex + 1) * 10 }).eq('id', sameCategoryTodos[prevIndex].id)
+      supabase.from('todos').update({ display_order: (currentIndex + 1) * 10 }).eq('id', sortedTodos[prevIndex].id)
     ]);
 
     await loadTodos(date, profile, timezone);
@@ -1222,28 +1632,23 @@ async function moveTodoDown(todoId, date, profile, timezone = 'Asia/Seoul') {
     // todo의 실제 category 사용 (activeTab에 의존하지 않음)
     const todoCategory = todo.category;
     
-    const sameCategoryTodos = todos
-      .filter(t => t.category === todoCategory && !t.is_done && t.date === date)
-      .sort((a, b) => {
-        // display_order로 정렬 (NULL은 마지막)
-        if (a.display_order !== null && b.display_order !== null) {
-          return a.display_order - b.display_order;
-        }
-        if (a.display_order !== null) return -1;
-        if (b.display_order !== null) return 1;
-        // 둘 다 NULL이면 created_at으로 정렬
-        return new Date(a.created_at) - new Date(b.created_at);
-      });
+    // 같은 카테고리, 미완료, 같은 날짜 필터링
+    const sameCategoryTodos = todos.filter(
+      t => t.category === todoCategory && !t.is_done && t.date === date
+    );
+    
+    // loadTodos와 동일한 정렬 적용
+    const sortedTodos = sortTodosForDisplay(sameCategoryTodos);
 
-    const currentIndex = sameCategoryTodos.findIndex(t => t.id === todoId);
-    if (currentIndex < 0 || currentIndex >= sameCategoryTodos.length - 1) return;
+    const currentIndex = sortedTodos.findIndex(t => t.id === todoId);
+    if (currentIndex < 0 || currentIndex >= sortedTodos.length - 1) return;
 
     const nextIndex = currentIndex + 1;
     
     // 인덱스 기반으로 display_order 재할당 (10 단위 간격으로 안정적 유지)
     await Promise.all([
       supabase.from('todos').update({ display_order: (nextIndex + 1) * 10 }).eq('id', todoId),
-      supabase.from('todos').update({ display_order: (currentIndex + 1) * 10 }).eq('id', sameCategoryTodos[nextIndex].id)
+      supabase.from('todos').update({ display_order: (currentIndex + 1) * 10 }).eq('id', sortedTodos[nextIndex].id)
     ]);
 
     await loadTodos(date, profile, timezone);
