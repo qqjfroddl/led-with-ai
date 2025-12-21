@@ -301,19 +301,25 @@ function renderPatternCard(icon, label, title, description, color = '#f87171') {
 function findMostActiveDay(todosDaily, routinesDaily) {
   const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
   const dayScores = {};
+  const dayTodos = {}; // 요일별 할일 완료 수
+  const dayRoutines = {}; // 요일별 루틴 완료 수
   
   // 할일 점수 계산
-  Object.entries(todosDaily).forEach(([date, stats]) => {
+  Object.entries(todosDaily || {}).forEach(([date, stats]) => {
     const dayOfWeek = new Date(date).getDay();
     const dayName = dayNames[dayOfWeek === 0 ? 6 : dayOfWeek - 1]; // 월요일=0으로 변환
-    dayScores[dayName] = (dayScores[dayName] || 0) + (stats.completed || 0);
+    const completed = stats.completed || 0;
+    dayScores[dayName] = (dayScores[dayName] || 0) + completed;
+    dayTodos[dayName] = (dayTodos[dayName] || 0) + completed;
   });
   
   // 루틴 점수 추가
-  Object.entries(routinesDaily).forEach(([date, count]) => {
+  Object.entries(routinesDaily || {}).forEach(([date, count]) => {
     const dayOfWeek = new Date(date).getDay();
     const dayName = dayNames[dayOfWeek === 0 ? 6 : dayOfWeek - 1];
-    dayScores[dayName] = (dayScores[dayName] || 0) + (count || 0);
+    const routineCount = count || 0;
+    dayScores[dayName] = (dayScores[dayName] || 0) + routineCount;
+    dayRoutines[dayName] = (dayRoutines[dayName] || 0) + routineCount;
   });
   
   if (Object.keys(dayScores).length === 0) return null;
@@ -322,9 +328,13 @@ function findMostActiveDay(todosDaily, routinesDaily) {
     score > best.score ? { day, score } : best
   , { day: '', score: -1 });
   
+  // 가장 활발한 요일의 실제 할일/루틴 완료 수 사용
+  const todoCount = dayTodos[mostActive.day] || 0;
+  const routineCount = dayRoutines[mostActive.day] || 0;
+  
   return {
     day: mostActive.day,
-    description: `할일 ${todosDaily ? Object.values(todosDaily).reduce((sum, s) => sum + (s.completed || 0), 0) : 0}개, 루틴 ${routinesDaily ? Object.values(routinesDaily).reduce((sum, c) => sum + (c || 0), 0) : 0}개 완료`
+    description: `할일 ${todoCount}개, 루틴 ${routineCount}개 완료`
   };
 }
 
