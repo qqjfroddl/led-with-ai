@@ -7,6 +7,7 @@ alwaysApply: true
 ## 구현 상태 (Implementation Status)
 - ✅ **완료**: 
   - 로그인 화면 - 로고 이미지(logo.png) 표시, 구글 로그인 버튼 이미지 하단 오버레이, 짙은 회색 배경/흰색 텍스트 스타일, 반응형 디자인
+  - Open Graph 메타 태그 - 카카오톡 링크 미리보기 지원 (og:title, og:description, og:image, og:url, og:type, og:site_name), Twitter Card 메타 태그 포함
   - 날짜 선택 바 (Date Bar) - 이전/다음 날짜 이동, 달력 오버레이, 오늘로 이동 버튼 (오늘 날짜가 아닐 때만 표시), 타임존 정확성 개선 (로컬 날짜 사용)
   - 오늘 할일 (Todos) + Carry-over (미완료 이월) + Enter 키로 수정 저장 + 날짜 이동 기능 + 프로젝트 배지 표시
   - 오늘 루틴 (Routine) - 모닝/나이트 구분, 목표 탭 연동, 진행률 표시, Soft Delete 적용, 토글 기능, 날짜 기준 필터링 (어제 루틴 보존)
@@ -1619,6 +1620,35 @@ Secondary 버튼 (.btn-secondary):
 위치:
   - index.html <head> 섹션 내 <link rel="icon"> 태그
   - 브라우저 탭에 표시
+```
+
+### Open Graph 메타 태그 (카카오톡 링크 미리보기) ✅ 2025-01-21 구현 완료
+```html
+<!-- Open Graph 메타 태그 (카카오톡 링크 미리보기) -->
+<meta property="og:title" content="인생관리 - 할일, 루틴, 성찰을 한 곳에서">
+<meta property="og:description" content="매일 할일과 루틴을 기록하고, 주간/월간/연간 리포트와 AI 성찰로 개선하는 인생 관리 시스템">
+<meta property="og:image" content="https://led-with-ai.vercel.app/logo.png">
+<meta property="og:url" content="https://led-with-ai.vercel.app">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="인생관리">
+
+<!-- Twitter Card 메타 태그 -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="인생관리 - 할일, 루틴, 성찰을 한 곳에서">
+<meta name="twitter:description" content="매일 할일과 루틴을 기록하고, 주간/월간/연간 리포트와 AI 성찰로 개선하는 인생 관리 시스템">
+<meta name="twitter:image" content="https://led-with-ai.vercel.app/logo.png">
+```
+
+구현 내용:
+  - 카카오톡 링크 공유 시 이미지 미리보기 지원
+  - Open Graph 프로토콜 표준 메타 태그 (og:title, og:description, og:image, og:url, og:type, og:site_name)
+  - Twitter Card 메타 태그 포함 (소셜 미디어 호환성)
+  - 이미지 URL: 절대 경로 사용 (https://led-with-ai.vercel.app/logo.png)
+  - 배포 후 카카오톡 링크 미리보기 캐시 초기화 필요 (https://developers.kakao.com/tool/clear/og)
+
+위치:
+  - index.html <head> 섹션 내 메타 태그
+  - 카카오톡/페이스북/트위터 등 소셜 미디어 링크 공유 시 미리보기 표시
 ```
 
 ## B4-1) 인터랙션 가이드라인 ✅ 2025-01-21 추가
