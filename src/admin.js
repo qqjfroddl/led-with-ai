@@ -590,26 +590,34 @@ window.showTab = function(tab) {
     // 승인된 사용자 통계 로드 (DOM 렌더링 완료 후)
     console.log('[Admin] Loading approved users stats, count:', approvedUsers.length);
     if (approvedUsers.length > 0) {
-      // requestAnimationFrame을 두 번 사용하여 확실하게 렌더링 완료 대기
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      // 섹션이 화면에 표시된 후 통계 로드 (충분한 지연시간 확보)
+      setTimeout(() => {
+        // 다시 한 번 섹션이 보이는 상태인지 확인
+        const section = document.getElementById('approved-section');
+        if (section && section.style.display === 'block') {
           console.log('[Admin] Starting loadUserStats for approved users');
-          loadUserStats(approvedUsers, selectedWeekOffset);
-        });
-      });
+          loadUserStats(approvedUsers, selectedWeekOffset, 'approved-section');
+        } else {
+          console.warn('[Admin] Approved section is not visible, skipping stats load');
+        }
+      }, 200);
     }
   } else if (tab === 'challenge' && challengeSection) {
     challengeSection.style.display = 'block';
     // 챌린지 참가자 통계 로드 (DOM 렌더링 완료 후)
     console.log('[Admin] Loading challenge participants stats, count:', challengeParticipants.length);
     if (challengeParticipants.length > 0) {
-      // requestAnimationFrame을 두 번 사용하여 확실하게 렌더링 완료 대기
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      // 섹션이 화면에 표시된 후 통계 로드 (충분한 지연시간 확보)
+      setTimeout(() => {
+        // 다시 한 번 섹션이 보이는 상태인지 확인
+        const section = document.getElementById('challenge-section');
+        if (section && section.style.display === 'block') {
           console.log('[Admin] Starting loadUserStats for challenge participants');
-          loadUserStats(challengeParticipants, selectedWeekOffset);
-        });
-      });
+          loadUserStats(challengeParticipants, selectedWeekOffset, 'challenge-section');
+        } else {
+          console.warn('[Admin] Challenge section is not visible, skipping stats load');
+        }
+      }, 200);
     }
   }
   
@@ -1230,8 +1238,8 @@ async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul', weekOffset = 
 }
 
 // 여러 사용자의 통계를 병렬로 로드
-async function loadUserStats(users, weekOffset = 0) {
-  console.log('[Admin] loadUserStats called with users:', users.length, 'weekOffset:', weekOffset);
+async function loadUserStats(users, weekOffset = 0, sectionId = null) {
+  console.log('[Admin] loadUserStats called with users:', users.length, 'weekOffset:', weekOffset, 'sectionId:', sectionId);
   const timezone = currentProfile?.timezone || 'Asia/Seoul';
   
   // 캐시 키에 주차 오프셋 포함
@@ -1258,11 +1266,31 @@ async function loadUserStats(users, weekOffset = 0) {
   const results = await Promise.all(statsPromises);
   console.log('[Admin] All stats fetched, updating DOM');
   
+  // 특정 섹션 내에서만 요소 찾기
+  const container = sectionId ? document.getElementById(sectionId) : document;
+  
   // 각 사용자의 통계를 DOM에 업데이트
   results.forEach(({ userId, stats }) => {
-    const statsElement = document.querySelector(`.user-stats[data-user-id="${userId}"]`);
-    console.log('[Admin] Updating stats element for user:', userId, 'element found:', !!statsElement);
-    if (!statsElement) return;
+    const statsElement = container.querySelector(`.user-stats[data-user-id="${userId}"]`);
+    
+    if (!statsElement) {
+      console.error('[Admin] Stats element not found for user:', userId);
+      return;
+    }
+    
+    // 요소가 보이지 않으면 부모 섹션을 확인
+    const isVisible = statsElement.offsetParent !== null;
+    if (!isVisible) {
+      console.warn('[Admin] Stats element is not visible for user:', userId, '- parent section may be hidden');
+      // 부모 섹션 찾기
+      let parent = statsElement.parentElement;
+      while (parent && !parent.classList.contains('tab-content')) {
+        parent = parent.parentElement;
+      }
+      if (parent) {
+        console.log('[Admin] Parent section display:', parent.style.display, 'id:', parent.id);
+      }
+    }
     
     // 로딩 메시지 제거
     const loadingSpan = statsElement.querySelector('.stats-loading');
@@ -1279,27 +1307,28 @@ async function loadUserStats(users, weekOffset = 0) {
     const todoRate = stats.todos?.completionRate || 0;
     const reflectionDays = stats.reflections?.writtenDays || 0;
     
-    // textContent 대신 개별 span 요소를 생성하여 추가 (createIcons 영향 방지)
+    // 기존 내용 초기화
     statsElement.innerHTML = '';
     
+    // 통계 span 요소들 생성
     const routineSpan = document.createElement('span');
-    routineSpan.style.color = '#10b981';
-    routineSpan.style.fontWeight = '600';
+    routineSpan.style.cssText = 'color: #10b981; font-weight: 600; margin-right: 0.5rem;';
     routineSpan.textContent = `🎯 ${routineRate.toFixed(1)}%`;
     
     const todoSpan = document.createElement('span');
-    todoSpan.style.color = '#6366f1';
-    todoSpan.style.fontWeight = '600';
+    todoSpan.style.cssText = 'color: #6366f1; font-weight: 600; margin-right: 0.5rem;';
     todoSpan.textContent = `✅ ${todoRate.toFixed(1)}%`;
     
     const reflectionSpan = document.createElement('span');
-    reflectionSpan.style.color = '#a78bfa';
-    reflectionSpan.style.fontWeight = '600';
+    reflectionSpan.style.cssText = 'color: #a78bfa; font-weight: 600;';
     reflectionSpan.textContent = `📝 ${reflectionDays}일`;
     
+    // DOM에 추가
     statsElement.appendChild(routineSpan);
     statsElement.appendChild(todoSpan);
     statsElement.appendChild(reflectionSpan);
+    
+    console.log('[Admin] Stats updated for user:', userId, '- visible:', isVisible);
   });
   console.log('[Admin] Stats update complete');
 }
