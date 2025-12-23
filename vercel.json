@@ -4,11 +4,12 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/((?!admin\\.html|assets|_next|.*\\..*).*)",
+      "source": "/((?!admin\\.html|assets|_next|logo\\.png|.*\\.(png|jpg|jpeg|gif|svg|ico|webp)).*)",
       "destination": "/index.html"
     }
   ]
 }
+
 
 
 
