@@ -393,7 +393,10 @@ function render() {
   updateWeekLabel();
   
   // 현재 활성 탭 복원 (탭 복원 시 통계도 자동으로 로드됨)
-  showTab(activeTab);
+  // requestAnimationFrame을 사용하여 DOM이 완전히 렌더링된 후 실행
+  requestAnimationFrame(() => {
+    showTab(activeTab);
+  });
 }
 
 // 주간 라벨 업데이트
@@ -571,27 +574,42 @@ window.showTab = function(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   
   // 모든 섹션 숨기기
-  document.getElementById('pending-section').style.display = 'none';
-  document.getElementById('approved-section').style.display = 'none';
+  const pendingSection = document.getElementById('pending-section');
+  const approvedSection = document.getElementById('approved-section');
   const challengeSection = document.getElementById('challenge-section');
+  
+  if (pendingSection) pendingSection.style.display = 'none';
+  if (approvedSection) approvedSection.style.display = 'none';
   if (challengeSection) challengeSection.style.display = 'none';
   
   // 선택된 탭의 섹션만 표시
-  if (tab === 'pending') {
-    document.getElementById('pending-section').style.display = 'block';
-  } else if (tab === 'approved') {
-    document.getElementById('approved-section').style.display = 'block';
-    // 승인된 사용자 통계 로드
+  if (tab === 'pending' && pendingSection) {
+    pendingSection.style.display = 'block';
+  } else if (tab === 'approved' && approvedSection) {
+    approvedSection.style.display = 'block';
+    // 승인된 사용자 통계 로드 (DOM 렌더링 완료 후)
     console.log('[Admin] Loading approved users stats, count:', approvedUsers.length);
     if (approvedUsers.length > 0) {
-      setTimeout(() => loadUserStats(approvedUsers, selectedWeekOffset), 100);
+      // requestAnimationFrame을 두 번 사용하여 확실하게 렌더링 완료 대기
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          console.log('[Admin] Starting loadUserStats for approved users');
+          loadUserStats(approvedUsers, selectedWeekOffset);
+        });
+      });
     }
   } else if (tab === 'challenge' && challengeSection) {
     challengeSection.style.display = 'block';
-    // 챌린지 참가자 통계 로드
+    // 챌린지 참가자 통계 로드 (DOM 렌더링 완료 후)
     console.log('[Admin] Loading challenge participants stats, count:', challengeParticipants.length);
     if (challengeParticipants.length > 0) {
-      setTimeout(() => loadUserStats(challengeParticipants, selectedWeekOffset), 100);
+      // requestAnimationFrame을 두 번 사용하여 확실하게 렌더링 완료 대기
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          console.log('[Admin] Starting loadUserStats for challenge participants');
+          loadUserStats(challengeParticipants, selectedWeekOffset);
+        });
+      });
     }
   }
   
