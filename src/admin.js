@@ -13,6 +13,8 @@ let selectedPendingIds = new Set();
 let selectedApprovedIds = new Set();
 let selectedChallengeIds = new Set(); // 챌린지 참가자 선택 관리
 let userStatsCache = new Map(); // 사용자별 통계 캐시 (userId -> stats)
+let selectedWeekOffset = 0; // 선택된 주차 오프셋 (0: 이번 주, -1: 지난 주, 1: 다음 주)
+let activeTab = 'pending'; // 현재 활성화된 탭 (기본값: pending)
 
 // 초기화
 async function init() {
@@ -288,19 +290,19 @@ function render() {
 
       <!-- 탭 -->
       <div class="tabs" id="admin-tabs">
-        <button class="tab active" onclick="showTab('pending')">
+        <button class="tab ${activeTab === 'pending' ? 'active' : ''}" onclick="showTab('pending')">
           승인 대기 (${pendingUsers.length})
         </button>
-        <button class="tab" onclick="showTab('approved')">
+        <button class="tab ${activeTab === 'approved' ? 'active' : ''}" onclick="showTab('approved')">
           승인된 사용자 (${approvedUsers.length})
         </button>
-        <button class="tab" onclick="showTab('challenge')">
+        <button class="tab ${activeTab === 'challenge' ? 'active' : ''}" onclick="showTab('challenge')">
           챌린지 참가자 (${challengeParticipants.length})
         </button>
       </div>
 
       <!-- 승인 대기 목록 -->
-      <div id="pending-section" class="tab-content">
+      <div id="pending-section" class="tab-content" style="display: ${activeTab === 'pending' ? 'block' : 'none'};">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h2><i data-lucide="bell" style="width:20px; height:20px; margin-right:6px;"></i>승인 대기 중인 사용자</h2>
           <div style="display: flex; align-items: center; gap: 1rem;">
@@ -316,10 +318,23 @@ function render() {
       </div>
 
       <!-- 승인된 사용자 목록 -->
-      <div id="approved-section" class="tab-content" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div id="approved-section" class="tab-content" style="display: ${activeTab === 'approved' ? 'block' : 'none'};">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
           <h2>✅ 승인된 사용자</h2>
-          <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <!-- 주간 선택 -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: #f3f4f6; padding: 0.5rem; border-radius: 8px;">
+              <button onclick="changeWeek(-1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
+                <i data-lucide="chevron-left" style="width:16px; height:16px;"></i>
+              </button>
+              <span id="week-label" style="font-size: 0.875rem; font-weight: 600; min-width: 120px; text-align: center;">이번 주</span>
+              <button onclick="changeWeek(1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
+                <i data-lucide="chevron-right" style="width:16px; height:16px;"></i>
+              </button>
+              <button onclick="resetWeek()" class="btn btn-sm" style="padding: 0.25rem 0.75rem; ${selectedWeekOffset === 0 ? 'display: none;' : ''}" id="reset-week-btn">
+                <i data-lucide="calendar" style="width:16px; height:16px;"></i> 이번 주
+              </button>
+            </div>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
             <button id="bulk-expiry" class="btn btn-primary btn-sm" disabled>일괄 기한 설정</button>
             <button id="bulk-add-challenge" class="btn btn-primary btn-sm" disabled>챌린지 참가자 추가</button>
@@ -329,10 +344,23 @@ function render() {
       </div>
 
       <!-- 챌린지 참가자 목록 -->
-      <div id="challenge-section" class="tab-content" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div id="challenge-section" class="tab-content" style="display: ${activeTab === 'challenge' ? 'block' : 'none'};">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
           <h2>🏆 챌린지 참가자</h2>
-          <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <!-- 주간 선택 -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: #f3f4f6; padding: 0.5rem; border-radius: 8px;">
+              <button onclick="changeWeek(-1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
+                <i data-lucide="chevron-left" style="width:16px; height:16px;"></i>
+              </button>
+              <span id="week-label-challenge" style="font-size: 0.875rem; font-weight: 600; min-width: 120px; text-align: center;">이번 주</span>
+              <button onclick="changeWeek(1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
+                <i data-lucide="chevron-right" style="width:16px; height:16px;"></i>
+              </button>
+              <button onclick="resetWeek()" class="btn btn-sm" style="padding: 0.25rem 0.75rem; ${selectedWeekOffset === 0 ? 'display: none;' : ''}" id="reset-week-btn-challenge">
+                <i data-lucide="calendar" style="width:16px; height:16px;"></i> 이번 주
+              </button>
+            </div>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
             <button id="bulk-remove-challenge" class="btn btn-primary btn-sm" disabled>일괄 제외</button>
           </div>
@@ -361,16 +389,80 @@ function render() {
   // Lucide 아이콘 렌더링
   createIcons({ icons });
   
-  // 승인된 사용자 통계 로드
-  if (approvedUsers.length > 0) {
-    loadUserStats(approvedUsers);
+  // 현재 활성 탭 복원
+  showTab(activeTab);
+  
+  // 승인된 사용자 통계 로드 (approved 탭이 활성화된 경우)
+  if (activeTab === 'approved' && approvedUsers.length > 0) {
+    loadUserStats(approvedUsers, selectedWeekOffset);
   }
   
-  // 챌린지 참가자 통계 로드 (챌린지 탭이 활성화된 경우)
-  const challengeSection = document.getElementById('challenge-section');
-  if (challengeSection && challengeSection.style.display !== 'none' && challengeParticipants.length > 0) {
-    loadUserStats(challengeParticipants);
+  // 챌린지 참가자 통계 로드 (challenge 탭이 활성화된 경우)
+  if (activeTab === 'challenge' && challengeParticipants.length > 0) {
+    loadUserStats(challengeParticipants, selectedWeekOffset);
   }
+  
+  // 주간 라벨 업데이트
+  updateWeekLabel();
+}
+
+// 주간 라벨 업데이트
+function updateWeekLabel() {
+  const { DateTime } = window.luxon;
+  const timezone = currentProfile?.timezone || 'Asia/Seoul';
+  const today = getToday(timezone);
+  let weekStart = getWeekStart(today, timezone);
+  
+  // 주차 오프셋 적용
+  if (selectedWeekOffset !== 0) {
+    const dt = DateTime.fromISO(weekStart, { zone: timezone });
+    weekStart = dt.plus({ weeks: selectedWeekOffset }).toISODate();
+  }
+  
+  const weekEnd = getWeekEnd(weekStart, timezone);
+  
+  // 날짜 포맷팅
+  const startDt = DateTime.fromISO(weekStart, { zone: timezone });
+  const endDt = DateTime.fromISO(weekEnd, { zone: timezone });
+  
+  let labelText;
+  if (selectedWeekOffset === 0) {
+    labelText = '이번 주';
+  } else if (selectedWeekOffset === -1) {
+    labelText = '지난 주';
+  } else if (selectedWeekOffset === 1) {
+    labelText = '다음 주';
+  } else {
+    labelText = `${selectedWeekOffset > 0 ? '+' : ''}${selectedWeekOffset}주`;
+  }
+  
+  const dateRange = `(${startDt.toFormat('M/d')} ~ ${endDt.toFormat('M/d')})`;
+  
+  // 라벨 업데이트
+  const weekLabel = document.getElementById('week-label');
+  const weekLabelChallenge = document.getElementById('week-label-challenge');
+  if (weekLabel) weekLabel.textContent = `${labelText} ${dateRange}`;
+  if (weekLabelChallenge) weekLabelChallenge.textContent = `${labelText} ${dateRange}`;
+  
+  // "이번 주" 버튼 표시/숨김
+  const resetBtn = document.getElementById('reset-week-btn');
+  const resetBtnChallenge = document.getElementById('reset-week-btn-challenge');
+  if (resetBtn) resetBtn.style.display = selectedWeekOffset === 0 ? 'none' : 'inline-flex';
+  if (resetBtnChallenge) resetBtnChallenge.style.display = selectedWeekOffset === 0 ? 'none' : 'inline-flex';
+}
+
+// 주차 변경
+window.changeWeek = function(offset) {
+  selectedWeekOffset += offset;
+  userStatsCache.clear(); // 캐시 초기화
+  render();
+};
+
+// 이번 주로 리셋
+window.resetWeek = function() {
+  selectedWeekOffset = 0;
+  userStatsCache.clear(); // 캐시 초기화
+  render();
 }
 
 // 사용자 테이블 렌더링
@@ -482,6 +574,9 @@ function renderUserTable(users, type) {
 
 // 탭 전환
 window.showTab = function(tab) {
+  // 현재 활성 탭 저장
+  activeTab = tab;
+  
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   
   // 모든 섹션 숨기기
@@ -500,17 +595,17 @@ window.showTab = function(tab) {
   }
   
   // 활성 탭 표시
-  const activeTab = Array.from(document.querySelectorAll('.tab')).find(t => {
+  const activeTabElement = Array.from(document.querySelectorAll('.tab')).find(t => {
     if (tab === 'pending') return t.textContent.includes('승인 대기');
     if (tab === 'approved') return t.textContent.includes('승인된 사용자');
     if (tab === 'challenge') return t.textContent.includes('챌린지 참가자');
     return false;
   });
-  if (activeTab) activeTab.classList.add('active');
+  if (activeTabElement) activeTabElement.classList.add('active');
   
   // 챌린지 참가자 탭일 때 통계 로드
   if (tab === 'challenge' && challengeParticipants.length > 0) {
-    loadUserStats(challengeParticipants);
+    loadUserStats(challengeParticipants, selectedWeekOffset);
   }
 };
 
@@ -1066,17 +1161,32 @@ window.saveBulkExpiryDate = async function() {
 };
 
 // 사용자별 주간 통계 조회 함수
-async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul') {
+async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul', weekOffset = 0) {
   try {
+    // Supabase 클라이언트 가져오기
+    const supabaseClient = await getSupabase();
+    if (!supabaseClient) {
+      console.error('[Admin] Supabase client not available');
+      return null;
+    }
+    
     const today = getToday(timezone);
-    const weekStart = getWeekStart(today, timezone);
-    const weekEnd = getWeekEnd(today, timezone);
+    let weekStart = getWeekStart(today, timezone);
+    
+    // 주차 오프셋 적용 (Luxon 사용)
+    if (weekOffset !== 0) {
+      const { DateTime } = window.luxon;
+      const dt = DateTime.fromISO(weekStart, { zone: timezone });
+      weekStart = dt.plus({ weeks: weekOffset }).toISODate();
+    }
+    
+    const weekEnd = getWeekEnd(weekStart, timezone);
     
     // 병렬로 통계 조회
     const [todosStats, routinesStats, reflectionsStats] = await Promise.all([
-      getTodosStats(userId, weekStart, weekEnd),
-      getRoutinesStats(userId, weekStart, weekEnd),
-      getReflectionsStats(userId, weekStart, weekEnd)
+      getTodosStats(userId, weekStart, weekEnd, supabaseClient),
+      getRoutinesStats(userId, weekStart, weekEnd, supabaseClient),
+      getReflectionsStats(userId, weekStart, weekEnd, supabaseClient)
     ]);
     
     return {
@@ -1088,28 +1198,41 @@ async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul') {
       },
       reflections: {
         writtenDays: reflectionsStats.writtenDays || 0
-      }
+      },
+      weekStart,
+      weekEnd
     };
   } catch (error) {
     console.error(`[Admin] Error loading stats for user ${userId}:`, error);
+    console.error(`[Admin] Error details:`, {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      stack: error.stack
+    });
     return null;
   }
 }
 
 // 여러 사용자의 통계를 병렬로 로드
-async function loadUserStats(users) {
+async function loadUserStats(users, weekOffset = 0) {
   const timezone = currentProfile?.timezone || 'Asia/Seoul';
+  
+  // 캐시 키에 주차 오프셋 포함
+  const cacheKey = (userId) => `${userId}_week${weekOffset}`;
   
   // 통계 조회 (병렬 처리)
   const statsPromises = users.map(async (user) => {
     // 캐시 확인
-    if (userStatsCache.has(user.id)) {
-      return { userId: user.id, stats: userStatsCache.get(user.id) };
+    const key = cacheKey(user.id);
+    if (userStatsCache.has(key)) {
+      return { userId: user.id, stats: userStatsCache.get(key) };
     }
     
-    const stats = await getUserWeeklyStats(user.id, timezone);
+    const stats = await getUserWeeklyStats(user.id, timezone, weekOffset);
     if (stats) {
-      userStatsCache.set(user.id, stats);
+      userStatsCache.set(key, stats);
     }
     return { userId: user.id, stats };
   });
