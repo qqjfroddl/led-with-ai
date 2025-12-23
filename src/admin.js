@@ -392,18 +392,17 @@ function render() {
   // 현재 활성 탭 복원
   showTab(activeTab);
   
-  // 승인된 사용자 통계 로드 (approved 탭이 활성화된 경우)
-  if (activeTab === 'approved' && approvedUsers.length > 0) {
-    loadUserStats(approvedUsers, selectedWeekOffset);
-  }
-  
-  // 챌린지 참가자 통계 로드 (challenge 탭이 활성화된 경우)
-  if (activeTab === 'challenge' && challengeParticipants.length > 0) {
-    loadUserStats(challengeParticipants, selectedWeekOffset);
-  }
-  
   // 주간 라벨 업데이트
   updateWeekLabel();
+  
+  // 통계 로드 (탭 복원 후)
+  setTimeout(() => {
+    if (activeTab === 'approved' && approvedUsers.length > 0) {
+      loadUserStats(approvedUsers, selectedWeekOffset);
+    } else if (activeTab === 'challenge' && challengeParticipants.length > 0) {
+      loadUserStats(challengeParticipants, selectedWeekOffset);
+    }
+  }, 0);
 }
 
 // 주간 라벨 업데이트
@@ -590,8 +589,16 @@ window.showTab = function(tab) {
     document.getElementById('pending-section').style.display = 'block';
   } else if (tab === 'approved') {
     document.getElementById('approved-section').style.display = 'block';
+    // 승인된 사용자 통계 로드
+    if (approvedUsers.length > 0) {
+      loadUserStats(approvedUsers, selectedWeekOffset);
+    }
   } else if (tab === 'challenge' && challengeSection) {
     challengeSection.style.display = 'block';
+    // 챌린지 참가자 통계 로드
+    if (challengeParticipants.length > 0) {
+      loadUserStats(challengeParticipants, selectedWeekOffset);
+    }
   }
   
   // 활성 탭 표시
@@ -602,11 +609,6 @@ window.showTab = function(tab) {
     return false;
   });
   if (activeTabElement) activeTabElement.classList.add('active');
-  
-  // 챌린지 참가자 탭일 때 통계 로드
-  if (tab === 'challenge' && challengeParticipants.length > 0) {
-    loadUserStats(challengeParticipants, selectedWeekOffset);
-  }
 };
 
 // 사용자 상태 업데이트
