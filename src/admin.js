@@ -389,20 +389,11 @@ function render() {
   // Lucide 아이콘 렌더링
   createIcons({ icons });
   
-  // 현재 활성 탭 복원
-  showTab(activeTab);
-  
   // 주간 라벨 업데이트
   updateWeekLabel();
   
-  // 통계 로드 (탭 복원 후)
-  setTimeout(() => {
-    if (activeTab === 'approved' && approvedUsers.length > 0) {
-      loadUserStats(approvedUsers, selectedWeekOffset);
-    } else if (activeTab === 'challenge' && challengeParticipants.length > 0) {
-      loadUserStats(challengeParticipants, selectedWeekOffset);
-    }
-  }, 0);
+  // 현재 활성 탭 복원 (탭 복원 시 통계도 자동으로 로드됨)
+  showTab(activeTab);
 }
 
 // 주간 라벨 업데이트
@@ -573,6 +564,7 @@ function renderUserTable(users, type) {
 
 // 탭 전환
 window.showTab = function(tab) {
+  console.log('[Admin] showTab called:', tab);
   // 현재 활성 탭 저장
   activeTab = tab;
   
@@ -590,14 +582,16 @@ window.showTab = function(tab) {
   } else if (tab === 'approved') {
     document.getElementById('approved-section').style.display = 'block';
     // 승인된 사용자 통계 로드
+    console.log('[Admin] Loading approved users stats, count:', approvedUsers.length);
     if (approvedUsers.length > 0) {
-      loadUserStats(approvedUsers, selectedWeekOffset);
+      setTimeout(() => loadUserStats(approvedUsers, selectedWeekOffset), 100);
     }
   } else if (tab === 'challenge' && challengeSection) {
     challengeSection.style.display = 'block';
     // 챌린지 참가자 통계 로드
+    console.log('[Admin] Loading challenge participants stats, count:', challengeParticipants.length);
     if (challengeParticipants.length > 0) {
-      loadUserStats(challengeParticipants, selectedWeekOffset);
+      setTimeout(() => loadUserStats(challengeParticipants, selectedWeekOffset), 100);
     }
   }
   
@@ -1219,6 +1213,7 @@ async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul', weekOffset = 
 
 // 여러 사용자의 통계를 병렬로 로드
 async function loadUserStats(users, weekOffset = 0) {
+  console.log('[Admin] loadUserStats called with users:', users.length, 'weekOffset:', weekOffset);
   const timezone = currentProfile?.timezone || 'Asia/Seoul';
   
   // 캐시 키에 주차 오프셋 포함
@@ -1229,10 +1224,13 @@ async function loadUserStats(users, weekOffset = 0) {
     // 캐시 확인
     const key = cacheKey(user.id);
     if (userStatsCache.has(key)) {
+      console.log('[Admin] Using cached stats for user:', user.id);
       return { userId: user.id, stats: userStatsCache.get(key) };
     }
     
+    console.log('[Admin] Fetching stats for user:', user.id);
     const stats = await getUserWeeklyStats(user.id, timezone, weekOffset);
+    console.log('[Admin] Stats fetched for user:', user.id, stats);
     if (stats) {
       userStatsCache.set(key, stats);
     }
@@ -1240,10 +1238,12 @@ async function loadUserStats(users, weekOffset = 0) {
   });
   
   const results = await Promise.all(statsPromises);
+  console.log('[Admin] All stats fetched, updating DOM');
   
   // 각 사용자의 통계를 DOM에 업데이트
   results.forEach(({ userId, stats }) => {
     const statsElement = document.querySelector(`.user-stats[data-user-id="${userId}"]`);
+    console.log('[Admin] Updating stats element for user:', userId, 'element found:', !!statsElement);
     if (!statsElement) return;
     
     if (!stats) {
@@ -1261,6 +1261,7 @@ async function loadUserStats(users, weekOffset = 0) {
       <span style="color: #a78bfa; font-weight: 600;">📝 ${reflectionDays}일</span>
     `;
   });
+  console.log('[Admin] Stats update complete');
 }
 
 // 챌린지 참가자 추가
