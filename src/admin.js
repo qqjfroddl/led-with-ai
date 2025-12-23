@@ -1246,6 +1246,12 @@ async function loadUserStats(users, weekOffset = 0) {
     console.log('[Admin] Updating stats element for user:', userId, 'element found:', !!statsElement);
     if (!statsElement) return;
     
+    // 로딩 메시지 제거
+    const loadingSpan = statsElement.querySelector('.stats-loading');
+    if (loadingSpan) {
+      loadingSpan.remove();
+    }
+    
     if (!stats) {
       statsElement.innerHTML = '<span style="color: #6b7280;">-</span>';
       return;
@@ -1255,11 +1261,27 @@ async function loadUserStats(users, weekOffset = 0) {
     const todoRate = stats.todos?.completionRate || 0;
     const reflectionDays = stats.reflections?.writtenDays || 0;
     
-    statsElement.innerHTML = `
-      <span style="color: #10b981; font-weight: 600;">🎯 ${routineRate.toFixed(1)}%</span>
-      <span style="color: #6366f1; font-weight: 600;">✅ ${todoRate.toFixed(1)}%</span>
-      <span style="color: #a78bfa; font-weight: 600;">📝 ${reflectionDays}일</span>
-    `;
+    // textContent 대신 개별 span 요소를 생성하여 추가 (createIcons 영향 방지)
+    statsElement.innerHTML = '';
+    
+    const routineSpan = document.createElement('span');
+    routineSpan.style.color = '#10b981';
+    routineSpan.style.fontWeight = '600';
+    routineSpan.textContent = `🎯 ${routineRate.toFixed(1)}%`;
+    
+    const todoSpan = document.createElement('span');
+    todoSpan.style.color = '#6366f1';
+    todoSpan.style.fontWeight = '600';
+    todoSpan.textContent = `✅ ${todoRate.toFixed(1)}%`;
+    
+    const reflectionSpan = document.createElement('span');
+    reflectionSpan.style.color = '#a78bfa';
+    reflectionSpan.style.fontWeight = '600';
+    reflectionSpan.textContent = `📝 ${reflectionDays}일`;
+    
+    statsElement.appendChild(routineSpan);
+    statsElement.appendChild(todoSpan);
+    statsElement.appendChild(reflectionSpan);
   });
   console.log('[Admin] Stats update complete');
 }
