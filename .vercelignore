@@ -1,0 +1,15 @@
+# Vercel 배포 시 제외할 파일/폴더
+node_modules/
+.git/
+.vscode/
+.cursor/
+*.log
+*.md
+!README.md
+supabase/migrations/
+*.sql
+!supabase/functions/
+.DS_Store
+.env.local
+.env.*.local
+
