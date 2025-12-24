@@ -807,12 +807,16 @@ function setupEventHandlers(date, profile, timezone) {
     });
   }
 
-  // 하루 성찰 저장
+  // 하루 성찰 저장 (이벤트 리스너 중복 등록 방지: cloneNode 패턴 사용)
   const saveReflectionBtn = document.getElementById('save-reflection-btn');
   if (saveReflectionBtn) {
-    saveReflectionBtn.addEventListener('click', async () => {
+    // 기존 이벤트 리스너 제거를 위한 클론
+    const newSaveReflectionBtn = saveReflectionBtn.cloneNode(true);
+    saveReflectionBtn.parentNode?.replaceChild(newSaveReflectionBtn, saveReflectionBtn);
+    
+    newSaveReflectionBtn.addEventListener('click', async () => {
       await saveReflection(date, profile);
-      await loadReflection(date, profile);
+      // loadReflection은 saveReflection 함수 내부에서 이미 호출되므로 중복 호출 제거
     });
   }
 
