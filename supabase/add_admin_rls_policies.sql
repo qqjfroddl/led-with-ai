@@ -62,3 +62,4 @@ ORDER BY tablename, policyname;
 -- 예시: todos 조회
 -- SELECT * FROM public.todos LIMIT 5;
 
+

@@ -13,3 +13,4 @@ supabase/migrations/
 .env.local
 .env.*.local
 
+

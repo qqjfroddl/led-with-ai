@@ -52,3 +52,4 @@ WHERE
 GROUP BY user_id, title, (schedule->>'category')
 ORDER BY user_id, category, title;
 
+
