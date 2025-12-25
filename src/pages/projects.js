@@ -156,19 +156,12 @@ async function loadProjects(profile) {
         const totalCount = tasksList.length;
         const completedCount = tasksList.filter(t => t.is_done).length;
         const isCompleted = totalCount > 0 && completedCount === totalCount;
-        
-        // 가장 가까운 마감일 계산
-        const upcomingDueDate = tasksList
-          .filter(t => !t.is_done && t.due_date)
-          .map(t => t.due_date)
-          .sort()[0] || null;
 
         return {
           ...project,
           totalCount,
           completedCount,
-          isCompleted,
-          upcomingDueDate
+          isCompleted
         };
       })
     );
@@ -267,24 +260,6 @@ function renderProjectCardCompact(project) {
   const progress = project.totalCount > 0 ? Math.round((project.completedCount / project.totalCount) * 100) : 0;
   const isExpanded = expandedProjectId === project.id;
 
-  // D-Day 계산
-  let dDayText = '';
-  let diffDays = null;
-  if (project.upcomingDueDate) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(project.upcomingDueDate);
-    dueDate.setHours(0, 0, 0, 0);
-    diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) {
-      dDayText = 'D-Day';
-    } else if (diffDays > 0) {
-      dDayText = `D-${diffDays}`;
-    } else {
-      dDayText = `D+${Math.abs(diffDays)}`;
-    }
-  }
-
   return `
     <div class="project-card-compact ${isExpanded ? 'expanded' : ''}" data-project-id="${project.id}" 
          style="background: ${project.isCompleted ? '#f3f4f6' : colors.bg}; 
@@ -304,7 +279,6 @@ function renderProjectCardCompact(project) {
           <h4 style="color: ${project.isCompleted ? '#6b7280' : '#1f2937'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${project.name}</h4>
           <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${project.isCompleted ? '#e5e7eb' : colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[project.category]}</span>
-            ${dDayText ? `<span style="font-size: 0.75rem; color: ${diffDays !== null && diffDays <= 3 ? '#ef4444' : '#6b7280'}; font-weight: 600;">${dDayText}</span>` : ''}
           </div>
         </div>
         <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" style="width: 18px; height: 18px; color: #9ca3af; flex-shrink: 0;"></i>
