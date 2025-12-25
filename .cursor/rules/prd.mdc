@@ -876,7 +876,9 @@ alwaysApply: true
   - 선택: `end_date` (없으면 3개월 후까지 자동 등록)
   - Soft Delete: `deleted_at` 타임스탬프
 - FR-JR2. 반복 주기 설정 ✅
+  - `daily`: 매일 (월~일)
   - `weekdays`: 주중 매일 (월~금)
+  - `weekends`: 매주 주말 (토, 일)
   - `weekly`: 매주 특정 요일 (예: 매주 월요일)
   - `monthly`: 매월 특정 날짜 (예: 매월 20일)
 - FR-JR3. 시작일/종료일 설정 ✅
@@ -1125,8 +1127,8 @@ alwaysApply: true
 - user_id uuid not null FK → profiles(id) ON DELETE CASCADE
 - category text not null CHECK (category IN ('work', 'job', 'self_dev', 'personal'))
 - title text not null
-- repeat_type text not null CHECK (repeat_type IN ('weekdays', 'weekly', 'monthly'))
-- repeat_config jsonb not null              -- 예: { "day_of_week": 1 } (주간), { "day_of_month": 20 } (월간)
+- repeat_type text not null CHECK (repeat_type IN ('daily', 'weekdays', 'weekends', 'weekly', 'monthly'))
+- repeat_config jsonb not null              -- daily/weekdays/weekends: {}, weekly: { "day_of_week": 1 } (0=일요일, 1=월요일, ..., 6=토요일), monthly: { "day_of_month": 20 } (1~31)
 - start_date date not null
 - end_date date                             -- NULL 허용 (없으면 3개월 후까지 자동 등록)
 - created_at timestamptz not null default now()

@@ -7,9 +7,11 @@ CREATE TABLE IF NOT EXISTS public.recurring_tasks (
   user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   category text NOT NULL CHECK (category IN ('work', 'job', 'self_dev', 'personal')),
   title text NOT NULL,
-  repeat_type text NOT NULL CHECK (repeat_type IN ('weekdays', 'weekly', 'monthly')),
+  repeat_type text NOT NULL CHECK (repeat_type IN ('daily', 'weekdays', 'weekends', 'weekly', 'monthly')),
   repeat_config jsonb NOT NULL,
-  -- weekdays: {}
+  -- daily: {} (매일)
+  -- weekdays: {} (주중 매일)
+  -- weekends: {} (주말)
   -- weekly: { "day_of_week": 1 } (0=일요일, 1=월요일, ..., 6=토요일)
   -- monthly: { "day_of_month": 20 } (1~31)
   start_date date NOT NULL,

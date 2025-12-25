@@ -81,7 +81,9 @@ export async function renderRecurring() {
           <div>
             <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">반복 주기</label>
             <select id="recurring-repeat-type-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer;">
+              <option value="daily">매일 (월~일)</option>
               <option value="weekdays">주중 매일 (월~금)</option>
+              <option value="weekends">매주 주말 (토, 일)</option>
               <option value="weekly">주간 (특정 요일)</option>
               <option value="monthly">월간 (특정 날짜)</option>
             </select>
@@ -212,7 +214,9 @@ function renderRecurringTaskCard(task) {
   const icon = categoryIcons[task.category] || 'repeat';
   
   const repeatTypeLabels = {
+    daily: '매일 (월~일)',
     weekdays: '주중 매일 (월~금)',
+    weekends: '매주 주말 (토, 일)',
     weekly: `매주 ${getDayOfWeekLabel(task.repeat_config.day_of_week)}`,
     monthly: `매월 ${task.repeat_config.day_of_month}일`
   };
@@ -554,10 +558,19 @@ function shouldCreateTodoToday(recurringTask, today) {
   
   // 반복 주기별 체크
   switch (repeat_type) {
+    case 'daily':
+      // 매일 (월~일) - 모든 요일
+      return true;
+    
     case 'weekdays':
       // 월~금 체크
       const dayOfWeek = new Date(today + 'T00:00:00').getDay();
       return dayOfWeek >= 1 && dayOfWeek <= 5; // 월요일(1) ~ 금요일(5)
+    
+    case 'weekends':
+      // 토, 일 체크
+      const dayOfWeekWeekends = new Date(today + 'T00:00:00').getDay();
+      return dayOfWeekWeekends === 0 || dayOfWeekWeekends === 6; // 일요일(0) 또는 토요일(6)
     
     case 'weekly':
       // 특정 요일 체크
