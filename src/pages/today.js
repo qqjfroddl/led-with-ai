@@ -1571,12 +1571,13 @@ async function toggleTodoDone(todoId, isDone) {
 
     // 동기화: project_task_id가 있으면 프로젝트 할일도 업데이트
     if (todo && todo.project_task_id) {
-      // 모든 연결된 todos 조회
+      // 모든 연결된 todos 조회 (이월된 원본 할일 제외)
       const { data: allTodos, error: todosError } = await supabase
         .from('todos')
         .select('is_done')
         .eq('project_task_id', todo.project_task_id)
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .is('carried_over_at', null);  // 이월된 원본 할일 제외
 
       if (todosError) {
         console.error('Error fetching todos for sync:', todosError);

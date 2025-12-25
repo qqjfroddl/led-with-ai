@@ -812,6 +812,7 @@ alwaysApply: true
 - FR-IPI2. 양방향 동기화 ✅
   - 프로젝트 Task 완료 → 연결된 Todo 완료
   - Todo 완료 → 연결된 Project Task 완료 (모든 연결 Todo 완료 시)
+  - **이월된 원본 할일 제외**: `carried_over_at`이 기록된 할일은 동기화 체크에서 제외 (이월된 원본 할일은 과거 데이터이므로 현재 활성 할일만 체크)
   - 제목 수정 시 양방향 동기화
   - 동기화 플래그로 무한 루프 방지
 - FR-IPI3. Carry-over 연동 ✅
@@ -844,6 +845,8 @@ alwaysApply: true
 - AC-IPT2. Todo에서 연결된 Task 정보 확인 가능 ✅
 - AC-IPI1. 프로젝트 진행률이 실시간 업데이트됨 ✅
 - AC-IPI2. 양방향 동기화 정상 작동 (무한 루프 없음) ✅
+- AC-IPI3. 이월된 프로젝트 할일 동기화 정상 작동 ✅
+  - 이월된 원본 할일(`carried_over_at` 기록됨)은 동기화 체크에서 제외되어, 오늘 탭에서 새로 생성된 할일 완료 시 프로젝트 할일도 정상적으로 완료 처리됨
 - AC-IPI3. Carry-over 시 Project Task due_date 업데이트 정상 ✅
 - AC-IPI4. 날짜 이동/포기 시 동기화 정상 ✅
 - AC-IPI5. 프로젝트 할일 삭제 시 연결된 todos도 오늘할일에서 삭제됨 ✅
