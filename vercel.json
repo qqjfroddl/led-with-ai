@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!admin\\.html|assets/|config\\.js|logo\\.png|.*\\.(png|jpg|jpeg|gif|svg|ico|webp)).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
