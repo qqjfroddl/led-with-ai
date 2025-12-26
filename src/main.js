@@ -17,12 +17,21 @@ async function init() {
     
     // 인증 상태 변경 감지 (Supabase 초기화 후)
     supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
+        // 로그인 시에만 라우팅
         currentUser = session?.user || null;
         if (currentUser) {
           currentProfile = await getCurrentProfile();
         }
         router.handleRoute();
+      } else if (event === 'TOKEN_REFRESHED') {
+        // 토큰 갱신은 인증 상태 변경이 아니므로 라우팅하지 않음
+        // 세션 정보만 조용히 업데이트 (입력 중인 내용 보존)
+        currentUser = session?.user || null;
+        if (currentUser) {
+          currentProfile = await getCurrentProfile();
+        }
+        // router.handleRoute() 호출 제거 - 페이지 재렌더링 방지
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         currentProfile = null;
