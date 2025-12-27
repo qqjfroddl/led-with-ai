@@ -54,7 +54,14 @@ async function initSupabase() {
         
         if (supabaseUrl && supabaseAnonKey) {
           console.log('✅ Supabase client initialized via CDN');
-          return createClient(supabaseUrl, supabaseAnonKey);
+          // 세션 유지를 위한 옵션 (기본값이지만 명시적으로 설정)
+          return createClient(supabaseUrl, supabaseAnonKey, {
+            auth: {
+              autoRefreshToken: true,
+              persistSession: true,
+              detectSessionInUrl: true
+            }
+          });
         } else {
           console.error('❌ Supabase config missing:', { url: !!supabaseUrl, anonKey: !!supabaseAnonKey, config: window.SUPABASE_CONFIG });
         }
@@ -77,7 +84,13 @@ async function initSupabase() {
       supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
       if (supabaseUrl && supabaseAnonKey) {
-        return createClient(supabaseUrl, supabaseAnonKey);
+        return createClient(supabaseUrl, supabaseAnonKey, {
+          auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true
+          }
+        });
       }
     } catch (e) {
       console.warn('Vite mode failed:', e);

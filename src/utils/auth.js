@@ -1,9 +1,10 @@
-import { supabase } from '../config/supabase.js';
+import { getSupabase } from '../config/supabase.js';
 
 /**
  * Google OAuth 로그인
  */
 export async function signInWithGoogle() {
+  const supabase = await getSupabase();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -19,6 +20,7 @@ export async function signInWithGoogle() {
  * 로그아웃
  */
 export async function signOut() {
+  const supabase = await getSupabase();
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
@@ -28,6 +30,7 @@ export async function signOut() {
  */
 async function createProfileIfMissing(user) {
   try {
+    const supabase = await getSupabase();
     console.log('[Auth] Creating missing profile for user:', user.id, user.email);
     
     // RLS 정책 수정 후 직접 INSERT 시도
@@ -93,16 +96,17 @@ async function createProfileIfMissing(user) {
 
 /**
  * 현재 사용자 프로필 조회 (승인 상태 포함)
- * 프로필이 없으면 자동 생성 시도 (타임아웃: 2초)
+ * 프로필이 없으면 자동 생성 시도
  */
 export async function getCurrentProfile() {
-  // 전체 타임아웃 설정 (5초로 증가)
+  // 타임아웃 3초로 단축 (속도 개선)
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('getCurrentProfile timeout')), 5000);
+    setTimeout(() => reject(new Error('getCurrentProfile timeout')), 3000);
   });
 
   try {
     const profilePromise = (async () => {
+      const supabase = await getSupabase();
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
@@ -134,9 +138,9 @@ export async function getCurrentProfile() {
             return newProfile;
           }
           
-          // 트리거가 생성했을 수 있으므로 빠른 재조회 (500ms)
+          // 트리거가 생성했을 수 있으므로 빠른 재조회 (300ms로 단축)
           console.log('[Auth] Quick retry for trigger-created profile...');
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 300));
           
           const { data: retryData, error: retryError } = await supabase
             .from('profiles')

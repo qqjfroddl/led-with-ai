@@ -39,72 +39,9 @@ async function init() {
       }
     });
     
-    // 세션 조회 (타임아웃: 5초)
+    // 간소화된 세션 조회 (속도 개선)
     console.log('Main: Getting session...');
-    
-    let sessionResult;
-    
-    // 로컬 스토리지에 Supabase 관련 세션 토큰이 있는지 확인
-    try {
-      // Supabase는 여러 형식의 localStorage 키를 사용할 수 있음
-      // 모든 localStorage 키를 확인하여 Supabase 관련 키 찾기
-      let hasLocalSession = false;
-      try {
-        const supabaseUrl = new URL(window.SUPABASE_CONFIG.url);
-        const projectRef = supabaseUrl.hostname.split('.')[0];
-        hasLocalSession = !!localStorage.getItem(`sb-${projectRef}-auth-token`);
-      } catch (e) {
-        // URL 파싱 실패 시 무시
-      }
-      
-      // 다른 형식의 키도 확인
-      if (!hasLocalSession) {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.includes('supabase') || key.includes('sb-') || key.includes('auth-token'))) {
-            hasLocalSession = true;
-            console.log('Main: Found Supabase session key:', key);
-            break;
-          }
-        }
-      }
-      
-      if (!hasLocalSession) {
-        console.log('Main: No local session found, skipping network request');
-        // 에러를 던지지 않고 null 세션으로 처리
-        sessionResult = { data: { session: null }, error: null };
-      } else {
-        // 로컬 세션이 있으면 네트워크 요청 (타임아웃: 5초)
-        console.log('Main: Local session found, fetching from server...');
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('getSession timeout')), 5000)
-        );
-        
-        try {
-          sessionResult = await Promise.race([sessionPromise, timeoutPromise]);
-          console.log('Main: Session fetched:', sessionResult?.data?.session ? 'found' : 'null');
-        } catch (timeoutError) {
-          console.warn('Main: getSession timeout, using null session');
-          sessionResult = { data: { session: null }, error: null };
-        }
-      }
-    } catch (checkError) {
-      console.warn('Main: Error checking local session, trying direct getSession:', checkError);
-      // 에러 발생 시 직접 getSession 시도 (타임아웃: 5초)
-      try {
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('getSession timeout')), 5000)
-        );
-        sessionResult = await Promise.race([sessionPromise, timeoutPromise]);
-      } catch (directError) {
-        console.warn('Main: Direct getSession also failed, using null session');
-        sessionResult = { data: { session: null }, error: null };
-      }
-    }
-    
-    const { data: { session }, error: sessionError } = sessionResult || { data: { session: null }, error: null };
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError) {
       console.warn('Main: Session error:', sessionError);
