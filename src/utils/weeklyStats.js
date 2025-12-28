@@ -1,6 +1,6 @@
 // 주간 통계 계산 유틸리티
 import { supabase, getSupabase } from '../config/supabase.js';
-import { getWeekStart, getWeekEnd } from './date.js';
+import { getWeekStart, getWeekEnd, getToday } from './date.js';
 
 /**
  * 주간 통계 조회
@@ -15,6 +15,15 @@ export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul', supabas
   }
   
   const weekEnd = getWeekEnd(weekStart, timezone);
+  const today = getToday(timezone);
+  
+  // 현재 주인지 확인 (weekStart <= today <= weekEnd)
+  const isCurrentWeek = weekStart <= today && today <= weekEnd;
+  
+  // 현재 주인 경우: 월요일 ~ 오늘까지를 기준으로 계산
+  // 과거 주인 경우: 전체 주(월~일)를 기준으로 계산
+  const effectiveEndDate = isCurrentWeek ? today : weekEnd;
+  
   const userId = (await client.auth.getUser()).data?.user?.id;
   
   if (!userId) {
@@ -23,9 +32,9 @@ export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul', supabas
   
   // 병렬로 모든 데이터 조회
   const [todosStats, routinesStats, reflectionsStats, prevWeekStats] = await Promise.all([
-    getTodosStats(userId, weekStart, weekEnd, client),
-    getRoutinesStats(userId, weekStart, weekEnd, client),
-    getReflectionsStats(userId, weekStart, weekEnd, client),
+    getTodosStats(userId, weekStart, effectiveEndDate, client),
+    getRoutinesStats(userId, weekStart, effectiveEndDate, client),
+    getReflectionsStats(userId, weekStart, effectiveEndDate, client),
     getPrevWeekStats(userId, weekStart, timezone, client) // 전주 통계 (비교용)
   ]);
   
@@ -33,6 +42,7 @@ export async function getWeeklyStats(weekStart, timezone = 'Asia/Seoul', supabas
   const stats = {
     weekStart,
     weekEnd,
+    effectiveEndDate, // 실제 계산에 사용된 종료일 (디버깅용)
     todos: todosStats,
     routines: routinesStats,
     reflections: reflectionsStats,
@@ -106,7 +116,7 @@ export async function getTodosStats(userId, weekStart, weekEnd, supabaseClient =
   const carriedOver = todos.filter(t => t.carried_over_at).length;
   const skipped = todos.filter(t => t.skipped_at).length;
   
-  // 일별 통계
+  // 일별 통계 (weekStart ~ weekEnd, weekEnd는 effectiveEndDate일 수 있음)
   const dailyStats = {};
   for (let d = new Date(weekStart); d <= new Date(weekEnd); d.setDate(d.getDate() + 1)) {
     const dateStr = d.toISOString().split('T')[0];
@@ -117,8 +127,9 @@ export async function getTodosStats(userId, weekStart, weekEnd, supabaseClient =
     };
   }
   
-  // 평균 일일 할일 수
-  const avgDailyTodos = total / 7;
+  // 평균 일일 할일 수 (실제 기간 기준)
+  const daysCount = Math.ceil((new Date(weekEnd) - new Date(weekStart)) / (1000 * 60 * 60 * 24)) + 1;
+  const avgDailyTodos = daysCount > 0 ? total / daysCount : 0;
   
   return {
     total,
@@ -366,10 +377,11 @@ export async function getRoutinesStats(userId, weekStart, weekEnd, supabaseClien
     };
   });
   
-  // 전체 루틴 수는 주간 평균으로 계산 (표시용)
-  const avgRoutinesPerDay = totalPossibleChecks / 7;
-  const avgMorningRoutines = morningPossible / 7;
-  const avgNightRoutines = nightPossible / 7;
+  // 전체 루틴 수는 실제 기간 기준으로 계산 (표시용)
+  const daysCount = Math.ceil((new Date(weekEnd) - new Date(weekStart)) / (1000 * 60 * 60 * 24)) + 1;
+  const avgRoutinesPerDay = daysCount > 0 ? totalPossibleChecks / daysCount : 0;
+  const avgMorningRoutines = daysCount > 0 ? morningPossible / daysCount : 0;
+  const avgNightRoutines = daysCount > 0 ? nightPossible / daysCount : 0;
   
   return {
     totalRoutines: Math.round(avgRoutinesPerDay * 10) / 10, // 평균 루틴 수 (소수점 첫째 자리)
@@ -415,12 +427,13 @@ export async function getReflectionsStats(userId, weekStart, weekEnd, supabaseCl
   }
   
   const writtenDays = reflections.length;
-  const totalDays = 7;
-  const writingRate = (writtenDays / totalDays) * 100;
+  // 실제 기간 기준으로 계산 (weekStart ~ weekEnd)
+  const daysCount = Math.ceil((new Date(weekEnd) - new Date(weekStart)) / (1000 * 60 * 60 * 24)) + 1;
+  const writingRate = daysCount > 0 ? (writtenDays / daysCount) * 100 : 0;
   
   return {
     writtenDays,
-    totalDays,
+    totalDays: daysCount,
     writingRate: Math.round(writingRate * 10) / 10
   };
 }

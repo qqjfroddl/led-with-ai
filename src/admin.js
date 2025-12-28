@@ -1204,11 +1204,19 @@ async function getUserWeeklyStats(userId, timezone = 'Asia/Seoul', weekOffset = 
     
     const weekEnd = getWeekEnd(weekStart, timezone);
     
+    // 현재 주인지 확인 (weekOffset === 0이고 weekStart <= today <= weekEnd)
+    // weekOffset이 0이 아니면 과거 주이므로 전체 주 기준
+    const isCurrentWeek = weekOffset === 0 && weekStart <= today && today <= weekEnd;
+    
+    // 현재 주인 경우: 월요일 ~ 오늘까지를 기준으로 계산
+    // 과거 주인 경우: 전체 주(월~일)를 기준으로 계산
+    const effectiveEndDate = isCurrentWeek ? today : weekEnd;
+    
     // 병렬로 통계 조회
     const [todosStats, routinesStats, reflectionsStats] = await Promise.all([
-      getTodosStats(userId, weekStart, weekEnd, supabaseClient),
-      getRoutinesStats(userId, weekStart, weekEnd, supabaseClient),
-      getReflectionsStats(userId, weekStart, weekEnd, supabaseClient)
+      getTodosStats(userId, weekStart, effectiveEndDate, supabaseClient),
+      getRoutinesStats(userId, weekStart, effectiveEndDate, supabaseClient),
+      getReflectionsStats(userId, weekStart, effectiveEndDate, supabaseClient)
     ]);
     
     return {
