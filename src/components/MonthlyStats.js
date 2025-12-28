@@ -225,3 +225,10 @@ function renderChangeIndicator(change, unit = '') {
 
 
 
+
+
+
+
+
+
+

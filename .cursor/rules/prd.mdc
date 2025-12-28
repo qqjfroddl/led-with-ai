@@ -559,9 +559,10 @@ alwaysApply: true
 - FR-G0-7. 저장 시 `monthly_plans.daily_routines` JSONB에 저장
   - 형식: `{ "morning": ["루틴1", "루틴2"], "night": ["루틴3"] }`
 - FR-G0-8. 저장 시 `routines` 테이블에 동기화
-  - 기존 월간 루틴: `is_active = false`, `deleted_at = NOW()` (Soft Delete)
-  - 새 루틴: `schedule = { "type": "monthly", "month": "YYYY-MM-01", "active_from_date": "YYYY-MM-DD" }` 생성
-    - `active_from_date`: 오늘 날짜 (YYYY-MM-DD) 저장하여 오늘부터 적용되도록 함
+  - 기존 활성 월간 루틴: `is_active = false`, `deleted_at = NOW()` (Soft Delete)
+  - 새 루틴 생성: `schedule = { "type": "monthly", "month": "YYYY-MM-01", "active_from_date": "YYYY-MM-DD" }` 생성
+    - `active_from_date`: 오늘 날짜 (YYYY-MM-DD) 저장하여 오늘부터 적용
+  - 기존 비활성 루틴 재활성화: `is_active = true`, `deleted_at = NULL`, **`active_from_date`는 기존 값 유지** (과거 기록 보존)
 - FR-G0-9. 보기 모드: 저장된 루틴 목록 표시 + "수정하기" 버튼
 - FR-G0-10. 편집 모드: 입력 필드 + "저장하기" / "취소" 버튼
 - FR-G0-11. 루틴 없을 때: "등록된 모닝루틴이 없습니다" / "등록된 나이트루틴이 없습니다" 메시지
@@ -576,6 +577,7 @@ alwaysApply: true
 - AC-G0-5. 중복 생성 방지 (기존 루틴 비활성화 후 새로 생성) ✅
 - AC-G0-6. 토글 기능 정상 작동, 상태가 localStorage에 저장되어 새로고침 후에도 유지 ✅
 - AC-G0-7. 부제목이 동적으로 업데이트되며 올바른 위치에 표시됨 ✅
+- AC-G0-8. **재활성화 루틴의 active_from_date 보존**: 기존 루틴 삭제 후 재추가 시 `active_from_date`가 원래 값으로 유지되어 과거 날짜에서도 해당 루틴이 정상 표시됨 ✅
 
 ### G-1 연간목표 FR-GY ✅ 구현 완료
 #### 구조 (구현됨)

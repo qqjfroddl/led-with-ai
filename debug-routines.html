@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>루틴 디버그</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f8fafc;
+    }
+    h1 {
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+    .controls {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+    button:hover {
+      background: #4f46e5;
+    }
+    #output {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .routine-card {
+      background: #f1f5f9;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 6px;
+      border-left: 4px solid #6366f1;
+    }
+    .active {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+    .inactive {
+      border-left-color: #ef4444;
+      background: #fef2f2;
+    }
+    .info {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 루틴 데이터베이스 디버그</h1>
+  
+  <div class="controls">
+    <button onclick="checkAllRoutines()">모든 루틴 조회</button>
+    <button onclick="checkDecemberRoutines()">12월 루틴만 조회</button>
+    <button onclick="checkRoutinesByDate('2025-12-26')">어제(12/26) 루틴 확인</button>
+    <button onclick="checkRoutinesByDate('2025-12-27')">오늘(12/27) 루틴 확인</button>
+  </div>
+  
+  <div id="output">여기에 결과가 표시됩니다...</div>
+
+  <script>
+    let supabase;
+    let currentUser;
+
+    // Supabase 초기화
+    async function initSupabase() {
+      const config = window.SUPABASE_CONFIG || {
+        url: import.meta?.env?.VITE_SUPABASE_URL,
+        anonKey: import.meta?.env?.VITE_SUPABASE_ANON_KEY
+      };
+
+      if (!config.url || !config.anonKey) {
+        throw new Error('Supabase 설정을 찾을 수 없습니다.');
+      }
+
+      supabase = window.supabase.createClient(config.url, config.anonKey);
+      
+      // 현재 사용자 확인
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        document.getElementById('output').innerHTML = '❌ 로그인이 필요합니다. index.html에서 먼저 로그인해주세요.';
+        return false;
+      }
+      
+      currentUser = session.user;
+      document.getElementById('output').innerHTML = `✅ 로그인됨: ${currentUser.email}`;
+      return true;
+    }
+
+    // 날짜 기준 루틴 필터링 함수
+    function isRoutineDue(routine, selectedDate) {
+      const schedule = typeof routine.schedule === 'string' 
+        ? JSON.parse(routine.schedule)
+        : routine.schedule;
+      
+      if (!schedule) return false;
+
+      // 적용 시작일 확인
+      let activeFromDate;
+      if (schedule.active_from_date) {
+        activeFromDate = schedule.active_from_date;
+      } else if (routine.created_at) {
+        activeFromDate = routine.created_at.substring(0, 10);
+      } else {
+        return false;
+      }
+
+      // 비활성화일 확인
+      let deletedAtDate = null;
+      if (routine.deleted_at) {
+        deletedAtDate = routine.deleted_at.substring(0, 10);
+      }
+
+      // 날짜 범위 체크
+      if (selectedDate < activeFromDate) {
+        return false;
+      }
+      if (deletedAtDate && selectedDate >= deletedAtDate) {
+        return false;
+      }
+
+      // 타입별 필터링
+      if (schedule.type === 'monthly') {
+        const monthStart = schedule.month;
+        const currentMonth = selectedDate.substring(0, 7) + '-01';
+        return monthStart === currentMonth;
+      }
+      
+      return false;
+    }
+
+    // 모든 루틴 조회
+    async function checkAllRoutines() {
+      if (!supabase && !await initSupabase()) return;
+
+      const { data, error } = await supabase
+        .from('routines')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('schedule->>type', 'monthly')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        document.getElementById('output').innerHTML = `❌ 오류: ${error.message}`;
+        return;
+      }
+
+      let html = `<h3>📊 전체 루틴: ${data.length}개</h3>\n`;
+      
+      if (data.length === 0) {
+        html += '<p style="color: #ef4444;">⚠️ 루틴이 하나도 없습니다!</p>';
+      } else {
+        data.forEach((routine, i) => {
+          const schedule = typeof routine.schedule === 'string' 
+            ? JSON.parse(routine.schedule) 
+            : routine.schedule;
+          
+          const statusClass = routine.is_active ? 'active' : 'inactive';
+          const statusEmoji = routine.is_active ? '✅' : '❌';
+          
+          html += `<div class="routine-card ${statusClass}">`;
+          html += `<strong>#${i+1} ${statusEmoji} ${routine.title}</strong><br>`;
+          html += `<div class="info">`;
+          html += `ID: ${routine.id}<br>`;
+          html += `상태: ${routine.is_active ? '활성' : '비활성'}<br>`;
+          html += `카테고리: ${schedule.category || 'N/A'}<br>`;
+          html += `월: ${schedule.month || 'N/A'}<br>`;
+          html += `적용 시작일: ${schedule.active_from_date || 'N/A'}<br>`;
+          html += `생성일: ${routine.created_at ? routine.created_at.substring(0, 19).replace('T', ' ') : 'N/A'}<br>`;
+          html += `비활성화일: ${routine.deleted_at ? routine.deleted_at.substring(0, 19).replace('T', ' ') : 'N/A'}<br>`;
+          html += `</div></div>`;
+        });
+      }
+
+      document.getElementById('output').innerHTML = html;
+    }
+
+    // 12월 루틴만 조회
+    async function checkDecemberRoutines() {
+      if (!supabase && !await initSupabase()) return;
+
+      const { data, error } = await supabase
+        .from('routines')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('schedule->>type', 'monthly')
+        .eq('schedule->>month', '2025-12-01')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        document.getElementById('output').innerHTML = `❌ 오류: ${error.message}`;
+        return;
+      }
+
+      let html = `<h3>📅 12월 루틴: ${data.length}개</h3>\n`;
+      
+      if (data.length === 0) {
+        html += '<p style="color: #ef4444;">⚠️ 12월 루틴이 없습니다!</p>';
+      } else {
+        const activeRoutines = data.filter(r => r.is_active);
+        const inactiveRoutines = data.filter(r => !r.is_active);
+        
+        html += `<p><strong>활성:</strong> ${activeRoutines.length}개 | <strong>비활성:</strong> ${inactiveRoutines.length}개</p>\n`;
+        
+        data.forEach((routine, i) => {
+          const schedule = typeof routine.schedule === 'string' 
+            ? JSON.parse(routine.schedule) 
+            : routine.schedule;
+          
+          const statusClass = routine.is_active ? 'active' : 'inactive';
+          const statusEmoji = routine.is_active ? '✅' : '❌';
+          
+          html += `<div class="routine-card ${statusClass}">`;
+          html += `<strong>#${i+1} ${statusEmoji} ${routine.title}</strong><br>`;
+          html += `<div class="info">`;
+          html += `ID: ${routine.id}<br>`;
+          html += `상태: ${routine.is_active ? '활성' : '비활성'}<br>`;
+          html += `카테고리: ${schedule.category || 'N/A'}<br>`;
+          html += `적용 시작일: ${schedule.active_from_date || 'N/A'}<br>`;
+          html += `생성일: ${routine.created_at ? routine.created_at.substring(0, 19).replace('T', ' ') : 'N/A'}<br>`;
+          html += `비활성화일: ${routine.deleted_at ? routine.deleted_at.substring(0, 19).replace('T', ' ') : 'N/A'}<br>`;
+          html += `</div></div>`;
+        });
+      }
+
+      document.getElementById('output').innerHTML = html;
+    }
+
+    // 특정 날짜 기준 루틴 확인
+    async function checkRoutinesByDate(selectedDate) {
+      if (!supabase && !await initSupabase()) return;
+
+      const { data, error } = await supabase
+        .from('routines')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .eq('schedule->>type', 'monthly')
+        .eq('schedule->>month', '2025-12-01')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        document.getElementById('output').innerHTML = `❌ 오류: ${error.message}`;
+        return;
+      }
+
+      const filteredRoutines = data.filter(r => isRoutineDue(r, selectedDate));
+
+      let html = `<h3>📅 ${selectedDate} 기준 루틴</h3>\n`;
+      html += `<p><strong>전체 12월 루틴:</strong> ${data.length}개 | <strong>${selectedDate}에 표시되어야 할 루틴:</strong> ${filteredRoutines.length}개</p>\n`;
+      
+      if (filteredRoutines.length === 0) {
+        html += '<p style="color: #ef4444;">⚠️ 이 날짜에 표시될 루틴이 없습니다!</p>';
+        
+        html += '<h4>🔍 모든 12월 루틴 분석:</h4>';
+        data.forEach((routine, i) => {
+          const schedule = typeof routine.schedule === 'string' 
+            ? JSON.parse(routine.schedule) 
+            : routine.schedule;
+          
+          const activeFromDate = schedule.active_from_date || (routine.created_at ? routine.created_at.substring(0, 10) : 'N/A');
+          const deletedAtDate = routine.deleted_at ? routine.deleted_at.substring(0, 10) : null;
+          
+          let reason = '';
+          if (selectedDate < activeFromDate) {
+            reason = `❌ 적용 시작 전 (${selectedDate} < ${activeFromDate})`;
+          } else if (deletedAtDate && selectedDate >= deletedAtDate) {
+            reason = `❌ 이미 비활성화됨 (${selectedDate} >= ${deletedAtDate})`;
+          } else {
+            reason = '✅ 조건 만족 (표시되어야 함)';
+          }
+          
+          html += `<div class="routine-card">`;
+          html += `<strong>#${i+1} ${routine.title}</strong><br>`;
+          html += `<div class="info">`;
+          html += `${reason}<br>`;
+          html += `적용 시작일: ${activeFromDate}<br>`;
+          html += `비활성화일: ${deletedAtDate || 'N/A'}<br>`;
+          html += `</div></div>`;
+        });
+      } else {
+        filteredRoutines.forEach((routine, i) => {
+          const schedule = typeof routine.schedule === 'string' 
+            ? JSON.parse(routine.schedule) 
+            : routine.schedule;
+          
+          html += `<div class="routine-card active">`;
+          html += `<strong>#${i+1} ✅ ${routine.title}</strong><br>`;
+          html += `<div class="info">`;
+          html += `카테고리: ${schedule.category || 'N/A'}<br>`;
+          html += `적용 시작일: ${schedule.active_from_date || 'N/A'}<br>`;
+          html += `비활성화일: ${routine.deleted_at ? routine.deleted_at.substring(0, 10) : 'N/A'}<br>`;
+          html += `</div></div>`;
+        });
+      }
+
+      document.getElementById('output').innerHTML = html;
+    }
+
+    // 페이지 로드 시 자동 초기화
+    window.addEventListener('DOMContentLoaded', initSupabase);
+  </script>
+</body>
+</html>
+

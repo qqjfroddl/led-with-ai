@@ -884,13 +884,13 @@ export async function renderGoals() {
             );
             
             if (existingRoutine && !existingRoutine.is_active) {
-              // 비활성 루틴이 있으면 재활성화
+              // 비활성 루틴이 있으면 재활성화 (active_from_date는 기존 값 유지)
               routinesToReactivate.push({
                 id: existingRoutine.id,
                 schedule: {
                   ...existingRoutine.schedule,
-                  order: index,
-                  active_from_date: activeFromDate
+                  order: index
+                  // active_from_date는 기존 값 유지하여 과거 기록 보존
                 }
               });
             } else if (!existingRoutine) {
@@ -920,13 +920,13 @@ export async function renderGoals() {
             );
             
             if (existingRoutine && !existingRoutine.is_active) {
-              // 비활성 루틴이 있으면 재활성화
+              // 비활성 루틴이 있으면 재활성화 (active_from_date는 기존 값 유지)
               routinesToReactivate.push({
                 id: existingRoutine.id,
                 schedule: {
                   ...existingRoutine.schedule,
-                  order: index,
-                  active_from_date: activeFromDate
+                  order: index
+                  // active_from_date는 기존 값 유지하여 과거 기록 보존
                 }
               });
             } else if (!existingRoutine) {
