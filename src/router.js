@@ -99,6 +99,8 @@ class Router {
 
     const rerender = () => {
       updateDateDisplay();
+      // ✅ 날짜 변경 시 강제 재렌더링을 위해 상태 초기화
+      this.lastRenderedState = null;
       this.handleRoute();
     };
 
@@ -218,8 +220,19 @@ class Router {
       // 현재 상태 체크 (해시 + 프로필 ID + 선택된 날짜)
       // ✅ 날짜 변경 시 페이지 재렌더링을 위해 selectedDate를 상태에 포함
       const timezone = profile?.timezone || 'Asia/Seoul';
-      const selectedDate = currentHash === '#/today' ? getSelectedDate(timezone) : 'n/a';
+      // hash에서 # 제거한 값으로 비교 (예: '/today')
+      const hashPath = currentHash.slice(1) || '/today';
+      const selectedDate = hashPath === '/today' ? getSelectedDate(timezone) : 'n/a';
       const currentState = `${currentHash}:${profile?.id || 'null'}:${profile?.status || 'null'}:${selectedDate}`;
+      
+      // 디버깅: 상태 값 확인
+      console.log('[Router] State check:', { 
+        currentHash,
+        hashPath,
+        selectedDate, 
+        currentState,
+        lastRenderedState: this.lastRenderedState 
+      });
       
       // 이전 렌더링과 동일한 상태면 스킵 (탭 전환 시 불필요한 새로고침 방지)
       if (this.lastRenderedState === currentState) {
