@@ -1,7 +1,7 @@
 {
   "name": "led-system",
-  "version": "1.1.0",
-  "description": "할일/루틴/성찰 관리 시스템",
+  "version": "1.2.0",
+  "description": "인생관리 시스템 - 할일, 루틴, 성찰을 한 곳에서",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
