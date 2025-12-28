@@ -5,6 +5,9 @@ import { getSelectedDate } from '../state/dateState.js';
 import { getToday } from '../utils/date.js';
 
 export async function renderToday() {
+  // ✅ 페이지 진입 시 필터 초기화 (다른 탭에서 돌아올 때 필터 상태 리셋)
+  currentFilter = 'today';
+  
   const profile = await getCurrentProfile();
   if (!profile) {
     return '<div class="card"><p>로그인이 필요합니다.</p></div>';
