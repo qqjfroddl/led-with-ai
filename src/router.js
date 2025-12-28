@@ -25,6 +25,10 @@ class Router {
       '/projects': renderProjects,
       '/recurring': renderRecurring
     };
+    this.isHandlingRoute = false; // 라우팅 진행 중 플래그
+    this.lastHash = null; // 마지막 처리한 해시
+    this.lastProfileId = null; // 마지막 처리한 프로필 ID
+    this.lastRenderedState = null; // 마지막 렌더링 상태 (해시 + 프로필)
   }
 
   renderIcons() {
@@ -41,7 +45,19 @@ class Router {
   init() {
     // 새로고침 시 오늘 날짜로 초기화 (요구사항)
     resetSelectedDate('Asia/Seoul');
-    window.addEventListener('hashchange', () => this.handleRoute());
+    
+    // 해시 변경 감지 - 중복 방지 추가
+    window.addEventListener('hashchange', () => {
+      const currentHash = window.location.hash;
+      
+      // 같은 해시로의 변경이면 스킵 (탭 전환 시 불필요한 새로고침 방지)
+      if (this.lastHash === currentHash) {
+        console.log('[Router] Skipping duplicate hashchange:', currentHash);
+        return;
+      }
+      
+      this.handleRoute();
+    });
   }
 
   bindDateBar(profile) {
@@ -174,17 +190,40 @@ class Router {
   }
 
   async handleRoute() {
+    // 이미 라우팅 진행 중이면 스킵 (동시 실행 방지)
+    if (this.isHandlingRoute) {
+      console.log('[Router] Already handling route, skipping...');
+      return;
+    }
+
+    this.isHandlingRoute = true;
+    
     const app = document.getElementById('app');
     if (!app) {
       console.error('App element not found');
+      this.isHandlingRoute = false;
       return;
     }
 
     try {
+      // 현재 해시 저장
+      const currentHash = window.location.hash;
+      this.lastHash = currentHash;
+      
       console.log('Router: Getting current profile...');
       
       // 프로필 조회 (내부 타임아웃 2초)
       const profile = await getCurrentProfile();
+      
+      // 현재 상태 체크 (해시 + 프로필 ID)
+      const currentState = `${currentHash}:${profile?.id || 'null'}:${profile?.status || 'null'}`;
+      
+      // 이전 렌더링과 동일한 상태면 스킵 (탭 전환 시 불필요한 새로고침 방지)
+      if (this.lastRenderedState === currentState) {
+        console.log('[Router] Same state, skipping render:', currentState);
+        this.isHandlingRoute = false;
+        return;
+      }
       
       console.log('Router: Profile result:', profile ? 'found' : 'null');
       console.log('Router: Profile details:', profile ? { id: profile.id, email: profile.email, status: profile.status } : 'none');
@@ -246,6 +285,9 @@ class Router {
         }
         
         this.renderIcons();
+        // 렌더링 완료 후 상태 저장
+        this.lastRenderedState = currentState;
+        this.isHandlingRoute = false;
         return;
       }
 
@@ -253,12 +295,18 @@ class Router {
     if (profile.status === 'pending' || profile.status === 'rejected') {
       app.innerHTML = await renderPending(profile);
       this.renderIcons();
+      // 렌더링 완료 후 상태 저장
+      this.lastRenderedState = currentState;
+      this.isHandlingRoute = false;
       return;
     }
 
     if (profile.status === 'blocked') {
       app.innerHTML = await renderRejected(profile);
       this.renderIcons();
+      // 렌더링 완료 후 상태 저장
+      this.lastRenderedState = currentState;
+      this.isHandlingRoute = false;
       return;
     }
 
@@ -272,12 +320,18 @@ class Router {
         if (expiryDate < today) {
           app.innerHTML = await renderExpired(profile);
           this.renderIcons();
+          // 렌더링 완료 후 상태 저장
+          this.lastRenderedState = currentState;
+          this.isHandlingRoute = false;
           return;
         }
       }
       // 만료되지 않은 승인 사용자는 아래 라우팅 로직 계속
     } else {
       app.innerHTML = '<div class="error">알 수 없는 상태입니다.</div>';
+      // 렌더링 완료 후 상태 저장
+      this.lastRenderedState = currentState;
+      this.isHandlingRoute = false;
       return;
     }
 
@@ -316,9 +370,16 @@ class Router {
         console.error('Route render error:', error);
         app.innerHTML = `<div class="error">오류가 발생했습니다: ${error.message}<br><pre>${error.stack}</pre></div>`;
       }
+      
+      // 렌더링 완료 후 상태 저장 (정상 렌더링된 경우에만)
+      this.lastRenderedState = currentState;
+      
     } catch (error) {
       console.error('Router handleRoute error:', error);
       app.innerHTML = `<div class="error">라우터 오류가 발생했습니다: ${error.message}<br><pre>${error.stack}</pre></div>`;
+    } finally {
+      // 처리 완료 후 플래그 해제 (성공/실패 관계없이 항상 실행)
+      this.isHandlingRoute = false;
     }
   }
 }
