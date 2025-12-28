@@ -1,6 +1,6 @@
 // 월간 통계 계산 유틸리티
 import { supabase } from '../config/supabase.js';
-import { getMonthStart, getMonthEnd } from './date.js';
+import { getMonthStart, getMonthEnd, getToday } from './date.js';
 
 // Luxon DateTime 가져오기
 function getDateTimeLib() {
@@ -17,23 +17,36 @@ function getDateTimeLib() {
  */
 export async function getMonthlyStats(monthStart, timezone = 'Asia/Seoul') {
   const monthEnd = getMonthEnd(monthStart, timezone);
+  const today = getToday(timezone);
+  
+  // 현재 달인지 확인 (monthStart <= today <= monthEnd)
+  const isCurrentMonth = monthStart <= today && today <= monthEnd;
+  
+  // 현재 달인 경우: 1일 ~ 오늘까지를 기준으로 계산
+  // 과거 달인 경우: 전체 달(1일~말일)를 기준으로 계산
+  const effectiveEndDate = isCurrentMonth ? today : monthEnd;
+  
   const userId = (await supabase.auth.getUser()).data?.user?.id;
   
   if (!userId) {
     throw new Error('사용자가 로그인하지 않았습니다.');
   }
   
-  // 월의 일수 계산
+  // 월의 일수 계산 (전체 달 기준)
   const DateTime = getDateTimeLib();
   const monthStartDt = DateTime.fromISO(monthStart).setZone(timezone);
   const monthEndDt = DateTime.fromISO(monthEnd).setZone(timezone);
   const totalDays = monthEndDt.day; // 28, 29, 30, 31
   
+  // 실제 계산에 사용된 일수 계산 (effectiveEndDate 기준)
+  const effectiveEndDateDt = DateTime.fromISO(effectiveEndDate).setZone(timezone);
+  const effectiveDays = effectiveEndDateDt.diff(monthStartDt, 'days').days + 1;
+  
   // 병렬로 모든 데이터 조회
   const [todosStats, routinesStats, reflectionsStats, prevMonthStats] = await Promise.all([
-    getTodosStats(userId, monthStart, monthEnd, totalDays),
-    getRoutinesStats(userId, monthStart, monthEnd, totalDays),
-    getReflectionsStats(userId, monthStart, monthEnd, totalDays),
+    getTodosStats(userId, monthStart, effectiveEndDate, effectiveDays),
+    getRoutinesStats(userId, monthStart, effectiveEndDate, effectiveDays),
+    getReflectionsStats(userId, monthStart, effectiveEndDate, effectiveDays),
     getPrevMonthStats(userId, monthStart, timezone) // 전월 통계 (비교용)
   ]);
   
@@ -42,11 +55,13 @@ export async function getMonthlyStats(monthStart, timezone = 'Asia/Seoul') {
     monthStart,
     monthEnd,
     totalDays,
+    effectiveEndDate, // 실제 계산에 사용된 종료일 (디버깅용)
+    effectiveDays, // 실제 계산에 사용된 일수
     todos: todosStats,
     routines: routinesStats,
     reflections: reflectionsStats,
     comparison: calculateComparison(todosStats, routinesStats, reflectionsStats, prevMonthStats),
-    insights: generateInsights(todosStats, routinesStats, reflectionsStats, prevMonthStats, totalDays)
+    insights: generateInsights(todosStats, routinesStats, reflectionsStats, prevMonthStats, effectiveDays)
   };
   
   return stats;
@@ -56,8 +71,8 @@ export async function getMonthlyStats(monthStart, timezone = 'Asia/Seoul') {
  * 할일 통계
  * @param {string} userId - 사용자 ID
  * @param {string} monthStart - 월 시작일 (YYYY-MM-01)
- * @param {string} monthEnd - 월 종료일 (YYYY-MM-DD)
- * @param {number} totalDays - 월의 총 일수
+ * @param {string} monthEnd - 월 종료일 (YYYY-MM-DD) 또는 실제 종료일 (effectiveEndDate)
+ * @param {number} totalDays - 실제 계산에 사용된 일수 (effectiveDays)
  * @returns {Promise<Object>} 할일 통계 객체
  */
 export async function getTodosStats(userId, monthStart, monthEnd, totalDays) {
@@ -107,7 +122,7 @@ export async function getTodosStats(userId, monthStart, monthEnd, totalDays) {
   const carriedOver = todos.filter(t => t.carried_over_at).length;
   const skipped = todos.filter(t => t.skipped_at).length;
   
-  // 일별 통계
+  // 일별 통계 (monthStart ~ monthEnd, monthEnd는 effectiveEndDate일 수 있음)
   const dailyStats = {};
   const DateTime = getDateTimeLib();
   const startDate = DateTime.fromISO(monthStart);
@@ -122,8 +137,8 @@ export async function getTodosStats(userId, monthStart, monthEnd, totalDays) {
     };
   }
   
-  // 평균 일일 할일 수
-  const avgDailyTodos = total / totalDays;
+  // 평균 일일 할일 수 (실제 기간 기준)
+  const avgDailyTodos = totalDays > 0 ? total / totalDays : 0;
   
   return {
     total,
@@ -198,8 +213,8 @@ function isRoutineDue(routine, selectedDate) {
  * 루틴 통계
  * @param {string} userId - 사용자 ID
  * @param {string} monthStart - 월 시작일 (YYYY-MM-01)
- * @param {string} monthEnd - 월 종료일 (YYYY-MM-DD)
- * @param {number} totalDays - 월의 총 일수
+ * @param {string} monthEnd - 월 종료일 (YYYY-MM-DD) 또는 실제 종료일 (effectiveEndDate)
+ * @param {number} totalDays - 실제 계산에 사용된 일수 (effectiveDays)
  * @returns {Promise<Object>} 루틴 통계 객체
  */
 export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) {
@@ -366,10 +381,10 @@ export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) 
     };
   });
   
-  // 전체 루틴 수는 월간 평균으로 계산 (표시용)
-  const avgRoutinesPerDay = totalPossibleChecks / totalDays;
-  const avgMorningRoutines = morningPossible / totalDays;
-  const avgNightRoutines = nightPossible / totalDays;
+  // 전체 루틴 수는 실제 기간 기준으로 계산 (표시용)
+  const avgRoutinesPerDay = totalDays > 0 ? totalPossibleChecks / totalDays : 0;
+  const avgMorningRoutines = totalDays > 0 ? morningPossible / totalDays : 0;
+  const avgNightRoutines = totalDays > 0 ? nightPossible / totalDays : 0;
   
   return {
     totalRoutines: Math.round(avgRoutinesPerDay * 10) / 10, // 평균 루틴 수 (소수점 첫째 자리)
@@ -389,8 +404,8 @@ export async function getRoutinesStats(userId, monthStart, monthEnd, totalDays) 
  * 성찰 통계
  * @param {string} userId - 사용자 ID
  * @param {string} monthStart - 월 시작일 (YYYY-MM-01)
- * @param {string} monthEnd - 월 종료일 (YYYY-MM-DD)
- * @param {number} totalDays - 월의 총 일수
+ * @param {string} monthEnd - 월 종료일 (YYYY-MM-DD) 또는 실제 종료일 (effectiveEndDate)
+ * @param {number} totalDays - 실제 계산에 사용된 일수 (effectiveDays)
  * @returns {Promise<Object>} 성찰 통계 객체
  */
 export async function getReflectionsStats(userId, monthStart, monthEnd, totalDays) {
@@ -407,7 +422,8 @@ export async function getReflectionsStats(userId, monthStart, monthEnd, totalDay
   }
   
   const writtenDays = reflections.length;
-  const writingRate = (writtenDays / totalDays) * 100;
+  // 실제 기간 기준으로 계산 (monthStart ~ monthEnd)
+  const writingRate = totalDays > 0 ? (writtenDays / totalDays) * 100 : 0;
   
   return {
     writtenDays,
