@@ -1105,20 +1105,41 @@ async function registerProjectTasksToTodos(projectId, profile) {
     };
     const todoCategory = categoryMap[project.category] || 'work';
 
-    // todos에 등록 (이미 등록된 것은 제외)
+    // todos에 등록/업데이트
     const todosToInsert = [];
-    for (const task of tasks) {
-      // 이미 등록된 할일인지 확인
-      const targetDate = task.due_date || today;
-      const { data: existingTodo } = await supabase
-        .from('todos')
-        .select('id')
-        .eq('project_task_id', task.id)
-        .eq('date', targetDate)
-        .is('deleted_at', null)
-        .maybeSingle();
+    const todosToUpdate = [];
+    let updatedCount = 0;
+    let insertedCount = 0;
 
-      if (!existingTodo) {
+    for (const task of tasks) {
+      const targetDate = task.due_date || today;
+      
+      // project_task_id로 이미 등록된 할일 확인 (이월/포기된 할일 제외)
+      // 첫 번째 결과만 가져옴 (중복 방지)
+      const { data: existingTodos } = await supabase
+        .from('todos')
+        .select('id, date')
+        .eq('project_task_id', task.id)
+        .is('deleted_at', null)
+        .is('carried_over_at', null)
+        .is('skipped_at', null)
+        .limit(1);
+      
+      const existingTodo = existingTodos && existingTodos.length > 0 ? existingTodos[0] : null;
+
+      if (existingTodo) {
+        // 이미 등록된 할일이 있고 날짜가 다르면 업데이트
+        if (existingTodo.date !== targetDate) {
+          todosToUpdate.push({
+            id: existingTodo.id,
+            date: targetDate,
+            title: task.title  // 제목도 동기화
+          });
+          updatedCount++;
+        }
+        // 날짜가 같으면 아무 작업도 하지 않음
+      } else {
+        // 등록된 할일이 없으면 새로 생성
         todosToInsert.push({
           user_id: profile.id,
           date: targetDate,
@@ -1127,21 +1148,46 @@ async function registerProjectTasksToTodos(projectId, profile) {
           project_task_id: task.id,
           is_done: false
         });
+        insertedCount++;
       }
     }
 
-    if (todosToInsert.length === 0) {
+    // 업데이트 처리
+    for (const todoUpdate of todosToUpdate) {
+      const { error: updateError } = await supabase
+        .from('todos')
+        .update({
+          date: todoUpdate.date,
+          title: todoUpdate.title
+        })
+        .eq('id', todoUpdate.id);
+
+      if (updateError) throw updateError;
+    }
+
+    // 새로 생성할 할일이 있으면 일괄 삽입
+    if (todosToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from('todos')
+        .insert(todosToInsert);
+
+      if (insertError) throw insertError;
+    }
+
+    if (updatedCount === 0 && insertedCount === 0) {
       alert('이미 등록된 할일만 있습니다.');
       return;
     }
 
-    const { error: insertError } = await supabase
-      .from('todos')
-      .insert(todosToInsert);
+    let message = '';
+    if (insertedCount > 0) {
+      message += `${insertedCount}개의 할일이 등록되었습니다.`;
+    }
+    if (updatedCount > 0) {
+      message += (message ? ' ' : '') + `${updatedCount}개의 할일 날짜가 업데이트되었습니다.`;
+    }
+    alert(message);
 
-    if (insertError) throw insertError;
-
-    alert(`${todosToInsert.length}개의 할일이 오늘 할일로 등록되었습니다.`);
     await loadProjects(profile);
   } catch (error) {
     console.error('Error registering project tasks:', error);
