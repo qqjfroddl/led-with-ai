@@ -135,6 +135,17 @@ alwaysApply: true
     - 월간: `src/utils/monthlyStats.js`의 `getMonthlyStats` 함수에서 `effectiveEndDate` 계산
     - 연간: `src/utils/yearlyStats.js`의 `getYearlyStats` 함수에서 `effectiveEndDate` 계산
 
+#### AI 기능 UX 개선
+- ✅ **AI 레이트리밋 사용량 안내 개선 (2025-01-29)**
+  - **연간목표 AI 피드백**: 버튼 클릭 시 팝업으로 현재 사용량 표시 (월 2회 제한)
+  - **월실천계획 AI 제안**: 버튼 클릭 시 팝업으로 현재 사용량 표시 (월 2회 제한)
+  - 구현:
+    - `getYearlyGoalFeedbackRateLimit()`: 연간목표 피드백 레이트리밋 조회 함수
+    - `getMonthlyPlanSuggestionRateLimit()`: 월실천계획 제안 레이트리밋 조회 함수
+    - 버튼 클릭 시 `ai_usage_counters` 테이블에서 현재 사용량 조회
+    - 남은 횟수가 0이면 즉시 차단, 있으면 확인 메시지에 사용량 표시
+  - 효과: 사용자가 AI 기능 사용 전에 남은 횟수를 확인하고 신중하게 사용 가능
+
 ---
 
 ## 3. 제품 원칙(Product Principles)
