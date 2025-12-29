@@ -112,11 +112,28 @@ alwaysApply: true
 - ✅ Vercel 자동 배포 파이프라인
 - ✅ 관리자 페이지 배포 설정
 
-#### 버그 수정 (2025-12-29)
-- ✅ **날짜 선택 시 페이지 재렌더링 버그 수정**: 라우터 상태에 selectedDate 포함, 강제 재렌더링 로직 추가, currentFilter 초기화, 해시 경로 비교 정확성 개선
+---
+
+### v1.2 (개발 중)
+**버그 수정 및 리포트 개선**
+
+#### 버그 수정
+- ✅ **날짜 선택 시 페이지 재렌더링 버그 수정**
   - 문제: 날짜 변경 시 오늘 날짜 데이터만 계속 표시되는 현상
   - 원인: 라우터 상태 체크에서 selectedDate 미포함, currentHash 비교 오류
   - 해결: `currentState`에 selectedDate 추가, `rerender()` 시 `lastRenderedState = null`, `hashPath` 변수로 정확한 경로 비교
+  - 구현: `src/router.js`의 `handleRoute` 함수에서 라우터 상태 관리 개선
+
+#### 리포트 개선
+- ✅ **주간/월간/연간 실행률 기준 개선**
+  - **현재 주**: 월요일 ~ 오늘까지를 기준으로 실행률 계산 (과거 주는 전체 주 기준)
+  - **현재 달**: 1일 ~ 오늘까지를 기준으로 실행률 계산 (과거 달은 전체 달 기준)
+  - **현재 연도**: 1월 1일 ~ 오늘까지를 기준으로 실행률 계산 (과거 연도는 전체 연도 기준)
+  - 효과: 초반 기간(주/달/연도 시작 직후)에 실행률이 비정상적으로 낮게 표시되는 문제 해결
+  - 구현:
+    - 주간: `src/utils/weeklyStats.js`의 `getWeeklyStats` 함수에서 `effectiveEndDate` 계산
+    - 월간: `src/utils/monthlyStats.js`의 `getMonthlyStats` 함수에서 `effectiveEndDate` 계산
+    - 연간: `src/utils/yearlyStats.js`의 `getYearlyStats` 함수에서 `effectiveEndDate` 계산
 
 ---
 
