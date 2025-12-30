@@ -8,10 +8,12 @@ let currentProfile = null;
 let pendingUsers = [];
 let approvedUsers = [];
 let challengeParticipants = []; // 챌린지 참가자 목록
+let expiredUsers = []; // 기한 만료된 사용자 목록
 let allUsers = []; // 전체 사용자 목록 저장
 let selectedPendingIds = new Set();
 let selectedApprovedIds = new Set();
 let selectedChallengeIds = new Set(); // 챌린지 참가자 선택 관리
+let selectedExpiredIds = new Set(); // 기한 만료 사용자 선택 관리
 let userStatsCache = new Map(); // 사용자별 통계 캐시 (userId -> stats)
 let selectedWeekOffset = 0; // 선택된 주차 오프셋 (0: 이번 주, -1: 지난 주, 1: 다음 주)
 let activeTab = 'pending'; // 현재 활성화된 탭 (기본값: pending)
@@ -212,14 +214,25 @@ async function loadUsers() {
   approvedUsers = usersByStatus.approved;
   challengeParticipants = data.filter(u => u.status === 'approved' && u.is_challenge_participant === true);
   
+  // 기한 만료 사용자 필터링
+  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  expiredUsers = data.filter(u => 
+    u.status === 'approved' && 
+    u.expires_at && 
+    u.expires_at < currentDate
+  );
+  
   console.log('[Admin] Pending users:', pendingUsers.length);
   console.log('[Admin] Approved users:', approvedUsers.length);
   console.log('[Admin] Rejected users:', usersByStatus.rejected.length);
   console.log('[Admin] Blocked users:', usersByStatus.blocked.length);
+  console.log('[Admin] Expired users:', expiredUsers.length);
   
   // 선택 목록에서 존재하지 않는 ID 제거
   selectedPendingIds = new Set(pendingUsers.filter(u => selectedPendingIds.has(u.id)).map(u => u.id));
   selectedApprovedIds = new Set(approvedUsers.filter(u => selectedApprovedIds.has(u.id)).map(u => u.id));
+  selectedChallengeIds = new Set(challengeParticipants.filter(u => selectedChallengeIds.has(u.id)).map(u => u.id));
+  selectedExpiredIds = new Set(expiredUsers.filter(u => selectedExpiredIds.has(u.id)).map(u => u.id));
 }
 
 // 렌더링
@@ -286,6 +299,18 @@ function render() {
           </div>
         </div>
         ` : ''}
+        <div class="card" style="border: 2px solid #ef4444;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <i data-lucide="clock" style="width:20px; height:20px; color: #ef4444;"></i>
+            <strong style="color: #ef4444;">기한 만료</strong>
+          </div>
+          <div style="font-size: 2rem; font-weight: bold; color: #ef4444;">
+            ${expiredUsers.length}
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+            사용 기한이 만료된 사용자
+          </div>
+        </div>
       </div>
 
       <!-- 탭 -->
@@ -298,6 +323,9 @@ function render() {
         </button>
         <button class="tab ${activeTab === 'challenge' ? 'active' : ''}" onclick="showTab('challenge')">
           챌린지 참가자 (${challengeParticipants.length})
+        </button>
+        <button class="tab ${activeTab === 'expired' ? 'active' : ''}" onclick="showTab('expired')" style="color: #ef4444;">
+          기한 만료 (${expiredUsers.length})
         </button>
       </div>
 
@@ -366,6 +394,23 @@ function render() {
           </div>
         </div>
         ${renderUserTable(challengeParticipants, 'challenge')}
+      </div>
+
+      <!-- 기한 만료 사용자 목록 -->
+      <div id="expired-section" class="tab-content" style="display: ${activeTab === 'expired' ? 'block' : 'none'};">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2>⏰ 기한 만료된 사용자</h2>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
+            <button id="bulk-extend-expired" class="btn btn-primary btn-sm" disabled>일괄 기한 연장</button>
+          </div>
+        </div>
+        <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+          <p style="color: #991b1b; margin: 0; font-size: 0.9rem;">
+            <strong>안내:</strong> 사용 기한이 만료된 사용자입니다. 기한을 연장할 수 있습니다.
+          </p>
+        </div>
+        ${renderUserTable(expiredUsers, 'expired')}
       </div>
 
       <!-- 재신청 대기 목록 (rejected 상태) -->
@@ -466,6 +511,7 @@ function renderUserTable(users, type) {
         <p style="color: var(--text-secondary); font-size: 1.1rem;">
             ${type === 'pending' ? '승인 대기 중인 사용자가 없습니다. 🎉' 
               : type === 'challenge' ? '챌린지 참가자가 없습니다.' 
+              : type === 'expired' ? '기한이 만료된 사용자가 없습니다. 🎉'
               : '승인된 사용자가 없습니다.'}
         </p>
       </div>
@@ -477,7 +523,7 @@ function renderUserTable(users, type) {
       <table class="admin-table">
         <thead>
           <tr>
-            ${type === 'pending' || type === 'approved' || type === 'challenge'
+            ${type === 'pending' || type === 'approved' || type === 'challenge' || type === 'expired'
               ? `<th style="width:40px; text-align:center;"><input type="checkbox" id="select-all-${type}"></th>` 
               : '<th style="width:40px;"></th>'}
             <th>프로필</th>
@@ -499,6 +545,8 @@ function renderUserTable(users, type) {
                   ? `<input type="checkbox" class="approved-select" data-id="${user.id}" ${selectedApprovedIds.has(user.id) ? 'checked' : ''}>`
                   : type === 'challenge'
                   ? `<input type="checkbox" class="challenge-select" data-id="${user.id}" ${selectedChallengeIds.has(user.id) ? 'checked' : ''}>`
+                  : type === 'expired'
+                  ? `<input type="checkbox" class="expired-select" data-id="${user.id}" ${selectedExpiredIds.has(user.id) ? 'checked' : ''}>`
                   : ''}
               </td>
               <td>
@@ -534,7 +582,11 @@ function renderUserTable(users, type) {
               </td>
               <td>
                 <div class="action-buttons">
-                  ${type === 'pending' 
+                  ${type === 'expired'
+                    ? `
+                      <button onclick="openExpiryModal('${user.id}', '${user.expires_at || ''}')" class="btn btn-primary btn-sm">기한 연장</button>
+                    `
+                    : type === 'pending' 
                     ? `
                       <button onclick="updateUserStatus('${user.id}', 'approved')" class="btn btn-primary btn-sm">승인</button>
                       <button onclick="updateUserStatus('${user.id}', 'rejected')" class="btn btn-danger btn-sm">취소</button>
@@ -577,10 +629,12 @@ window.showTab = function(tab) {
   const pendingSection = document.getElementById('pending-section');
   const approvedSection = document.getElementById('approved-section');
   const challengeSection = document.getElementById('challenge-section');
+  const expiredSection = document.getElementById('expired-section');
   
   if (pendingSection) pendingSection.style.display = 'none';
   if (approvedSection) approvedSection.style.display = 'none';
   if (challengeSection) challengeSection.style.display = 'none';
+  if (expiredSection) expiredSection.style.display = 'none';
   
   // 선택된 탭의 섹션만 표시
   if (tab === 'pending' && pendingSection) {
@@ -619,6 +673,8 @@ window.showTab = function(tab) {
         }
       }, 200);
     }
+  } else if (tab === 'expired' && expiredSection) {
+    expiredSection.style.display = 'block';
   }
   
   // 활성 탭 표시
@@ -626,6 +682,7 @@ window.showTab = function(tab) {
     if (tab === 'pending') return t.textContent.includes('승인 대기');
     if (tab === 'approved') return t.textContent.includes('승인된 사용자');
     if (tab === 'challenge') return t.textContent.includes('챌린지 참가자');
+    if (tab === 'expired') return t.textContent.includes('기한 만료');
     return false;
   });
   if (activeTabElement) activeTabElement.classList.add('active');
@@ -924,6 +981,39 @@ function bindSelectionEvents() {
     bulkRemoveChallenge.disabled = selectedChallengeIds.size === 0;
     bulkRemoveChallenge.onclick = () => removeFromChallengeBulk(Array.from(selectedChallengeIds));
   }
+  
+  // 기한 만료 사용자 체크박스
+  const selectAllExpired = document.getElementById('select-all-expired');
+  const rowChecksExpired = document.querySelectorAll('.expired-select');
+  const bulkExtendExpired = document.getElementById('bulk-extend-expired');
+  
+  if (selectAllExpired) {
+    selectAllExpired.checked = expiredUsers.length > 0 && expiredUsers.every(u => selectedExpiredIds.has(u.id));
+    selectAllExpired.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        expiredUsers.forEach(u => selectedExpiredIds.add(u.id));
+      } else {
+        selectedExpiredIds.clear();
+      }
+      render();
+    });
+  }
+  
+  rowChecksExpired.forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      if (e.target.checked) selectedExpiredIds.add(id);
+      else selectedExpiredIds.delete(id);
+      const allChecked = expiredUsers.length > 0 && expiredUsers.every(u => selectedExpiredIds.has(u.id));
+      if (selectAllExpired) selectAllExpired.checked = allChecked;
+      if (bulkExtendExpired) bulkExtendExpired.disabled = selectedExpiredIds.size === 0;
+    });
+  });
+  
+  if (bulkExtendExpired) {
+    bulkExtendExpired.disabled = selectedExpiredIds.size === 0;
+    bulkExtendExpired.onclick = () => openBulkExpiryModal('expired');
+  }
 }
 
 // 새로고침
@@ -1073,8 +1163,11 @@ window.saveExpiryDate = async function(userId) {
 };
 
 // 일괄 기한 설정 모달 열기
-window.openBulkExpiryModal = function() {
-  const selectedIds = Array.from(selectedApprovedIds);
+window.openBulkExpiryModal = function(sourceType = 'approved') {
+  const selectedIds = sourceType === 'expired' 
+    ? Array.from(selectedExpiredIds) 
+    : Array.from(selectedApprovedIds);
+    
   if (selectedIds.length === 0) {
     alert('사용자를 선택해주세요.');
     return;
@@ -1122,7 +1215,11 @@ window.toggleBulkExpiryDate = function() {
 
 // 일괄 기한 저장
 window.saveBulkExpiryDate = async function() {
-  const selectedIds = Array.from(selectedApprovedIds);
+  // activeTab을 확인하여 어느 탭에서 호출되었는지 판단
+  const selectedIds = activeTab === 'expired' 
+    ? Array.from(selectedExpiredIds) 
+    : Array.from(selectedApprovedIds);
+    
   if (selectedIds.length === 0) {
     alert('사용자를 선택해주세요.');
     return;
@@ -1176,7 +1273,13 @@ window.saveBulkExpiryDate = async function() {
   }
 
   document.querySelector('.modal').remove();
-  selectedApprovedIds.clear();
+  
+  if (activeTab === 'expired') {
+    selectedExpiredIds.clear();
+  } else {
+    selectedApprovedIds.clear();
+  }
+  
   await loadUsers();
   render();
   alert(`선택한 ${selectedIds.length}명의 사용 기한이 설정되었습니다.`);
