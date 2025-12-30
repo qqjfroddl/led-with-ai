@@ -63,7 +63,13 @@ export async function renderGoals() {
             </div>
           </div>
         </div>
-        <button id="edit-routines-btn" class="btn btn-secondary">수정하기</button>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="copy-prev-month-routines-btn" class="btn btn-secondary" style="display: none;">
+            <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            전월 루틴 복사
+          </button>
+          <button id="edit-routines-btn" class="btn btn-secondary">수정하기</button>
+        </div>
       </div>
 
       <!-- 편집 모드 -->
@@ -577,12 +583,28 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       // 모드 전환
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      function switchToViewMode() {
+      async function switchToViewMode() {
         document.getElementById('routines-view-mode').style.display = 'block';
         document.getElementById('routines-edit-mode').style.display = 'none';
         document.getElementById('routines-loading').style.display = 'none';
         isEditMode = false;
+        
+        // "전월 루틴 복사" 버튼 표시 조건 확인
+        await updateCopyButtonVisibility();
+        
         if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+      
+      /**
+       * "전월 루틴 복사" 버튼 표시 여부 결정
+       * 개발 모드: 항상 표시 (테스트용)
+       */
+      async function updateCopyButtonVisibility() {
+        const copyBtn = document.getElementById('copy-prev-month-routines-btn');
+        if (!copyBtn) return;
+        
+        // 개발 모드: 항상 버튼 표시 (전월 루틴 없어도 테스트 가능)
+        copyBtn.style.display = 'inline-flex';
       }
 
       function switchToEditMode() {
@@ -991,6 +1013,166 @@ export async function renderGoals() {
       }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 전월 루틴 조회 및 복사
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      
+      /**
+       * 전월 루틴 조회
+       * @param {string} userId - 사용자 ID
+       * @param {string} currentMonth - 현재 월 (YYYY-MM-01)
+       * @returns {Promise<Object>} { morning: [], night: [] }
+       */
+      async function fetchPreviousMonthRoutines(userId, currentMonth) {
+        try {
+          // 전월 계산 (JavaScript Date 사용)
+          const currentDate = new Date(currentMonth);
+          currentDate.setMonth(currentDate.getMonth() - 1);
+          const year = currentDate.getFullYear();
+          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+          const prevMonthStr = `${year}-${month}-01`;
+          
+          console.log(`[Copy] Fetching routines from previous month: ${prevMonthStr}`);
+          
+          // 전월의 monthly_plans 조회
+          const { data: prevPlan, error } = await supabase
+            .from('monthly_plans')
+            .select('daily_routines')
+            .eq('user_id', userId)
+            .eq('month_start', prevMonthStr)
+            .eq('source', 'manual')
+            .maybeSingle();
+          
+          if (error) {
+            console.error('[Copy Error] Failed to fetch previous month routines:', error);
+            return { morning: [], night: [] };
+          }
+          
+          if (!prevPlan || !prevPlan.daily_routines) {
+            console.log('[Copy] No routines found in previous month');
+            return { morning: [], night: [] };
+          }
+          
+          const { morning = [], night = [] } = prevPlan.daily_routines;
+          console.log(`[Copy] Found ${morning.length} morning + ${night.length} night routines`);
+          
+          return { morning, night };
+        } catch (error) {
+          console.error('[Copy Error]', error);
+          return { morning: [], night: [] };
+        }
+      }
+      
+      /**
+       * 전월 루틴 복사
+       */
+      async function copyPreviousMonthRoutines() {
+        try {
+          // 전월 루틴 조회
+          const prevRoutines = await fetchPreviousMonthRoutines(profile.id, currentMonth);
+          
+          if (prevRoutines.morning.length === 0 && prevRoutines.night.length === 0) {
+            alert('전월 루틴이 없습니다.');
+            return;
+          }
+          
+          // 현재 월 루틴이 있는지 확인
+          if (morningRoutines.length > 0 || nightRoutines.length > 0) {
+            const totalCurrent = morningRoutines.length + nightRoutines.length;
+            const totalPrev = prevRoutines.morning.length + prevRoutines.night.length;
+            
+            const confirmed = confirm(
+              `⚠️ 이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
+              `기존 루틴을 삭제하고 전월 루틴 ${totalPrev}개를 복사하시겠습니까?\n\n` +
+              `(오늘부터 적용됩니다)`
+            );
+            
+            if (!confirmed) return;
+          } else {
+            const totalPrev = prevRoutines.morning.length + prevRoutines.night.length;
+            
+            // 전월/현재월 이름 계산
+            const currentDate = new Date(currentMonth);
+            const prevDate = new Date(currentMonth);
+            prevDate.setMonth(prevDate.getMonth() - 1);
+            const prevMonthName = `${prevDate.getMonth() + 1}월`;
+            const currentMonthName = `${currentDate.getMonth() + 1}월`;
+            
+            const confirmed = confirm(
+              `${prevMonthName} 루틴 ${totalPrev}개를 ${currentMonthName}에 복사하시겠습니까?\n\n` +
+              `⚠️ 오늘(${today})부터 적용됩니다.`
+            );
+            
+            if (!confirmed) return;
+          }
+          
+          // monthly_plans에 저장
+          const { data: existingPlan } = await supabase
+            .from('monthly_plans')
+            .select('content_md, linked_year')
+            .eq('user_id', profile.id)
+            .eq('month_start', currentMonth)
+            .eq('source', 'manual')
+            .maybeSingle();
+          
+          const updateData = {
+            user_id: profile.id,
+            month_start: currentMonth,
+            source: 'manual',
+            daily_routines: prevRoutines,
+            status: 'draft'
+          };
+          
+          // 기존 content_md와 linked_year가 있으면 유지
+          if (existingPlan) {
+            if (existingPlan.content_md) {
+              updateData.content_md = existingPlan.content_md;
+            }
+            if (existingPlan.linked_year) {
+              updateData.linked_year = existingPlan.linked_year;
+            }
+          }
+          
+          const { data: savedPlan, error: saveError } = await supabase
+            .from('monthly_plans')
+            .upsert(updateData, {
+              onConflict: 'user_id,month_start,source'
+            })
+            .select()
+            .single();
+          
+          if (saveError) {
+            console.error('[Copy Error]', saveError);
+            throw new Error('루틴 복사 실패: ' + saveError.message);
+          }
+          
+          // routines 테이블 동기화
+          await syncMonthlyRoutines(profile.id, currentMonth, savedPlan.daily_routines, today);
+          
+          // 상태 업데이트
+          morningRoutines = prevRoutines.morning;
+          nightRoutines = prevRoutines.night;
+          
+          // 전월/현재월 이름 계산
+          const currentDate = new Date(currentMonth);
+          const prevDate = new Date(currentMonth);
+          prevDate.setMonth(prevDate.getMonth() - 1);
+          const prevMonthName = `${prevDate.getMonth() + 1}월`;
+          const currentMonthName = `${currentDate.getMonth() + 1}월`;
+          
+          alert(
+            `✅ ${prevMonthName} 루틴이 ${currentMonthName}에 복사되었습니다!\n\n` +
+            `오늘(${today})부터 적용됩니다.`
+          );
+          
+          displayRoutines();
+          
+        } catch (error) {
+          console.error('[Copy Failed]', error);
+          alert(`복사 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+        }
+      }
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       // 이벤트 리스너 (중복 방지)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       const handleEditRoutines = () => switchToEditMode();
@@ -1004,8 +1186,10 @@ export async function renderGoals() {
       const handleSaveRoutines = () => saveRoutines();
       const handleAddMorningRoutine = () => addRoutineInput('morning');
       const handleAddNightRoutine = () => addRoutineInput('night');
+      const handleCopyPrevMonthRoutines = () => copyPreviousMonthRoutines();
       
       const editBtn = document.getElementById('edit-routines-btn');
+      const copyBtn = document.getElementById('copy-prev-month-routines-btn');
       const cancelBtn = document.getElementById('cancel-edit-btn');
       const saveBtn = document.getElementById('save-routines-btn');
       const addMorningBtn = document.getElementById('add-morning-routine-btn');
@@ -1014,6 +1198,11 @@ export async function renderGoals() {
       if (editBtn) {
         editBtn.removeEventListener('click', handleEditRoutines);
         editBtn.addEventListener('click', handleEditRoutines);
+      }
+      
+      if (copyBtn) {
+        copyBtn.removeEventListener('click', handleCopyPrevMonthRoutines);
+        copyBtn.addEventListener('click', handleCopyPrevMonthRoutines);
       }
       
       if (cancelBtn) {
