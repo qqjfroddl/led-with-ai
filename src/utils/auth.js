@@ -99,9 +99,9 @@ async function createProfileIfMissing(user) {
  * 프로필이 없으면 자동 생성 시도
  */
 export async function getCurrentProfile() {
-  // 타임아웃 3초로 단축 (속도 개선)
+  // 타임아웃 2초로 단축 (속도 개선, 안정성 유지)
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('getCurrentProfile timeout')), 3000);
+    setTimeout(() => reject(new Error('getCurrentProfile timeout')), 2000);
   });
 
   try {

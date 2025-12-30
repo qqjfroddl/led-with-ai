@@ -132,6 +132,11 @@ supabase functions deploy ai-yearly-goal-feedback
 supabase secrets set GEMINI_API_KEY=your_gemini_api_key
 ```
 
+## 변경 이력
+
+### v1.2.1 (2025-01-30)
+- **로그인 성능 개선**: `getCurrentProfile` 타임아웃 3초 → 2초로 단축하여 로그인 속도 약 1초 개선
+
 ## Live Demo
 
 🔗 [led-with-ai.vercel.app](https://led-with-ai.vercel.app)
