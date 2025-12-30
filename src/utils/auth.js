@@ -2,13 +2,16 @@ import { getSupabase } from '../config/supabase.js';
 
 /**
  * Google OAuth 로그인
+ * 삼성 인터넷 및 모바일 브라우저 호환성 개선
  */
 export async function signInWithGoogle() {
   const supabase = await getSupabase();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/index.html`
+      redirectTo: `${window.location.origin}/index.html`,
+      // 같은 탭에서 리다이렉트 (삼성 인터넷, 앱 내장 브라우저 호환성 향상)
+      skipBrowserRedirect: false
     }
   });
   

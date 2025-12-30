@@ -41,10 +41,32 @@ async function init() {
     
     // 간소화된 세션 조회 (속도 개선)
     console.log('Main: Getting session...');
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    let { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError) {
       console.warn('Main: Session error:', sessionError);
+    }
+    
+    // 모바일 브라우저 세션 복구 (삼성 인터넷, 앱 내장 브라우저 등)
+    if (!session) {
+      console.log('Main: No session found, checking URL for OAuth callback...');
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      
+      if (accessToken) {
+        console.log('Main: OAuth access token found in URL, waiting for session...');
+        // Supabase가 OAuth 콜백을 처리할 시간 대기
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 세션 다시 확인
+        const { data: { session: recoveredSession } } = await supabase.auth.getSession();
+        if (recoveredSession) {
+          console.log('Main: Session recovered successfully! ✅');
+          session = recoveredSession;
+        } else {
+          console.warn('Main: Session recovery failed, access token found but no session');
+        }
+      }
     }
     
     if (session) {
