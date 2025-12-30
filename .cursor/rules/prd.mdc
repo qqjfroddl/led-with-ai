@@ -1375,6 +1375,21 @@ alwaysApply: true
 - 삭제: Soft Delete (deleted_at 타임스탬프)
 - todos.recurring_task_id: SET NULL (반복업무 삭제 시 연결만 해제, Todo는 유지)
 
+## 11.6 ai_usage_counters 정책 ✅ 2025-12-30 수정
+- **SELECT**: 본인 데이터만 조회 가능 (`user_id = auth.uid()`)
+- **INSERT**: 본인 데이터만 생성 가능 (`user_id = auth.uid()`) ✅ 추가
+- **UPDATE**: 본인 데이터만 수정 가능 (`user_id = auth.uid()`) ✅ 추가
+- **ALL (service_role)**: 관리자는 모든 권한
+
+**변경 이력**:
+- **2025-12-30**: INSERT/UPDATE 정책 추가
+  - **문제**: Edge Function에서 AI 사용 카운터 증가 안 됨 (upsert 실패)
+  - **원인**: authenticated role에 SELECT만 허용, INSERT/UPDATE 권한 없음
+  - **해결**: INSERT/UPDATE 정책 추가하여 Edge Function이 카운터 증가 가능하도록 수정
+  - **영향**: 프론트엔드는 SELECT만 사용하므로 기존 기능 영향 없음
+  - **테스트**: AI 피드백, 주간/월간/연간 성찰 레이트리밋 정상 작동 확인
+  - **적용 방법**: Supabase SQL Editor에서 `fix_complete.sql` 실행 (배포 불필요, DB 레벨 변경으로 즉시 반영)
+
 ---
 
 # 12. Edge Function(필수) — AI 생성 API 계약
