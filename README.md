@@ -136,6 +136,10 @@ supabase secrets set GEMINI_API_KEY=your_gemini_api_key
 
 ### v1.2.1 (2025-01-30)
 - **로그인 성능 개선**: `getCurrentProfile` 타임아웃 3초 → 2초로 단축하여 로그인 속도 약 1초 개선
+- **모바일 브라우저 호환성 개선**: 삼성 인터넷 및 앱 내장 브라우저에서 OAuth 로그인 문제 해결
+  - OAuth `skipBrowserRedirect` 옵션 명시적 설정
+  - URL 기반 세션 복구 로직 추가 (access_token 감지 시 자동 복구)
+  - 삼성 인터넷, 네이버/카카오 앱 내장 브라우저 호환성 향상
 
 ## Live Demo
 
