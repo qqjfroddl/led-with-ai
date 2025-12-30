@@ -185,10 +185,10 @@ function isRoutineDue(routine, selectedDate) {
   }
 
   // 날짜 범위 체크
-  if (selectedDate < activeFromDate) {
+  if (activeFromDate > selectedDate) {
     return false;
   }
-  if (deletedAtDate && selectedDate >= deletedAtDate) {
+  if (deletedAtDate && deletedAtDate <= selectedDate) {
     return false;
   }
 

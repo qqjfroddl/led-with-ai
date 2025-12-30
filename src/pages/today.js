@@ -393,10 +393,10 @@ async function loadRoutines(date, profile) {
       }
 
       // 날짜 범위 체크: 적용 시작일 <= 선택 날짜 < 비활성화일
-      if (selectedDate < activeFromDate) {
+      if (activeFromDate > selectedDate) {
         return false; // 아직 적용 시작 전
       }
-      if (deletedAtDate && selectedDate >= deletedAtDate) {
+      if (deletedAtDate && deletedAtDate <= selectedDate) {
         return false; // 이미 비활성화됨
       }
 
