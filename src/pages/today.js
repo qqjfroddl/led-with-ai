@@ -611,7 +611,16 @@ async function loadTodos(date, profile, timezone = 'Asia/Seoul') {
 
     if (error) throw error;
 
-    todos = data || [];
+    // 과거 날짜 조회 시: carried_over_at과 skipped_at이 있는 할일은 제외 (중복 방지)
+    // 단, 오늘 날짜 조회 시에는 모든 할일 표시 (이월된 할일 포함)
+    let filteredData = data || [];
+    if (date < today) {
+      console.log('[Todos] Filtering past date todos:', { date, today, beforeFilter: filteredData.length });
+      filteredData = filteredData.filter(todo => !todo.carried_over_at && !todo.skipped_at);
+      console.log('[Todos] After filtering:', { afterFilter: filteredData.length });
+    }
+
+    todos = filteredData;
     renderTodos(todos, date, profile, timezone);
     
     // DOM이 렌더링된 후 이벤트 바인딩 (삭제/수정 후 재렌더링 시에도 이벤트가 바인딩되도록)

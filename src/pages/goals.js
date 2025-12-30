@@ -915,6 +915,9 @@ export async function renderGoals() {
                   // active_from_date는 기존 값 유지하여 과거 기록 보존
                 }
               });
+            } else if (existingRoutine && existingRoutine.is_active) {
+              // 이미 활성인 루틴은 그대로 유지 (아무것도 안함)
+              console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
             } else if (!existingRoutine) {
               // 루틴이 없으면 새로 생성
               routinesToInsert.push({
@@ -951,6 +954,9 @@ export async function renderGoals() {
                   // active_from_date는 기존 값 유지하여 과거 기록 보존
                 }
               });
+            } else if (existingRoutine && existingRoutine.is_active) {
+              // 이미 활성인 루틴은 그대로 유지 (아무것도 안함)
+              console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
             } else if (!existingRoutine) {
               // 루틴이 없으면 새로 생성
               routinesToInsert.push({
