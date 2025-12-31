@@ -576,39 +576,6 @@ function formatDate(dateString, timezone = 'Asia/Seoul') {
 /**
  * 레이트리밋 사용량 조회
  */
-async function getMonthlyReflectionRateLimit(monthStart) {
-  try {
-    const userId = (await supabase.auth.getUser()).data?.user?.id;
-    if (!userId) return null;
-    
-    // 월 키 계산 (Edge Function과 동일한 방식)
-    const monthStartDate = new Date(monthStart);
-    const monthKey = `${monthStartDate.getFullYear()}-${String(monthStartDate.getMonth() + 1).padStart(2, '0')}`;
-    
-    const { data: counter, error } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', userId)
-      .eq('scope', 'monthly_reflection')
-      .eq('period_key', monthKey)
-      .maybeSingle();
-    
-    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-      console.error('Error fetching rate limit:', error);
-      return null;
-    }
-    
-    return {
-      current: counter?.count || 0,
-      limit: 2, // 월당 2회
-      monthKey: monthKey
-    };
-  } catch (error) {
-    console.error('Error in getMonthlyReflectionRateLimit:', error);
-    return null;
-  }
-}
-
 /**
  * AI 성찰 생성 이벤트 바인딩
  */
@@ -617,24 +584,9 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
   const generateBtn = document.getElementById('generate-ai-reflection-btn');
   if (generateBtn) {
     generateBtn.addEventListener('click', async () => {
-      // 레이트리밋 사용량 조회
-      const rateLimit = await getMonthlyReflectionRateLimit(monthStart);
-      
-      if (rateLimit) {
-        // 사용량 메시지 표시
-        const remaining = rateLimit.limit - rateLimit.current;
-        if (remaining <= 0) {
-          alert(`월간 성찰은 월당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 달에는 더 이상 생성할 수 없습니다.`);
-          return;
-        }
-        
-        const shouldContinue = confirm(
-          `월간 성찰은 월당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n계속하시겠습니까?`
-        );
-        
-        if (!shouldContinue) {
-          return;
-        }
+      // 확인 메시지
+      if (!confirm('AI가 이번 달 활동을 분석하여 성찰을 생성합니다.\n\n계속하시겠습니까?')) {
+        return;
       }
       
       generateBtn.disabled = true;
@@ -664,29 +616,9 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
   const regenerateBtn = document.getElementById('regenerate-ai-reflection-btn');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', async () => {
-      // 레이트리밋 사용량 조회
-      const rateLimit = await getMonthlyReflectionRateLimit(monthStart);
-      
-      if (rateLimit) {
-        // 사용량 메시지 표시
-        const remaining = rateLimit.limit - rateLimit.current;
-        if (remaining <= 0) {
-          alert(`월간 성찰은 월당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 달에는 더 이상 생성할 수 없습니다.`);
-          return;
-        }
-        
-        const shouldContinue = confirm(
-          `월간 성찰은 월당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\nAI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.`
-        );
-        
-        if (!shouldContinue) {
-          return;
-        }
-      } else {
-        // 레이트리밋 조회 실패 시 기존 확인 메시지만 표시
-        if (!confirm('AI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.')) {
-          return;
-        }
+      // 확인 메시지
+      if (!confirm('AI 성찰을 다시 생성하시겠습니까?\n\n기존 성찰은 덮어씌워집니다.')) {
+        return;
       }
       
       regenerateBtn.disabled = true;

@@ -101,34 +101,6 @@ serve(async (req) => {
     // 월의 일수 계산
     const totalDays = monthEndDate.getDate(); // 28, 29, 30, 31
 
-    // 레이트리밋 확인 (월 2회)
-    // period_key 형식: "2025-12" (YYYY-MM)
-    const monthKey = `${monthStartDate.getFullYear()}-${String(monthStartDate.getMonth() + 1).padStart(2, '0')}`;
-    console.log('[monthly_reflection] Checking rate limit:', { userId: user.id, scope: 'monthly_reflection', period_key: monthKey });
-    
-    const { data: counter, error: counterError } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('scope', 'monthly_reflection')
-      .eq('period_key', monthKey)
-      .maybeSingle();
-
-    if (counterError && counterError.code !== 'PGRST116') { // PGRST116 = not found (정상)
-      console.error('[monthly_reflection] Error fetching rate limit counter:', counterError);
-      // 에러가 발생해도 계속 진행 (레이트리밋 체크 실패 시 허용)
-    }
-
-    const currentCount = counter?.count || 0;
-    console.log('[monthly_reflection] Current count:', currentCount);
-    
-    if (currentCount >= 2) {
-      return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Maximum 2 times per month.' }),
-        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
     // 월간 통계 수집
     const stats = await collectMonthlyStats(supabase, user.id, month_start, month_end, totalDays);
 
@@ -250,40 +222,6 @@ serve(async (req) => {
         JSON.stringify({ error: 'Failed to save reflection', details: saveError }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
-    }
-
-    // 레이트리밋 카운터 증가
-    const newCount = currentCount + 1;
-    console.log('[monthly_reflection] Updating counter:', { userId: user.id, scope: 'monthly_reflection', period_key: monthKey, currentCount, newCount });
-    
-    const { data: updatedCounter, error: counterUpdateError } = await supabase
-      .from('ai_usage_counters')
-      .upsert(
-        {
-          user_id: user.id,
-          scope: 'monthly_reflection',
-          period_key: monthKey,
-          count: newCount,
-        },
-        { onConflict: 'user_id,scope,period_key' }
-      );
-
-    if (counterUpdateError) {
-      console.error('[monthly_reflection] Error updating rate limit counter:', counterUpdateError);
-      // 카운터 업데이트 실패해도 성찰은 이미 저장되었으므로 계속 진행
-    } else {
-      console.log('[monthly_reflection] Counter updated successfully:', updatedCounter);
-      
-      // 업데이트 확인: 다시 조회하여 검증
-      const { data: verifyCounter } = await supabase
-        .from('ai_usage_counters')
-        .select('count')
-        .eq('user_id', user.id)
-        .eq('scope', 'monthly_reflection')
-        .eq('period_key', monthKey)
-        .maybeSingle();
-      
-      console.log('[monthly_reflection] Verified count after update:', verifyCounter?.count);
     }
 
     // 성공 응답

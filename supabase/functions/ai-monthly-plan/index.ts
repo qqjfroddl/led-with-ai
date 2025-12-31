@@ -107,24 +107,6 @@ serve(async (req) => {
     const month_end = monthEndDate.toISOString().split('T')[0];
     const totalDays = monthEndDate.getDate();
 
-    // 레이트리밋 확인 (월 2회)
-    const monthKey = `${monthStartDate.getFullYear()}-${String(monthStartDate.getMonth() + 1).padStart(2, '0')}`;
-    const { data: counter } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('scope', 'monthly_plan')
-      .eq('period_key', monthKey)
-      .single();
-
-    const currentCount = counter?.count || 0;
-    if (currentCount >= 2) {
-      return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Maximum 2 times per month.' }),
-        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
     // 연간목표 조회
     const { data: yearlyGoals, error: yearlyGoalsError } = await supabase
       .from('yearly_goals')

@@ -1542,40 +1542,6 @@ export async function renderGoals() {
       };
       const handleSaveYearlyGoals = () => saveYearlyGoals();
 
-      // 연간 목표 피드백 레이트리밋 조회
-      async function getYearlyGoalFeedbackRateLimit() {
-        try {
-          const userId = (await supabase.auth.getUser()).data?.user?.id;
-          if (!userId) return null;
-          
-          // 월 키 계산 (현재 월 기준)
-          const now = new Date();
-          const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-          
-          const { data: counter, error } = await supabase
-            .from('ai_usage_counters')
-            .select('count')
-            .eq('user_id', userId)
-            .eq('scope', 'yearly_goal_feedback')
-            .eq('period_key', monthKey)
-            .maybeSingle();
-          
-          if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-            console.error('Error fetching rate limit:', error);
-            return null;
-          }
-          
-          return {
-            current: counter?.count || 0,
-            limit: 2, // 월 2회
-            monthKey: monthKey
-          };
-        } catch (error) {
-          console.error('Error in getYearlyGoalFeedbackRateLimit:', error);
-          return null;
-        }
-      }
-
       // AI 피드백 생성
       async function generateAIYearlyGoalFeedback() {
         const selfDev = document.getElementById('yearly-goal-self-dev-input')?.value.trim() || '';
@@ -1588,25 +1554,9 @@ export async function renderGoals() {
           return;
         }
 
-        // 레이트리밋 사용량 조회
-        const rateLimit = await getYearlyGoalFeedbackRateLimit();
-        
-        if (rateLimit) {
-          const remaining = rateLimit.limit - rateLimit.current;
-          if (remaining <= 0) {
-            alert(`연간 목표 AI 피드백은 월 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 달에는 더 이상 생성할 수 없습니다.`);
-            return;
-          }
-          
-          const shouldContinue = confirm(
-            `연간 목표 AI 피드백은 월 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\nAI가 ${selectedYear}년 연간 목표에 대한 SMART 기준 피드백을 제공합니다.\n\n입력하신 목표를 더 구체적이고 측정 가능하게 개선하는 제안을 드립니다.`
-          );
-          
-          if (!shouldContinue) return;
-        } else {
-          const confirmGenerate = confirm(`AI가 ${selectedYear}년 연간 목표에 대한 SMART 기준 피드백을 제공합니다.\n\n입력하신 목표를 더 구체적이고 측정 가능하게 개선하는 제안을 드립니다.`);
-          if (!confirmGenerate) return;
-        }
+        // 확인 메시지
+        const confirmGenerate = confirm(`AI가 ${selectedYear}년 연간 목표에 대한 SMART 기준 피드백을 제공합니다.\n\n입력하신 목표를 더 구체적이고 측정 가능하게 개선하는 제안을 드립니다.\n\n계속하시겠습니까?`);
+        if (!confirmGenerate) return;
 
         // 버튼 참조 및 원본 HTML 저장
         const feedbackBtn = document.getElementById('ai-feedback-yearly-goals-btn');
@@ -2342,39 +2292,6 @@ export async function renderGoals() {
       }
 
       // 월실천계획 제안 레이트리밋 조회
-      async function getMonthlyPlanSuggestionRateLimit() {
-        try {
-          const userId = (await supabase.auth.getUser()).data?.user?.id;
-          if (!userId) return null;
-          
-          // 월 키 계산 (현재 월 기준)
-          const now = new Date();
-          const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-          
-          const { data: counter, error } = await supabase
-            .from('ai_usage_counters')
-            .select('count')
-            .eq('user_id', userId)
-            .eq('scope', 'monthly_plan')
-            .eq('period_key', monthKey)
-            .maybeSingle();
-          
-          if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-            console.error('Error fetching rate limit:', error);
-            return null;
-          }
-          
-          return {
-            current: counter?.count || 0,
-            limit: 2, // 월 2회
-            monthKey: monthKey
-          };
-        } catch (error) {
-          console.error('Error in getMonthlyPlanSuggestionRateLimit:', error);
-          return null;
-        }
-      }
-
       // AI 월실천계획 제안 생성
       async function generateAIMonthlyPlan() {
         try {
@@ -2387,26 +2304,9 @@ export async function renderGoals() {
             await loadLinkedYearlyGoals(linkedYear);
           }
 
-          // 레이트리밋 사용량 조회
-          const rateLimit = await getMonthlyPlanSuggestionRateLimit();
-          
-          if (rateLimit) {
-            const remaining = rateLimit.limit - rateLimit.current;
-            if (remaining <= 0) {
-              alert(`월간 실천계획 AI 제안은 월 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 달에는 더 이상 생성할 수 없습니다.`);
-              return;
-            }
-            
-            const shouldContinue = confirm(
-              `월간 실천계획 AI 제안은 월 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\nAI가 ${selectedMonthStart.substring(0, 4)}년 ${parseInt(selectedMonthStart.substring(5, 7))}월의 월간 실천계획을 제안해드립니다.\n\n연간목표와 최근 활동을 분석하여 구체적인 실천계획을 생성합니다.`
-            );
-            
-            if (!shouldContinue) return;
-          } else {
-            // 확인 메시지
-            const confirmGenerate = confirm(`AI가 ${selectedMonthStart.substring(0, 4)}년 ${parseInt(selectedMonthStart.substring(5, 7))}월의 월간 실천계획을 제안해드립니다.\n\n연간목표와 최근 활동을 분석하여 구체적인 실천계획을 생성합니다.`);
-            if (!confirmGenerate) return;
-          }
+          // 확인 메시지
+          const confirmGenerate = confirm(`AI가 ${selectedMonthStart.substring(0, 4)}년 ${parseInt(selectedMonthStart.substring(5, 7))}월의 월간 실천계획을 제안해드립니다.\n\n연간목표와 최근 활동을 분석하여 구체적인 실천계획을 생성합니다.\n\n계속하시겠습니까?`);
+          if (!confirmGenerate) return;
 
           // 로딩 표시
           document.getElementById('monthly-plans-loading').style.display = 'block';

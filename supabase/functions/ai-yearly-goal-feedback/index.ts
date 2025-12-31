@@ -96,25 +96,6 @@ serve(async (req) => {
       );
     }
 
-    // 레이트리밋 확인 (월 2회)
-    const today = new Date();
-    const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-    const { data: counter } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('scope', 'yearly_goal_feedback')
-      .eq('period_key', monthKey)
-      .single();
-
-    const currentCount = counter?.count || 0;
-    if (currentCount >= 2) {
-      return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Maximum 2 times per month.' }),
-        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
     // 입력값 검증 (최소 1개 영역에 내용이 있어야 함)
     if (!self_dev && !relationship && !work_finance) {
       return new Response(
@@ -225,19 +206,6 @@ serve(async (req) => {
       relationship: feedback.relationship || relationship || '',
       work_finance: feedback.work_finance || feedback.workFinance || work_finance || '',
     };
-
-    // 레이트리밋 카운터 증가
-    await supabase
-      .from('ai_usage_counters')
-      .upsert(
-        {
-          user_id: user.id,
-          scope: 'yearly_goal_feedback',
-          period_key: monthKey,
-          count: currentCount + 1,
-        },
-        { onConflict: 'user_id,scope,period_key' }
-      );
 
     // 성공 응답 (DB 저장 없이 피드백만 반환)
     return new Response(

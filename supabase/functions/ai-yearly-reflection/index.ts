@@ -94,40 +94,6 @@ serve(async (req) => {
       );
     }
 
-    // 레이트리밋 확인 (연 2회)
-    // period_key 형식: "2025" (YYYY)
-    const yearKey = String(year);
-    console.log('[yearly_reflection] Checking rate limit:', { userId: user.id, scope: 'yearly_reflection', period_key: yearKey });
-    
-    const { data: counter, error: counterError } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('scope', 'yearly_reflection')
-      .eq('period_key', yearKey)
-      .maybeSingle();
-
-    // PGRST116 = not found (정상, 카운터가 없는 경우)
-    if (counterError && counterError.code !== 'PGRST116') {
-      console.error('[yearly_reflection] Error fetching rate limit counter:', counterError);
-      // 카운터 조회 실패는 심각한 오류이므로 에러 반환
-      return new Response(
-        JSON.stringify({ error: 'Failed to check rate limit', details: counterError }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    const currentCount = counter?.count || 0;
-    console.log('[yearly_reflection] Current count:', currentCount, 'for period_key:', yearKey);
-    
-    if (currentCount >= 2) {
-      console.log('[yearly_reflection] Rate limit exceeded:', { currentCount, limit: 2 });
-      return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Maximum 2 times per year.' }),
-        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
     // 연간 목표 조회
     const { data: yearlyGoals, error: yearlyGoalsError } = await supabase
       .from('yearly_goals')
@@ -277,58 +243,6 @@ serve(async (req) => {
         JSON.stringify({ error: 'Failed to save reflection', details: saveError }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
-    }
-
-    // 레이트리밋 카운터 증가
-    const newCount = currentCount + 1;
-    console.log('[yearly_reflection] Updating counter:', { userId: user.id, scope: 'yearly_reflection', period_key: yearKey, currentCount, newCount });
-    
-    const { data: updatedCounter, error: counterUpdateError } = await supabase
-      .from('ai_usage_counters')
-      .upsert(
-        {
-          user_id: user.id,
-          scope: 'yearly_reflection',
-          period_key: yearKey,
-          count: newCount,
-        },
-        { 
-          onConflict: 'user_id,scope,period_key',
-          // upsert 후 반환값 확인을 위해 select 추가
-        }
-      )
-      .select('count')
-      .single();
-
-    if (counterUpdateError) {
-      console.error('[yearly_reflection] Error updating rate limit counter:', counterUpdateError);
-      // 카운터 업데이트 실패는 심각한 오류이므로 에러 반환
-      return new Response(
-        JSON.stringify({ error: 'Failed to update rate limit counter', details: counterUpdateError }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-    
-    console.log('[yearly_reflection] Counter updated successfully:', updatedCounter);
-    
-    // 업데이트 확인: 다시 조회하여 검증
-    const { data: verifyCounter, error: verifyError } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', user.id)
-      .eq('scope', 'yearly_reflection')
-      .eq('period_key', yearKey)
-      .maybeSingle();
-    
-    if (verifyError) {
-      console.error('[yearly_reflection] Error verifying counter:', verifyError);
-    } else {
-      console.log('[yearly_reflection] Verified count after update:', verifyCounter?.count, 'expected:', newCount);
-      
-      // 검증: 실제 카운트가 예상과 다르면 경고
-      if (verifyCounter?.count !== newCount) {
-        console.warn('[yearly_reflection] Counter mismatch! Expected:', newCount, 'Got:', verifyCounter?.count);
-      }
     }
 
     // 성공 응답

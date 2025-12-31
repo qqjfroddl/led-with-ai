@@ -560,39 +560,6 @@ function getWeekNumber(date) {
 /**
  * 레이트리밋 사용량 조회
  */
-async function getWeeklyReflectionRateLimit(weekStart) {
-  try {
-    const userId = (await supabase.auth.getUser()).data?.user?.id;
-    if (!userId) return null;
-    
-    // 주차 키 계산 (Edge Function과 동일한 방식)
-    const weekStartDate = new Date(weekStart);
-    const weekKey = `${weekStartDate.getFullYear()}-W${getWeekNumber(weekStartDate)}`;
-    
-    const { data: counter, error } = await supabase
-      .from('ai_usage_counters')
-      .select('count')
-      .eq('user_id', userId)
-      .eq('scope', 'weekly_reflection')
-      .eq('period_key', weekKey)
-      .maybeSingle();
-    
-    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-      console.error('Error fetching rate limit:', error);
-      return null;
-    }
-    
-    return {
-      current: counter?.count || 0,
-      limit: 2, // 주당 2회
-      weekKey: weekKey
-    };
-  } catch (error) {
-    console.error('Error in getWeeklyReflectionRateLimit:', error);
-    return null;
-  }
-}
-
 /**
  * AI 성찰 생성 이벤트 바인딩
  */
@@ -601,24 +568,9 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
   const generateBtn = document.getElementById('generate-ai-reflection-btn');
   if (generateBtn) {
     generateBtn.addEventListener('click', async () => {
-      // 레이트리밋 사용량 조회
-      const rateLimit = await getWeeklyReflectionRateLimit(weekStart);
-      
-      if (rateLimit) {
-        // 사용량 메시지 표시
-        const remaining = rateLimit.limit - rateLimit.current;
-        if (remaining <= 0) {
-          alert(`주간 성찰은 주당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 주에는 더 이상 생성할 수 없습니다.`);
-          return;
-        }
-        
-        const shouldContinue = confirm(
-          `주간 성찰은 주당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n계속하시겠습니까?`
-        );
-        
-        if (!shouldContinue) {
-          return;
-        }
+      // 확인 메시지
+      if (!confirm('AI가 이번 주 활동을 분석하여 성찰을 생성합니다.\n\n계속하시겠습니까?')) {
+        return;
       }
       
       generateBtn.disabled = true;
@@ -648,29 +600,9 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
   const regenerateBtn = document.getElementById('regenerate-ai-reflection-btn');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', async () => {
-      // 레이트리밋 사용량 조회
-      const rateLimit = await getWeeklyReflectionRateLimit(weekStart);
-      
-      if (rateLimit) {
-        // 사용량 메시지 표시
-        const remaining = rateLimit.limit - rateLimit.current;
-        if (remaining <= 0) {
-          alert(`주간 성찰은 주당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\n이번 주에는 더 이상 생성할 수 없습니다.`);
-          return;
-        }
-        
-        const shouldContinue = confirm(
-          `주간 성찰은 주당 ${rateLimit.limit}회까지 가능합니다.\n\n현재 사용량: ${rateLimit.current}/${rateLimit.limit}\n\nAI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.`
-        );
-        
-        if (!shouldContinue) {
-          return;
-        }
-      } else {
-        // 레이트리밋 조회 실패 시 기존 확인 메시지만 표시
-        if (!confirm('AI 성찰을 다시 생성하시겠습니까? 기존 성찰은 덮어씌워집니다.')) {
-          return;
-        }
+      // 확인 메시지
+      if (!confirm('AI 성찰을 다시 생성하시겠습니까?\n\n기존 성찰은 덮어씌워집니다.')) {
+        return;
       }
       
       regenerateBtn.disabled = true;
