@@ -2172,6 +2172,33 @@ export async function renderGoals() {
         if (window.lucide?.createIcons) window.lucide.createIcons();
       }
 
+      // 텍스트 영역 자동 높이 조절 함수
+      function autoResizeTextarea(textarea) {
+        if (!textarea) return;
+        
+        // 높이를 초기화하여 정확한 scrollHeight 계산
+        textarea.style.height = 'auto';
+        
+        // 내용에 맞춰 높이 조절 (최소 80px, 최대 500px)
+        const newHeight = Math.max(80, Math.min(textarea.scrollHeight + 2, 500));
+        textarea.style.height = newHeight + 'px';
+      }
+
+      // 텍스트 영역 초기 높이 설정 및 이벤트 리스너 등록
+      function setupTextareaAutoResize(textareaId) {
+        const textarea = document.getElementById(textareaId);
+        if (!textarea) return;
+        
+        // 초기 높이 조절
+        autoResizeTextarea(textarea);
+        
+        // input 이벤트: 내용 변경 시 자동 조절
+        // innerHTML로 매번 새로 생성되므로 중복 걱정 없음
+        textarea.addEventListener('input', function() {
+          autoResizeTextarea(this);
+        });
+      }
+
       async function switchToMonthlyPlanEditMode() {
         document.getElementById('monthly-plans-view-mode').style.display = 'none';
         document.getElementById('monthly-plans-edit-mode').style.display = 'block';
@@ -2195,6 +2222,20 @@ export async function renderGoals() {
         renderResultsContentInEditMode();
 
         if (window.lucide?.createIcons) window.lucide.createIcons();
+
+        // 텍스트 영역 자동 높이 조절 적용 (DOM 렌더링 후 실행)
+        // requestAnimationFrame으로 더 안정적인 타이밍 보장
+        requestAnimationFrame(() => {
+          // 월실천계획 textarea
+          setupTextareaAutoResize('plan-content-self-dev-input');
+          setupTextareaAutoResize('plan-content-relationship-input');
+          setupTextareaAutoResize('plan-content-work-finance-input');
+          
+          // 월말 결과 textarea
+          setupTextareaAutoResize('results-content-self-dev-input');
+          setupTextareaAutoResize('results-content-relationship-input');
+          setupTextareaAutoResize('results-content-work-finance-input');
+        });
       }
 
       // 편집 모드: 연간목표 표시 (읽기 전용)
