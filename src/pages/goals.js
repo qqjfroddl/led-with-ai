@@ -2070,6 +2070,13 @@ export async function renderGoals() {
         }
       }
 
+      // 연간목표 텍스트 포맷팅 함수 (목표 사이에 빈 줄 추가)
+      function formatYearlyGoalText(text) {
+        if (!text) return '';
+        // "1. A\n2. B" → "1. A\n\n2. B"
+        return text.replace(/\n(\d+\.)/g, '\n\n$1').trim();
+      }
+
       // 월간 실천계획 표시 (3컬럼 레이아웃)
       function displayMonthlyPlan() {
         // 왼쪽: 연간목표 표시
@@ -2082,21 +2089,21 @@ export async function renderGoals() {
                   <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
                   <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
                 </div>
-                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.self_dev || '목표를 입력해주세요'}</div>
+                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.self_dev) || '목표를 입력해주세요'}</div>
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                   <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
                   <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
                 </div>
-                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.relationship || '목표를 입력해주세요'}</div>
+                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.relationship) || '목표를 입력해주세요'}</div>
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                   <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
                   <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
                 </div>
-                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${linkedYearlyGoals.work_finance || '목표를 입력해주세요'}</div>
+                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.work_finance) || '목표를 입력해주세요'}</div>
               </div>
             `;
           } else {
@@ -2250,21 +2257,21 @@ export async function renderGoals() {
                 <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
                 <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
               </div>
-              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.self_dev || '목표를 입력해주세요'}</div>
+              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${formatYearlyGoalText(linkedYearlyGoals.self_dev) || '목표를 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
                 <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
-              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.relationship || '목표를 입력해주세요'}</div>
+              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${formatYearlyGoalText(linkedYearlyGoals.relationship) || '목표를 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
                 <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
               </div>
-              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${linkedYearlyGoals.work_finance || '목표를 입력해주세요'}</div>
+              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${formatYearlyGoalText(linkedYearlyGoals.work_finance) || '목표를 입력해주세요'}</div>
             </div>
           `;
         } else {
