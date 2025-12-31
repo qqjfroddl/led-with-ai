@@ -192,7 +192,13 @@ export async function renderGoals() {
             </div>
           </div>
         </div>
-        <button id="edit-yearly-goals-btn" class="btn btn-secondary" style="margin-top: 1.5rem;">수정하기</button>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+          <button id="copy-prev-year-goals-btn" class="btn btn-secondary" style="display: none;">
+            <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            작년 목표 복사
+          </button>
+          <button id="edit-yearly-goals-btn" class="btn btn-secondary">수정하기</button>
+        </div>
       </div>
 
       <!-- 편집 모드 -->
@@ -1429,6 +1435,9 @@ export async function renderGoals() {
         }
 
         switchToYearlyGoalsViewMode();
+        
+        // 버튼 표시/숨김 제어
+        updateCopyYearlyGoalsButtonVisibility();
       }
 
       // 연간 목표 모드 전환
@@ -1492,6 +1501,142 @@ export async function renderGoals() {
           console.error('[Yearly Goals Save Failed]', error);
           alert(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
         }
+      }
+
+      /**
+       * 작년 목표 조회
+       */
+      async function fetchPreviousYearGoals(userId, currentYear) {
+        try {
+          const previousYear = currentYear - 1;
+          
+          console.log(`[Copy] Fetching yearly goals from previous year: ${previousYear}`);
+          
+          // 작년 연간 목표 조회
+          const { data: prevGoals, error } = await supabase
+            .from('yearly_goals')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('year', previousYear)
+            .maybeSingle();
+          
+          if (error) {
+            console.error('[Copy Error] Failed to fetch previous year goals:', error);
+            return null;
+          }
+          
+          if (!prevGoals) {
+            console.log('[Copy] No goals found in previous year');
+            return null;
+          }
+          
+          console.log(`[Copy] Found previous year goals`);
+          
+          return {
+            self_dev: prevGoals.self_dev || null,
+            relationship: prevGoals.relationship || null,
+            work_finance: prevGoals.work_finance || null
+          };
+        } catch (error) {
+          console.error('[Copy Error]', error);
+          return null;
+        }
+      }
+      
+      /**
+       * 작년 목표 복사
+       */
+      async function copyPreviousYearGoals() {
+        try {
+          // 작년 목표 조회
+          const prevGoals = await fetchPreviousYearGoals(profile.id, selectedYear);
+          
+          if (!prevGoals) {
+            alert(`${selectedYear - 1}년 목표가 없습니다.`);
+            return;
+          }
+          
+          // 작년 목표가 모두 비어있는지 확인
+          if (!prevGoals.self_dev && !prevGoals.relationship && !prevGoals.work_finance) {
+            alert(`${selectedYear - 1}년 목표가 비어있습니다.`);
+            return;
+          }
+          
+          // 현재 연도 목표가 있는지 확인
+          const hasCurrentGoals = yearlyGoals.self_dev || yearlyGoals.relationship || yearlyGoals.work_finance;
+          
+          if (hasCurrentGoals) {
+            const goalCount = [prevGoals.self_dev, prevGoals.relationship, prevGoals.work_finance].filter(Boolean).length;
+            
+            const confirmed = confirm(
+              `⚠️ ${selectedYear}년 목표가 이미 있습니다.\n\n` +
+              `${selectedYear - 1}년 목표 ${goalCount}개 영역으로 덮어쓰시겠습니까?\n\n` +
+              `⚠️ 기존 목표는 복구할 수 없습니다.`
+            );
+            
+            if (!confirmed) return;
+          } else {
+            const goalCount = [prevGoals.self_dev, prevGoals.relationship, prevGoals.work_finance].filter(Boolean).length;
+            
+            const confirmed = confirm(
+              `${selectedYear - 1}년 목표 ${goalCount}개 영역을 ${selectedYear}년으로 복사하시겠습니까?\n\n` +
+              `복사 후 바로 수정할 수 있습니다.`
+            );
+            
+            if (!confirmed) return;
+          }
+          
+          // yearly_goals에 저장 (upsert)
+          const { data, error } = await supabase
+            .from('yearly_goals')
+            .upsert({
+              user_id: profile.id,
+              year: selectedYear,
+              self_dev: prevGoals.self_dev,
+              relationship: prevGoals.relationship,
+              work_finance: prevGoals.work_finance
+            }, {
+              onConflict: 'user_id,year'
+            })
+            .select()
+            .single();
+          
+          if (error) {
+            console.error('[Copy Error]', error);
+            throw new Error('목표 복사 실패: ' + error.message);
+          }
+          
+          // 상태 업데이트
+          yearlyGoals = {
+            self_dev: data.self_dev,
+            relationship: data.relationship,
+            work_finance: data.work_finance
+          };
+          
+          alert(
+            `✅ ${selectedYear - 1}년 목표가 ${selectedYear}년으로 복사되었습니다!\n\n` +
+            `이제 수정할 수 있습니다.`
+          );
+          
+          // 편집 모드로 자동 전환
+          switchToYearlyGoalsEditMode();
+          
+        } catch (error) {
+          console.error('[Copy Failed]', error);
+          alert(`복사 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+        }
+      }
+      
+      /**
+       * "작년 목표 복사" 버튼 표시/숨김 제어
+       * 개발 모드: 항상 표시 (테스트용)
+       */
+      async function updateCopyYearlyGoalsButtonVisibility() {
+        const copyBtn = document.getElementById('copy-prev-year-goals-btn');
+        if (!copyBtn) return;
+        
+        // 개발 모드: 항상 버튼 표시 (작년 목표 없어도 테스트 가능)
+        copyBtn.style.display = 'inline-flex';
       }
 
       // 연간 목표 이벤트 리스너
@@ -1696,12 +1841,22 @@ export async function renderGoals() {
         document.getElementById('yearly-goals-ai-feedback')?.style.setProperty('display', 'none');
       };
 
+      const handleCopyPrevYearGoals = () => copyPreviousYearGoals();
+      
       document.getElementById('yearly-goal-prev-btn')?.addEventListener('click', handleYearlyGoalPrev);
       document.getElementById('yearly-goal-next-btn')?.addEventListener('click', handleYearlyGoalNext);
       document.getElementById('yearly-goal-go-to-current-year-btn')?.addEventListener('click', handleGoToCurrentYear);
       document.getElementById('yearly-goal-year-label')?.addEventListener('click', handleYearLabelClick);
       document.getElementById('edit-yearly-goals-btn')?.addEventListener('click', handleEditYearlyGoals);
       document.getElementById('cancel-yearly-goals-btn')?.addEventListener('click', handleCancelYearlyGoals);
+      
+      // 작년 목표 복사 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
+      const copyPrevYearGoalsBtn = document.getElementById('copy-prev-year-goals-btn');
+      if (copyPrevYearGoalsBtn) {
+        const newCopyBtn = copyPrevYearGoalsBtn.cloneNode(true);
+        copyPrevYearGoalsBtn.parentNode?.replaceChild(newCopyBtn, copyPrevYearGoalsBtn);
+        newCopyBtn.addEventListener('click', handleCopyPrevYearGoals);
+      }
       
       // 저장 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
       const saveYearlyGoalsBtn = document.getElementById('save-yearly-goals-btn');
