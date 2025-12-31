@@ -108,6 +108,10 @@ export async function renderGoals() {
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem;">
+          <button id="copy-prev-month-routines-edit-btn" class="btn btn-secondary" style="display: inline-flex;">
+            <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            전월 루틴 복사
+          </button>
           <button id="save-routines-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">저장하기</button>
           <button id="cancel-edit-btn" class="btn btn-secondary">취소</button>
         </div>
@@ -229,6 +233,10 @@ export async function renderGoals() {
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
+          <button id="copy-prev-year-goals-edit-btn" class="btn btn-secondary" style="display: inline-flex;">
+            <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            작년 목표 복사
+          </button>
           <button id="ai-feedback-yearly-goals-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
             <i data-lucide="sparkles" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             AI로 피드백받기
@@ -603,13 +611,13 @@ export async function renderGoals() {
       
       /**
        * "전월 루틴 복사" 버튼 표시 여부 결정
-       * 개발 모드: 항상 표시 (테스트용)
+       * 항상 표시: 루틴이 있을 때도 전월 루틴으로 교체 가능
        */
       async function updateCopyButtonVisibility() {
         const copyBtn = document.getElementById('copy-prev-month-routines-btn');
         if (!copyBtn) return;
         
-        // 개발 모드: 항상 버튼 표시 (전월 루틴 없어도 테스트 가능)
+        // 항상 버튼 표시 (루틴 있을 때도 전월 루틴으로 교체 가능)
         copyBtn.style.display = 'inline-flex';
       }
 
@@ -634,13 +642,14 @@ export async function renderGoals() {
         const container = document.getElementById(`${type}-routines-list`);
         const countEl = document.getElementById(`${type}-count`);
         
-        if (routines.length === 0) {
-          // 최소 1개 필드
-          addRoutineInput(type);
-        } else {
-          container.innerHTML = '';
+        // 컨테이너 초기화
+        container.innerHTML = '';
+        
+        // 루틴이 있으면 표시
+        if (routines.length > 0) {
           routines.forEach(routine => addRoutineInput(type, routine));
         }
+        // 루틴이 없으면 빈 상태로 둠 (사용자가 "+ 루틴 추가" 버튼으로 추가)
         
         updateCount(type);
       }
@@ -1189,11 +1198,8 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       const handleEditRoutines = () => switchToEditMode();
       const handleCancelEdit = () => {
-        if (morningRoutines.length > 0 || nightRoutines.length > 0) {
-          displayRoutines();
-        } else {
-          loadRoutines();
-        }
+        // 루틴 있든 없든 보기 모드로 전환 (빈 상태 표시)
+        displayRoutines();
       };
       const handleSaveRoutines = () => saveRoutines();
       const handleAddMorningRoutine = () => addRoutineInput('morning');
@@ -1202,6 +1208,7 @@ export async function renderGoals() {
       
       const editBtn = document.getElementById('edit-routines-btn');
       const copyBtn = document.getElementById('copy-prev-month-routines-btn');
+      const copyEditBtn = document.getElementById('copy-prev-month-routines-edit-btn');
       const cancelBtn = document.getElementById('cancel-edit-btn');
       const saveBtn = document.getElementById('save-routines-btn');
       const addMorningBtn = document.getElementById('add-morning-routine-btn');
@@ -1215,6 +1222,11 @@ export async function renderGoals() {
       if (copyBtn) {
         copyBtn.removeEventListener('click', handleCopyPrevMonthRoutines);
         copyBtn.addEventListener('click', handleCopyPrevMonthRoutines);
+      }
+      
+      if (copyEditBtn) {
+        copyEditBtn.removeEventListener('click', handleCopyPrevMonthRoutines);
+        copyEditBtn.addEventListener('click', handleCopyPrevMonthRoutines);
       }
       
       if (cancelBtn) {
@@ -1856,6 +1868,14 @@ export async function renderGoals() {
         const newCopyBtn = copyPrevYearGoalsBtn.cloneNode(true);
         copyPrevYearGoalsBtn.parentNode?.replaceChild(newCopyBtn, copyPrevYearGoalsBtn);
         newCopyBtn.addEventListener('click', handleCopyPrevYearGoals);
+      }
+      
+      // 작년 목표 복사 버튼 (편집 모드) (중복 등록 방지를 위한 cloneNode 패턴)
+      const copyPrevYearGoalsEditBtn = document.getElementById('copy-prev-year-goals-edit-btn');
+      if (copyPrevYearGoalsEditBtn) {
+        const newCopyEditBtn = copyPrevYearGoalsEditBtn.cloneNode(true);
+        copyPrevYearGoalsEditBtn.parentNode?.replaceChild(newCopyEditBtn, copyPrevYearGoalsEditBtn);
+        newCopyEditBtn.addEventListener('click', handleCopyPrevYearGoals);
       }
       
       // 저장 버튼 (중복 등록 방지를 위한 cloneNode 패턴)

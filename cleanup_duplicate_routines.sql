@@ -72,3 +72,4 @@ RETURNING routines.id, routines.title, routines.schedule->>'category' as categor
 */
 
 
+
