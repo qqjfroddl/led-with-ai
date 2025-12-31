@@ -2266,27 +2266,38 @@ export async function renderGoals() {
         const container = document.getElementById('monthly-plan-results-content-edit-container');
         if (!container) return;
 
+        // 기본 템플릿 텍스트
+        const defaultResultsTemplate = `[성취한 것]
+-
+-
+-
+
+[아쉬운 점]
+-
+-
+-`;
+
         container.innerHTML = `
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
               <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
               <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
             </div>
-            <textarea id="results-content-self-dev-input" placeholder="월말 자기계발 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.self_dev || ''}</textarea>
+            <textarea id="results-content-self-dev-input" placeholder="월말 자기계발 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.self_dev || defaultResultsTemplate}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
               <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
               <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
             </div>
-            <textarea id="results-content-relationship-input" placeholder="월말 가족/관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.relationship || ''}</textarea>
+            <textarea id="results-content-relationship-input" placeholder="월말 가족/관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.relationship || defaultResultsTemplate}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
               <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
               <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
             </div>
-            <textarea id="results-content-work-finance-input" placeholder="월말 업무/재정 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.work_finance || ''}</textarea>
+            <textarea id="results-content-work-finance-input" placeholder="월말 업무/재정 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.work_finance || defaultResultsTemplate}</textarea>
           </div>
         `;
       }
