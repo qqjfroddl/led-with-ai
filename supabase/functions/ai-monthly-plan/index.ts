@@ -283,19 +283,6 @@ serve(async (req) => {
       );
     }
 
-    // 레이트리밋 카운터 증가
-    await supabase
-      .from('ai_usage_counters')
-      .upsert(
-        {
-          user_id: user.id,
-          scope: 'monthly_plan',
-          period_key: monthKey,
-          count: currentCount + 1,
-        },
-        { onConflict: 'user_id,scope,period_key' }
-      );
-
     // 성공 응답
     return new Response(
       JSON.stringify({
