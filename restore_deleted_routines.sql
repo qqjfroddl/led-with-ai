@@ -67,3 +67,4 @@ VALUES
    '{"type":"monthly","month":"2025-12-01","source":"monthly_goal","category":"night","order":7,"active_from_date":"2025-12-08"}',
    false, '2025-12-13 01:44:51.591891+00', '2025-12-08 22:49:02.979961+00', '2025-12-13 01:44:51.591891+00');
 
+

@@ -36,3 +36,4 @@ SELECT
 FROM pg_policies
 WHERE tablename = 'ai_usage_counters';
 
+

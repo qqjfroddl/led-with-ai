@@ -176,16 +176,17 @@ alwaysApply: true
     - 월간: `src/utils/monthlyStats.js`의 `getMonthlyStats` 함수에서 `effectiveEndDate` 계산
     - 연간: `src/utils/yearlyStats.js`의 `getYearlyStats` 함수에서 `effectiveEndDate` 계산
 
-#### AI 기능 UX 개선
-- ✅ **AI 레이트리밋 사용량 안내 개선 (2025-01-29)**
-  - **연간목표 AI 피드백**: 버튼 클릭 시 팝업으로 현재 사용량 표시 (월 2회 제한)
-  - **월실천계획 AI 제안**: 버튼 클릭 시 팝업으로 현재 사용량 표시 (월 2회 제한)
+#### AI 기능 개선
+- ✅ **AI 레이트리밋 제한 제거 (2025-01-30)**
+  - 문제: AI 기능 사용 시 주/월/연 2회 제한으로 인한 불편함
+  - 해결: 모든 AI 기능의 레이트리밋 제한 제거 (언제든지 사용 가능)
   - 구현:
-    - `getYearlyGoalFeedbackRateLimit()`: 연간목표 피드백 레이트리밋 조회 함수
-    - `getMonthlyPlanSuggestionRateLimit()`: 월실천계획 제안 레이트리밋 조회 함수
-    - 버튼 클릭 시 `ai_usage_counters` 테이블에서 현재 사용량 조회
-    - 남은 횟수가 0이면 즉시 차단, 있으면 확인 메시지에 사용량 표시
-  - 효과: 사용자가 AI 기능 사용 전에 남은 횟수를 확인하고 신중하게 사용 가능
+    - Edge Function에서 레이트리밋 체크 로직 제거 (429 에러 반환 제거)
+    - 사용량 카운터는 계속 증가하여 통계 추적 유지 (`ai_usage_counters` 테이블)
+    - 프론트엔드에서 레이트리밋 관련 팝업 메시지 제거
+    - 적용 기능: 주간/월간/연간 AI 성찰, AI 연간 목표 피드백, AI 월실천계획 제안
+  - 효과: 사용자가 언제든지 AI 피드백을 받을 수 있어 사용성 향상
+  - 주의: 사용량은 계속 추적되므로 관리자가 통계 확인 가능
 
 ---
 
@@ -698,12 +699,12 @@ alwaysApply: true
 - AC-FAI2. pending/rejected/blocked는 생성/조회 불가(RLS + Edge 인증) ✅
 - AC-FAI3. AI 호출 실패 시 DB에 부분 저장 없음(서버에서 원자적 처리) ✅
 - AC-FAI4. 월간 AI 성찰 생성/조회 정상 작동 ✅
-- AC-FAI5. 월간 레이트리밋 (월 2회) 정상 작동 ✅
+- AC-FAI5. 월간 사용량 추적 정상 작동 (레이트리밋 제한 없음) ✅
 - AC-FAI6. 연간 AI 성찰 생성/조회 정상 작동 ✅
-- AC-FAI7. 연간 레이트리밋 (연 2회) 정상 작동 ✅
+- AC-FAI7. 연간 사용량 추적 정상 작동 (레이트리밋 제한 없음) ✅
 - AC-FAI8. **에러 메시지 한글화**: Gemini API 에러 메시지가 한글로 표시됨 ✅
 - AC-FAI9. **에러 팝업 중복 방지**: 에러 발생 시 팝업이 한 번만 표시됨 ✅
-- AC-FAI10. **연간 레이트리밋 강화**: 카운터 조회/업데이트 실패 시 에러 반환하여 레이트리밋 체크 우회 방지 ✅
+- AC-FAI10. **사용량 카운터 안정성**: 카운터 조회/업데이트 실패 시 에러 반환하여 정확한 통계 추적 보장 ✅
 - AC-FAI11. **DB 제약조건 수정**: ai_usage_counters 테이블의 scope CHECK 제약조건에 yearly_reflection 포함 확인 ✅
 
 ---
@@ -897,7 +898,7 @@ alwaysApply: true
 - FR-GAI5. 저장 정책: `monthly_plans.source='ai_suggested'`, `status='draft'`, plan_content JSONB 저장 ✅
 - FR-GAI6. 재생성 정책: 동일 `user_id + month_start + source='ai_suggested'`는 upsert 덮어쓰기 ✅
 - FR-GAI7. 사용자 편집: AI 제안 생성 후 편집 모드에서 수정 가능, 저장 시 manual로 전환 가능 ✅
-- FR-GAI8. 레이트리밋: 월 2회 제한 (ai_usage_counters 테이블로 관리) ✅
+- FR-GAI8. 사용량 추적: ai_usage_counters 테이블로 관리 (레이트리밋 제한 없음) ✅
 
 ### G-3 AC (검증됨)
 - AC-GAI1. 생성 결과 저장 후 PC/모바일 동일 조회 ✅
@@ -905,7 +906,7 @@ alwaysApply: true
 - AC-GAI3. 승인 사용자만 가능(RLS + Edge 인증) ✅
 - AC-GAI4. 연간목표와 지난달 실천계획/결과, 최근 활동이 AI 제안에 반영됨 ✅
 - AC-GAI5. AI 제안이 구체적이고 실행 가능한 1-2개 핵심 행동으로 제안됨 ✅
-- AC-GAI6. 레이트리밋 정상 작동 (월 2회 제한) ✅
+- AC-GAI6. 사용량 추적 정상 작동 (레이트리밋 제한 없음) ✅
 
 ---
 
@@ -1126,16 +1127,13 @@ alwaysApply: true
 - NFR-C2. carry-over 복제는 새 ID 생성으로 충돌 방지
 - NFR-C3. 루틴 변경 시 Soft Delete 적용: `DELETE` 대신 `UPDATE is_active = false, deleted_at = NOW()` (과거 체크 기록 보존)
 
-## 9.3 AI 보안/비용/레이트리밋
+## 9.3 AI 보안/비용/사용량 추적
 - NFR-AI1. AI 키는 Edge Function 환경변수로만 보관
 - NFR-AI2. 저장: model/prompt_version 필수
-- NFR-AI3. 레이트리밋(고정, v1 권장)
-  - 주간 AI 성찰: 주 2회
-  - 월간 AI 성찰: 월 2회
-  - 연간 AI 성찰: 연 2회
-  - AI 월계획: 월 2회
-  - AI 연간 목표 피드백: 월 2회
-  - 구현: `ai_usage_counters` 테이블로 카운트(upsert)
+- NFR-AI3. 사용량 추적 (레이트리밋 제한 없음, 2025-01-30 변경)
+  - 모든 AI 기능: 레이트리밋 제한 없음 (언제든지 사용 가능)
+  - 사용량 추적: `ai_usage_counters` 테이블로 카운트(upsert)하여 통계 관리
+  - 적용 기능: 주간/월간/연간 AI 성찰, AI 연간 목표 피드백, AI 월실천계획 제안
 - NFR-AI4. 실패 시 사용자에게 재시도 버튼 제공(서버는 부분 저장 금지)
 
 ## 9.4 성능/호환성
@@ -1398,8 +1396,8 @@ alwaysApply: true
 ## 12.1 공통 규칙
 - 인증: Supabase JWT(Authorization Bearer) 필수
 - 승인 체크: profiles.status=approved 아니면 403
-- 레이트리밋: ai_usage_counters로 scope/period_key 카운트 증가(초과 시 429)
-- 저장 원자성: “모델 호출 성공 → DB upsert 저장”을 단일 흐름으로 보장(부분 저장 금지)
+- 사용량 추적: ai_usage_counters로 scope/period_key 카운트 증가 (레이트리밋 제한 없음, 통계 관리용)
+- 저장 원자성: "모델 호출 성공 → DB upsert 저장"을 단일 흐름으로 보장(부분 저장 금지)
 
 ## 12.2 Functions 목록(권장 이름)
 1) `POST /functions/v1/ai-weekly-reflection` ✅ 구현 완료
@@ -1410,7 +1408,7 @@ alwaysApply: true
   - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 8000)
   - weekly_ai_reflections upsert(user_id, week_start)
 - response: { "content_md":"...", "week_start":"...", "week_end":"...", "model":"...", "prompt_version":"..." }
-- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 사용량 추적 (레이트리밋 제한 없음)
 
 2) `POST /functions/v1/ai-monthly-reflection` ✅ 구현 완료
 - body: { "month_start":"YYYY-MM-01" }  (필수)
@@ -1420,7 +1418,7 @@ alwaysApply: true
   - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 8000)
   - monthly_ai_reflections upsert(user_id, month_start)
 - response: { "content_md":"...", "month_start":"...", "model":"...", "prompt_version":"..." }
-- 구현 상태: ✅ 배포 준비 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용 (월 2회)
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 사용량 추적 (레이트리밋 제한 없음)
 
 3) `POST /functions/v1/ai-yearly-reflection` ✅ 구현 완료
 - body: { "year": 2025 } (필수)
@@ -1431,7 +1429,7 @@ alwaysApply: true
   - 모델 호출 (Gemini API, gemini-2.5-flash, maxOutputTokens: 8000)
   - yearly_ai_reflections upsert(user_id, year)
 - response: { "content_md":"...", "year": 2025, "model":"...", "prompt_version":"..." }
-- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 레이트리밋 적용 (연 2회), CORS 헤더 수정 완료
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, 마크다운 저장, 사용량 추적 (레이트리밋 제한 없음), CORS 헤더 수정 완료
 
 4) `POST /functions/v1/ai-monthly-plan` ✅ 구현 완료
 - body: { "month_start":"YYYY-MM-01", "linked_year": 2025 } (필수)
@@ -1441,7 +1439,7 @@ alwaysApply: true
   - JSON 형식 응답 파싱 및 plan_content JSONB 저장
   - monthly_plans upsert(user_id, month_start, source='ai_suggested') status='draft'
 - response: { "plan_content": {...}, "month_start":"...", "model":"...", "prompt_version":"..." }
-- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, JSON 저장, 레이트리밋 적용 (월 2회)
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 8000, JSON 저장, 사용량 추적 (레이트리밋 제한 없음)
 
 5) `POST /functions/v1/ai-yearly-goal-feedback` ✅ 구현 완료
 - body: { "year": 2025, "self_dev": "...", "relationship": "...", "work_finance": "..." } (필수)
@@ -1453,7 +1451,7 @@ alwaysApply: true
   - 레이트리밋 카운터 증가 (scope: 'yearly_goal_feedback')
   - DB 저장 없이 피드백만 반환 (사용자가 직접 저장)
 - response: { "success": true, "year": 2025, "feedback": { "self_dev": "...", "relationship": "...", "work_finance": "..." }, "model": "...", "prompt_version": "..." }
-- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 4000, JSON 응답, 레이트리밋 적용 (월 2회)
+- 구현 상태: ✅ 배포 완료, Gemini API 연동, 토큰 제한 4000, JSON 응답, 사용량 추적 (레이트리밋 제한 없음)
 
 ## 12.3 Prompt Versioning(필수)
 - prompt_version 예: `weekly_reflection_v1`, `monthly_plan_v1`

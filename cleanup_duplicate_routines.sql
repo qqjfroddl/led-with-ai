@@ -71,3 +71,4 @@ WHERE routines.id = ids_to_deactivate.id
 RETURNING routines.id, routines.title, routines.schedule->>'category' as category;
 */
 
+
