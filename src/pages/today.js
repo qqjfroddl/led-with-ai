@@ -1091,8 +1091,12 @@ function bindTodoEvents(date, profile, timezone) {
     // 삭제 버튼
     if (target.hasAttribute('data-delete-todo')) {
       e.stopPropagation();
-      await deleteTodo(todoId);
-      await loadTodos(date, profile, timezone);
+      
+      // 삭제 확인 팝업 추가
+      if (confirm('이 할일을 삭제하시겠습니까?')) {
+        await deleteTodo(todoId);
+        await loadTodos(date, profile, timezone);
+      }
       return;
     }
   });
