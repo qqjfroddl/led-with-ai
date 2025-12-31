@@ -207,6 +207,30 @@ serve(async (req) => {
       work_finance: feedback.work_finance || feedback.workFinance || work_finance || '',
     };
 
+    // 사용량 카운터 증가 (통계용, 제한 없음)
+    const today = new Date();
+    const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    const { data: counter } = await supabase
+      .from('ai_usage_counters')
+      .select('count')
+      .eq('user_id', user.id)
+      .eq('scope', 'yearly_goal_feedback')
+      .eq('period_key', monthKey)
+      .maybeSingle();
+
+    const currentCount = counter?.count || 0;
+    await supabase
+      .from('ai_usage_counters')
+      .upsert(
+        {
+          user_id: user.id,
+          scope: 'yearly_goal_feedback',
+          period_key: monthKey,
+          count: currentCount + 1,
+        },
+        { onConflict: 'user_id,scope,period_key' }
+      );
+
     // 성공 응답 (DB 저장 없이 피드백만 반환)
     return new Response(
       JSON.stringify({

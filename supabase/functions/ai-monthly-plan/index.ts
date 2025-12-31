@@ -283,6 +283,29 @@ serve(async (req) => {
       );
     }
 
+    // 사용량 카운터 증가 (통계용, 제한 없음)
+    const monthKey = `${monthStartDate.getFullYear()}-${String(monthStartDate.getMonth() + 1).padStart(2, '0')}`;
+    const { data: counter } = await supabase
+      .from('ai_usage_counters')
+      .select('count')
+      .eq('user_id', user.id)
+      .eq('scope', 'monthly_plan')
+      .eq('period_key', monthKey)
+      .maybeSingle();
+
+    const currentCount = counter?.count || 0;
+    await supabase
+      .from('ai_usage_counters')
+      .upsert(
+        {
+          user_id: user.id,
+          scope: 'monthly_plan',
+          period_key: monthKey,
+          count: currentCount + 1,
+        },
+        { onConflict: 'user_id,scope,period_key' }
+      );
+
     // 성공 응답
     return new Response(
       JSON.stringify({

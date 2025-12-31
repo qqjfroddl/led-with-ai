@@ -224,6 +224,29 @@ serve(async (req) => {
       );
     }
 
+    // 사용량 카운터 증가 (통계용, 제한 없음)
+    const weekKey = `${weekStartDate.getFullYear()}-W${getWeekNumber(weekStartDate)}`;
+    const { data: counter } = await supabase
+      .from('ai_usage_counters')
+      .select('count')
+      .eq('user_id', user.id)
+      .eq('scope', 'weekly_reflection')
+      .eq('period_key', weekKey)
+      .maybeSingle();
+
+    const currentCount = counter?.count || 0;
+    await supabase
+      .from('ai_usage_counters')
+      .upsert(
+        {
+          user_id: user.id,
+          scope: 'weekly_reflection',
+          period_key: weekKey,
+          count: currentCount + 1,
+        },
+        { onConflict: 'user_id,scope,period_key' }
+      );
+
     // 성공 응답
     return new Response(
       JSON.stringify({
