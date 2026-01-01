@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
-const PROMPT_VERSION = 'weekly_reflection_v1';
+const PROMPT_VERSION = 'weekly_reflection_v3';
 
 interface RequestBody {
   week_start: string;
@@ -102,6 +102,28 @@ serve(async (req) => {
     // 주간 통계 수집
     const stats = await collectWeeklyStats(supabase, user.id, week_start, week_end);
 
+    // 루틴별 상세 통계 수집 (v2 추가)
+    const { data: allRoutines } = await supabase
+      .from('routines')
+      .select('*')
+      .eq('user_id', user.id);
+
+    const routineDetails = await collectRoutineDetails(
+      supabase,
+      user.id,
+      week_start,
+      week_end,
+      allRoutines || []
+    );
+
+    // 할일 이월 패턴 분석 (v2 추가)
+    const todoPatterns = await collectTodoPatterns(
+      supabase,
+      user.id,
+      week_start,
+      week_end
+    );
+
     // 성찰 텍스트 요약 수집
     const reflectionsText = await collectReflectionsText(
       supabase,
@@ -110,8 +132,8 @@ serve(async (req) => {
       week_end
     );
 
-    // AI 프롬프트 생성
-    const prompt = generatePrompt(stats, reflectionsText, week_start, week_end);
+    // AI 프롬프트 생성 (v2: 파라미터 추가)
+    const prompt = generatePrompt(stats, reflectionsText, week_start, week_end, routineDetails, todoPatterns);
 
     // Gemini API 호출
     if (!GEMINI_API_KEY) {
@@ -336,6 +358,111 @@ function isRoutineDue(routine: any, selectedDate: string): boolean {
 }
 
 /**
+ * 루틴별 상세 통계 수집 (v2 추가)
+ */
+async function collectRoutineDetails(
+  supabase: any,
+  userId: string,
+  weekStart: string,
+  weekEnd: string,
+  routines: any[]
+) {
+  const routineStats = [];
+  
+  for (const routine of routines) {
+    // 해당 주에 활성 상태였던 날짜 수 계산
+    let activeDays = 0;
+    const weekStartDate = new Date(weekStart + 'T00:00:00');
+    const weekEndDate = new Date(weekEnd + 'T00:00:00');
+    
+    for (let d = new Date(weekStartDate); d <= weekEndDate; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      if (isRoutineDue(routine, dateStr)) {
+        activeDays++;
+      }
+    }
+    
+    if (activeDays === 0) continue;
+    
+    // 체크된 횟수 조회
+    const { data: logs } = await supabase
+      .from('routine_logs')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('routine_id', routine.id)
+      .gte('date', weekStart)
+      .lte('date', weekEnd)
+      .eq('checked', true);
+    
+    const checked = logs?.length || 0;
+    const rate = (checked / activeDays) * 100;
+    
+    routineStats.push({
+      title: routine.title,
+      checked,
+      total: activeDays,
+      rate: Math.round(rate * 10) / 10
+    });
+  }
+  
+  // 실천율 기준 정렬
+  routineStats.sort((a, b) => b.rate - a.rate);
+  
+  return {
+    top3: routineStats.slice(0, 3),
+    bottom3: routineStats.slice(-3).reverse(),
+    all: routineStats
+  };
+}
+
+/**
+ * 할일 이월 패턴 분석 (v2 추가)
+ */
+async function collectTodoPatterns(
+  supabase: any,
+  userId: string,
+  weekStart: string,
+  weekEnd: string
+) {
+  // 이번 주 동안 이월된 할일 조회
+  const { data: carriedTodos } = await supabase
+    .from('todos')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('date', weekStart)
+    .lte('date', weekEnd)
+    .not('carried_over_at', 'is', null)
+    .is('deleted_at', null);
+  
+  // 카테고리별 집계
+  const categoryCount: Record<string, number> = {};
+  const categoryNames: Record<string, string> = {
+    work: 'Work',
+    job: 'Job',
+    self_dev: 'Growth',
+    personal: 'Personal'
+  };
+  const todoDetails: any[] = [];
+  
+  carriedTodos?.forEach((todo: any) => {
+    categoryCount[todo.category] = (categoryCount[todo.category] || 0) + 1;
+    todoDetails.push({
+      title: todo.title,
+      category: categoryNames[todo.category] || todo.category
+    });
+  });
+  
+  const mostCarriedCategory = Object.entries(categoryCount)
+    .sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0] || 'N/A';
+  
+  return {
+    carriedOver: carriedTodos?.length || 0,
+    mostCarriedCategory: categoryNames[mostCarriedCategory] || mostCarriedCategory,
+    carriedOverDetails: todoDetails.slice(0, 5) // 상위 5개만
+  };
+}
+
+/**
  * 주간 통계 수집
  */
 async function collectWeeklyStats(
@@ -457,9 +584,16 @@ async function collectReflectionsText(
 }
 
 /**
- * AI 프롬프트 생성
+ * AI 프롬프트 생성 (v2.4 - 숫자 리스트로 명확한 구분)
  */
-function generatePrompt(stats: any, reflectionsText: string, weekStart: string, weekEnd: string) {
+function generatePrompt(
+  stats: any,
+  reflectionsText: string,
+  weekStart: string,
+  weekEnd: string,
+  routineDetails: any,
+  todoPatterns: any
+) {
   return `다음은 ${weekStart}부터 ${weekEnd}까지의 주간 활동 통계입니다.
 
 ## 주간 통계
@@ -468,36 +602,157 @@ function generatePrompt(stats: any, reflectionsText: string, weekStart: string, 
 - 전체 할일: ${stats.todos.total}개
 - 완료한 할일: ${stats.todos.completed}개
 - 완료율: ${stats.todos.completionRate}%
+- 이월된 할일: ${todoPatterns.carriedOver}개
+${todoPatterns.carriedOver > 0 ? `- 가장 많이 이월된 카테고리: ${todoPatterns.mostCarriedCategory}` : ''}
 
 ### 루틴
 - 전체 루틴 수: ${stats.routines.totalRoutines}개
 - 체크한 루틴: ${stats.routines.totalChecks}회
 - 실천율: ${stats.routines.practiceRate}%
 
+#### 잘 실천한 루틴 (상위 3개)
+${routineDetails.top3.length > 0 
+  ? routineDetails.top3.map((r: any) => `- ${r.title}: ${r.rate}% (${r.checked}/${r.total}회)`).join('\n')
+  : '- 루틴이 없습니다.'}
+
+#### 실천이 부족한 루틴 (하위 3개)
+${routineDetails.bottom3.length > 0
+  ? routineDetails.bottom3.map((r: any) => `- ${r.title}: ${r.rate}% (${r.checked}/${r.total}회)`).join('\n')
+  : '- 루틴이 없습니다.'}
+
 ### 성찰
 - 작성한 날: ${stats.reflections.writtenDays}일
 - 작성률: ${stats.reflections.writingRate}%
 
+${todoPatterns.carriedOver > 0 ? `## 이월된 할일 상세
+${todoPatterns.carriedOverDetails.map((t: any) => `- [${t.category}] ${t.title}`).join('\n')}
+` : ''}
 ## 일일 성찰 요약
 ${reflectionsText}
+
+---
 
 위 통계와 성찰을 바탕으로 다음 형식으로 주간 성찰을 작성해주세요:
 
 # 주간 성찰 (${weekStart} ~ ${weekEnd})
 
 ## 이번 주 요약
-이번 주의 전반적인 활동을 요약해주세요.
+이번 주의 전반적인 활동을 요약해주세요. 완료율, 실천율, 성찰 작성률을 종합적으로 평가하세요.
 
-## 잘한 점
-이번 주 잘한 점과 성과를 구체적으로 나열해주세요.
+## 잘한 점 👏
 
-## 개선할 점
-아쉬웠던 점이나 개선이 필요한 부분을 건설적으로 제시해주세요.
+이번 주 잘한 점들을 구체적으로 칭찬하고 격려해주세요.
 
-## 다음 주 제안
-다음 주를 위한 구체적인 행동 제안을 해주세요.
+실천율이 높은 루틴들의 **구체적인 루틴명**을 언급하며 왜 잘했는지, 어떤 점이 좋았는지 설명하고, 완료한 할일들의 성과도 함께 인정해주세요.
 
-마크다운 형식으로 작성하고, 격려와 동기부여가 되는 톤으로 작성해주세요.`;
+자연스럽게 문단으로 작성하거나, 필요하면 불릿 리스트를 사용해도 좋습니다.
+
+## 개선할 점 💪
+
+아쉬웠던 점과 개선이 필요한 부분을 건설적으로 분석해주세요.
+
+**실천이 부족한 루틴**
+
+실천율이 낮은 루틴들의 **구체적인 루틴명**을 언급하며 분석하고, 왜 실천이 어려웠을지 원인을 추측해주세요(시간 부족, 난이도, 동기부여 등).
+
+그리고 다음과 같은 구체적이고 실행 가능한 개선 방법을 제시해주세요. 각 개선 방법은 **볼드 제목 + 불릿 리스트** 형식으로 작성하세요:
+
+**시간대 조정**: 저녁 루틴이 어렵다면 아침으로 변경하는 등의 방법
+- 구체적 예시: ○○ 루틴을 저녁 9시 → 아침 7시로 이동
+- 왜 효과적인지: 아침은 피로도가 낮아 집중력이 높음
+
+**루틴 난이도 낮추기**: 30분 목표를 10분으로 줄여서 지속 가능하게 만들기
+- 구체적 예시: 독서 30분 → 책 한 페이지만 읽기
+- 왜 효과적인지: 작은 성공이 쌓여 동기부여와 자신감 향상
+
+**트리거 설정**: 자동으로 떠올릴 수 있는 계기 만들기
+- 구체적 예시: 아침 커피 마신 직후 = ○○ 루틴 시작
+- 왜 효과적인지: 기존 습관에 연결하면 자동으로 실행됨
+
+**환경 개선**: 필요한 도구나 공간을 미리 준비해두어 실천 장벽 낮추기
+- 구체적 예시: 운동복을 침대 옆에 미리 준비
+- 왜 효과적인지: 준비 과정이 간소화되어 즉시 시작 가능
+
+**마크다운 형식**: 
+- 각 개선 방법은 **볼드로 제목** 작성 (예: **시간대 조정**: 설명)
+- 하위 항목은 불릿 리스트 (-)로 들여쓰기
+- 숫자는 사용하지 마세요
+
+**마크다운 형식 중요**: 
+- 개선 방법은 **볼드 제목 (예: **시간대 조정**: 설명)**으로 작성
+- 하위 항목(예시, 이유)은 **들여쓰기 후 불릿 리스트 (-)**로 작성
+- 숫자는 사용하지 마세요
+- 이렇게 하면 볼드 제목과 불릿이 명확히 구분됩니다
+
+${todoPatterns.carriedOver > 0 ? `
+**이월된 할일**
+
+계속 미뤄지는 할일들에 대해 각각 분석해주세요. 각 할일을 **볼드 제목 + 불릿 리스트** 형식으로 나열하고, 원인과 해결 방안을 하위 불릿으로 설명하세요:
+
+**[카테고리] 할일 제목**: 간단한 설명
+- 원인 분석: 왜 미뤄지는지 (너무 큰 일, 애매한 일, 두려움, 중요도 낮음 등)
+- 해결 방안: 구체적인 액션 (작은 단위로 쪼개기, 명확한 시간 블록 할당 등)
+
+**[카테고리] 할일 제목**: 간단한 설명
+- 원인 분석: ...
+- 해결 방안: ...
+
+**[카테고리] 할일 제목**: 간단한 설명
+- 원인 분석: ...
+- 해결 방안: ...
+
+**중요**: 각 할일은 볼드 제목으로, 하위 항목은 불릿 리스트로 작성하세요. 숫자는 사용하지 마세요.
+
+(최대 5개까지만 나열)
+` : ''}
+## 다음 주 실행 계획 🎯
+
+다음 주를 위한 구체적이고 실행 가능한 계획을 제시해주세요.
+
+**루틴 개선 액션**
+
+실천율이 낮은 루틴 1-2개를 선택하여, 구체적이고 실행 가능한 개선 액션을 **볼드 제목 + 불릿 리스트** 형식으로 제시하세요:
+
+**○○ 루틴 개선**: 구체적 액션 설명
+- 예시: "매일 아침 7시 알람과 함께 ○○ 루틴 시작하기"
+- 목표: 주 5회 이상 실천
+
+**△△ 루틴 개선**: 구체적 액션 설명
+- 예시: "○○ 루틴은 10분으로 줄이고 매일 실천하기"
+- 목표: 매일 실천
+
+**중요**: 각 루틴 개선은 볼드 제목으로, 하위 항목은 불릿 리스트로 작성하세요. 숫자는 사용하지 마세요.
+
+**할일 관리 전략**
+
+이월을 줄이고 완료율을 높이기 위한 구체적인 전략을 **볼드 제목 + 불릿 리스트** 형식으로 제시하세요:
+
+**전략 이름**: 구체적 설명
+- 예시: "큰 할일은 3개 이하의 작은 할일로 나누기"
+- 실행 방법: 매일 아침 할일 검토 시 큰 일 분해
+
+**전략 이름**: 구체적 설명
+- 예시: "매일 아침 가장 중요한 할일 1개 먼저 처리하기"
+- 실행 방법: 하루 시작 30분은 최우선 할일에만 집중
+
+**중요**: 각 전략은 볼드 제목으로, 하위 항목은 불릿 리스트로 작성하세요. 숫자는 사용하지 마세요.
+
+**격려 메시지**
+
+긍정적이고 따뜻한 톤으로 다음 주를 응원하는 메시지를 작성해주세요. 작은 진전도 큰 성과임을 강조하세요.
+
+---
+
+**작성 가이드:**
+- 마크다운 형식으로 작성하되, 자연스러운 흐름을 유지하세요
+- **개선 방법, 이월된 할일, 액션 아이템은 볼드 제목 + 불릿 리스트 조합**으로 작성
+- **각 항목의 제목은 볼드 (예: **시간대 조정**: 설명)**로 작성
+- **하위 항목(예시, 이유, 방법)은 들여쓰기 후 불릿 리스트 (-)**로 작성
+- **숫자는 절대 사용하지 마세요**
+- 이렇게 하면 볼드 제목과 불릿이 명확히 구분됩니다
+- 통계 숫자만 나열하지 말고, **구체적인 루틴명과 할일을 언급**하며 개인화된 피드백 제공
+- 격려와 동기부여가 되는 따뜻한 톤 유지
+- 실행 가능한 구체적 액션 아이템 제시`;
 }
 
 /**
