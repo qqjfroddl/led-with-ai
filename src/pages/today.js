@@ -587,7 +587,16 @@ async function loadTodos(date, profile, timezone = 'Asia/Seoul') {
     const today = getToday(timezone);
     let query = supabase
       .from('todos')
-      .select('*')
+      .select(`
+        *,
+        project_task:project_tasks(
+          id,
+          project:projects(
+            id,
+            name
+          )
+        )
+      `)
       .eq('user_id', profile.id)
       .is('deleted_at', null);
 
@@ -694,7 +703,7 @@ function renderTodos(todosList, date, profile, timezone) {
             <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               ${todo.pinned ? '<i data-lucide="pin" style="width: 14px; height: 14px; color: #f59e0b; flex-shrink: 0;"></i>' : ''}
               ${todo.priority ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; ${todo.priority === 3 ? 'background: #fee2e2; color: #991b1b;' : todo.priority === 2 ? 'background: #fef3c7; color: #92400e;' : 'background: #dbeafe; color: #1e40af;'}">P${todo.priority}</span>` : ''}
-              ${todo.project_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #e0e7ff; color: #4f46e5; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트</span>' : ''}
+              ${todo.project_task_id ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #e0e7ff; color: #4f46e5; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트${todo.project_task?.project?.name ? `: ${todo.project_task.project.name}` : ''}</span>` : ''}
               ${todo.recurring_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: #f3e8ff; color: #6b21a8; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="repeat" style="width: 12px; height: 12px;"></i>반복업무</span>' : ''}
               <span class="todo-title" data-todo-title="${todo.id}" style="${todo.is_done ? 'text-decoration: line-through; color: #9ca3af;' : ''} ${!isReadOnly && !todo.is_done ? 'cursor: pointer;' : ''}">${todo.title}</span>
               ${todo.due_date ? `<span style="font-size: 0.7rem; color: #6b7280; flex-shrink: 0;">📅 ${todo.due_date}</span>` : ''}
@@ -1891,7 +1900,16 @@ async function fetchCarryoverTodos(profile, timezone = 'Asia/Seoul') {
     
     const { data, error } = await supabase
       .from('todos')
-      .select('*')
+      .select(`
+        *,
+        project_task:project_tasks(
+          id,
+          project:projects(
+            id,
+            name
+          )
+        )
+      `)
       .eq('user_id', profile.id)
       .lt('date', today)
       .eq('is_done', false)
@@ -1966,9 +1984,10 @@ async function showCarryoverModal(profile, timezone = 'Asia/Seoul') {
       return `
         <div class="carryover-todo-item" data-todo-id="${todo.id}" style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
           <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
               <span style="font-size: 0.75rem; color: #6b7280; background: #e5e7eb; padding: 0.25rem 0.5rem; border-radius: 4px;">${categoryLabel}</span>
               <span style="font-size: 0.75rem; color: #6b7280;">${dateStr}</span>
+              ${todo.project_task_id && todo.project_task?.project?.name ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; background: #e0e7ff; color: #4f46e5;">프로젝트: ${todo.project_task.project.name}</span>` : ''}
             </div>
             <div style="font-weight: 500; color: #1f2937;">${todo.title}</div>
           </div>
