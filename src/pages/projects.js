@@ -6,6 +6,9 @@ import { getToday } from '../utils/date.js';
 let syncingTodo = false;
 let syncingProjectTask = false;
 
+// 할일 등록 중 플래그 (동시 실행 방지)
+let registeringProjectTasks = false;
+
 // 이벤트 리스너 중복 등록 방지 플래그
 let projectEventsBound = false;
 let projectEventHandler = null; // 이벤트 핸들러 참조 저장
@@ -428,6 +431,16 @@ async function renderProjectDetail(project, profile) {
 function renderProjectTask(task, projectCategory) {
   const isEditing = editingProjectTaskId === task.id;
   
+  // 날짜 표시 로직 개선
+  let dateDisplay = '';
+  if (task.start_date && task.end_date) {
+    dateDisplay = `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.start_date} ~ ${task.end_date}</span>`;
+  } else if (task.start_date) {
+    dateDisplay = `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.start_date}</span>`;
+  } else if (task.due_date) {
+    dateDisplay = `<span style="font-size: 0.75rem; color: #9ca3af;">📅 ${task.due_date} (구)</span>`;
+  }
+  
   return `
     <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
       <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer;" ${isEditing ? 'disabled' : ''}>
@@ -436,10 +449,10 @@ function renderProjectTask(task, projectCategory) {
       ` : `
         <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
       `}
-      ${task.due_date ? `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.due_date}</span>` : ''}
+      ${dateDisplay}
       ${!isEditing ? `
-        <button class="project-task-date-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="마감날짜 설정">
-          <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+        <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="시작일/종료일 설정">
+          <i data-lucide="calendar-range" style="width: 18px; height: 18px;"></i>
         </button>
         <button class="project-task-edit-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem;" title="수정">
           <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
@@ -561,7 +574,14 @@ function setupEventHandlers(profile) {
       await loadProjects(profile);
     }
 
-    // 프로젝트 할일 날짜 버튼
+    // 프로젝트 할일 날짜 범위 버튼
+    if (e.target.closest('.project-task-dates-btn')) {
+      const btn = e.target.closest('.project-task-dates-btn');
+      const taskId = btn.dataset.taskId;
+      openProjectTaskDateRangePicker(taskId, profile);
+    }
+
+    // (구) 단일 날짜 버튼 (하위 호환성)
     if (e.target.closest('.project-task-date-btn')) {
       const btn = e.target.closest('.project-task-date-btn');
       const taskId = btn.dataset.taskId;
@@ -805,7 +825,7 @@ async function toggleProjectTask(taskId, isDone, profile) {
 
     if (taskError) throw taskError;
 
-    // 동기화: 연결된 todos도 업데이트
+    // 양방향 동기화: 연결된 todos도 모두 업데이트
     if (!syncingTodo) {
       syncingTodo = true;
       try {
@@ -815,7 +835,10 @@ async function toggleProjectTask(taskId, isDone, profile) {
             is_done: isDone,
             done_at: isDone ? new Date().toISOString() : null
           })
-          .eq('project_task_id', taskId);
+          .eq('project_task_id', taskId)
+          .is('deleted_at', null)
+          .is('carried_over_at', null)  // 이월된 원본은 제외
+          .is('skipped_at', null);      // 포기된 원본은 제외
 
         if (todoError) throw todoError;
       } finally {
@@ -935,6 +958,164 @@ async function updateProjectTaskDate(taskId, dueDate, profile) {
   } catch (error) {
     console.error('Error updating project task date:', error);
     alert('마감날짜 설정 중 오류가 발생했습니다.');
+  }
+}
+
+// 시작일/종료일 범위 선택 모달
+function openProjectTaskDateRangePicker(taskId, profile) {
+  // 모달 HTML 생성 (처음 호출 시만)
+  if (!document.getElementById('project-task-daterange-overlay')) {
+    const modalHTML = `
+      <div id="project-task-daterange-overlay" class="hidden" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.15);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid #e5e7eb;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0;">시작일/종료일 설정</h3>
+            <button id="project-task-daterange-close" style="background: transparent; border: none; cursor: pointer; padding: 0.25rem;" title="닫기">
+              <i data-lucide="x" style="width: 24px; height: 24px; color: #6b7280;"></i>
+            </button>
+          </div>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">시작일</label>
+            <input type="text" id="project-task-startdate-input" readonly placeholder="시작일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+          </div>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">종료일</label>
+            <input type="text" id="project-task-enddate-input" readonly placeholder="종료일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+          </div>
+          
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button id="project-task-daterange-save" class="btn btn-primary" style="flex: 1; padding: 0.75rem; border-radius: 8px; font-size: 1rem; font-weight: 600;">저장</button>
+            <button id="project-task-daterange-clear" class="btn btn-secondary" style="flex: 1; padding: 0.75rem; border-radius: 8px; font-size: 1rem; font-weight: 600;">날짜 지우기</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+  }
+
+  const overlay = document.getElementById('project-task-daterange-overlay');
+  const startDateInput = document.getElementById('project-task-startdate-input');
+  const endDateInput = document.getElementById('project-task-enddate-input');
+
+  if (!overlay || !startDateInput || !endDateInput || !window.flatpickr) return;
+
+  let currentTaskId = taskId;
+  let selectedStartDate = null;
+  let selectedEndDate = null;
+
+  const closeOverlay = () => {
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+    if (startDateInput._fp) {
+      startDateInput._fp.destroy();
+      startDateInput._fp = null;
+    }
+    if (endDateInput._fp) {
+      endDateInput._fp.destroy();
+      endDateInput._fp = null;
+    }
+    currentTaskId = null;
+    selectedStartDate = null;
+    selectedEndDate = null;
+  };
+
+  // 기존 flatpickr 인스턴스 제거
+  if (startDateInput._fp) {
+    startDateInput._fp.destroy();
+    startDateInput._fp = null;
+  }
+  if (endDateInput._fp) {
+    endDateInput._fp.destroy();
+    endDateInput._fp = null;
+  }
+
+  // 시작일 선택
+  startDateInput._fp = window.flatpickr(startDateInput, {
+    locale: window.flatpickr.l10ns?.ko,
+    dateFormat: 'Y-m-d',
+    onChange: (dates, dateStr) => {
+      selectedStartDate = dateStr;
+      // 종료일이 시작일보다 이전이면 초기화
+      if (selectedEndDate && selectedEndDate < selectedStartDate) {
+        selectedEndDate = null;
+        endDateInput.value = '';
+      }
+    }
+  });
+
+  // 종료일 선택
+  endDateInput._fp = window.flatpickr(endDateInput, {
+    locale: window.flatpickr.l10ns?.ko,
+    dateFormat: 'Y-m-d',
+    onChange: (dates, dateStr) => {
+      selectedEndDate = dateStr;
+    }
+  });
+
+  // 저장 버튼
+  const saveBtn = document.getElementById('project-task-daterange-save');
+  if (saveBtn) {
+    const newBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+    newBtn.onclick = async () => {
+      if (!selectedStartDate) {
+        alert('시작일을 선택해주세요.');
+        return;
+      }
+      if (selectedEndDate && selectedEndDate < selectedStartDate) {
+        alert('종료일은 시작일보다 이후여야 합니다.');
+        return;
+      }
+      await updateProjectTaskDateRange(currentTaskId, selectedStartDate, selectedEndDate, profile);
+      closeOverlay();
+    };
+  }
+
+  // 날짜 지우기 버튼
+  const clearBtn = document.getElementById('project-task-daterange-clear');
+  if (clearBtn) {
+    const newBtn = clearBtn.cloneNode(true);
+    clearBtn.parentNode.replaceChild(newBtn, clearBtn);
+    newBtn.onclick = async () => {
+      if (confirm('시작일/종료일을 지우시겠습니까?')) {
+        await updateProjectTaskDateRange(currentTaskId, null, null, profile);
+        closeOverlay();
+      }
+    };
+  }
+
+  // 닫기 버튼
+  const closeBtn = document.getElementById('project-task-daterange-close');
+  if (closeBtn) {
+    const newBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+    newBtn.onclick = closeOverlay;
+  }
+
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+}
+
+async function updateProjectTaskDateRange(taskId, startDate, endDate, profile) {
+  try {
+    const { error } = await supabase
+      .from('project_tasks')
+      .update({ 
+        start_date: startDate,
+        end_date: endDate
+      })
+      .eq('id', taskId);
+
+    if (error) throw error;
+    await loadProjects(profile);
+  } catch (error) {
+    console.error('Error updating project task date range:', error);
+    alert('시작일/종료일 설정 중 오류가 발생했습니다.');
   }
 }
 
@@ -1068,130 +1249,179 @@ async function deleteProject(projectId, profile) {
   }
 }
 
-async function registerProjectTasksToTodos(projectId, profile) {
-  try {
-    const today = getToday(profile.timezone || 'Asia/Seoul');
+// 날짜 범위 내의 모든 날짜를 순회하는 함수 (recurring.js와 동일)
+function* iterateDates(startDate, endDate) {
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(endDate + 'T00:00:00');
+  const current = new Date(start);
+  
+  while (current <= end) {
+    const year = current.getFullYear();
+    const month = String(current.getMonth() + 1).padStart(2, '0');
+    const day = String(current.getDate()).padStart(2, '0');
+    yield `${year}-${month}-${day}`;
+    current.setDate(current.getDate() + 1);
+  }
+}
 
-    // 프로젝트 정보 조회
+async function registerProjectTasksToTodos(projectId, profile) {
+  // 동시 실행 방지
+  if (registeringProjectTasks) {
+    console.log('이미 등록 중입니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  
+  registeringProjectTasks = true;
+  
+  // UI 피드백: 버튼 비활성화 및 텍스트 변경
+  const button = document.querySelector(`.btn-register-project-tasks[data-project-id="${projectId}"]`);
+  const originalText = button ? button.textContent : '';
+  if (button) {
+    button.disabled = true;
+    button.textContent = '등록 중...';
+  }
+  
+  try {
+    // 프로젝트 정보 조회 (카테고리 매핑용)
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('*')
+      .select('category')
       .eq('id', projectId)
       .single();
 
     if (projectError) throw projectError;
 
-    // 프로젝트 할일 조회 (미완료 + due_date가 설정된 것만, NULL은 제외)
+    // 카테고리 매핑 (프로젝트 → 할일)
+    const categoryMap = {
+      'self_dev': 'self_dev',      // Growth → Growth
+      'relationship': 'personal',   // 관계 → Personal
+      'work_finance': 'work'        // 업무/재정 → Work
+    };
+    const todoCategory = categoryMap[project.category] || 'work';
+
+    // 프로젝트의 모든 할일 조회 (완료/미완료 관계없이)
     const { data: tasks, error: tasksError } = await supabase
       .from('project_tasks')
       .select('*')
       .eq('project_id', projectId)
-      .eq('is_done', false)
       .is('deleted_at', null)
-      .not('due_date', 'is', null);
+      .order('display_order', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: true });
 
     if (tasksError) throw tasksError;
 
     if (!tasks || tasks.length === 0) {
-      alert('등록할 할일이 없습니다. 마감날짜를 설정한 미완료 할일만 등록됩니다.');
+      alert('등록할 할일이 없습니다.');
       return;
     }
 
-    // 카테고리 매핑
-    const categoryMap = {
-      self_dev: 'self_dev',
-      relationship: 'personal',
-      work_finance: 'work'
-    };
-    const todoCategory = categoryMap[project.category] || 'work';
-
-    // todos에 등록/업데이트
-    const todosToInsert = [];
-    const todosToUpdate = [];
-    let updatedCount = 0;
-    let insertedCount = 0;
-
+    // 등록할 날짜들을 모두 수집 (start_date ~ end_date 범위)
+    const datesToCheck = [];
+    const taskDateMap = new Map(); // { date: [taskIds] }
+    
     for (const task of tasks) {
-      const targetDate = task.due_date || today;
-      
-      // project_task_id로 이미 등록된 할일 확인 (이월/포기된 할일 제외)
-      // 첫 번째 결과만 가져옴 (중복 방지)
-      const { data: existingTodos } = await supabase
-        .from('todos')
-        .select('id, date')
-        .eq('project_task_id', task.id)
-        .is('deleted_at', null)
-        .is('carried_over_at', null)
-        .is('skipped_at', null)
-        .limit(1);
-      
-      const existingTodo = existingTodos && existingTodos.length > 0 ? existingTodos[0] : null;
-
-      if (existingTodo) {
-        // 이미 등록된 할일이 있고 날짜가 다르면 업데이트
-        if (existingTodo.date !== targetDate) {
-          todosToUpdate.push({
-            id: existingTodo.id,
-            date: targetDate,
-            title: task.title  // 제목도 동기화
-          });
-          updatedCount++;
+      // start_date와 end_date가 있으면 그 범위의 모든 날짜
+      if (task.start_date && task.end_date) {
+        for (const date of iterateDates(task.start_date, task.end_date)) {
+          datesToCheck.push(date);
+          if (!taskDateMap.has(date)) {
+            taskDateMap.set(date, []);
+          }
+          taskDateMap.get(date).push(task.id);
         }
-        // 날짜가 같으면 아무 작업도 하지 않음
-      } else {
-        // 등록된 할일이 없으면 새로 생성
-        todosToInsert.push({
-          user_id: profile.id,
-          date: targetDate,
-          category: todoCategory,
-          title: task.title,
-          project_task_id: task.id,
-          is_done: false
-        });
-        insertedCount++;
+      }
+      // start_date만 있으면 그 날짜만
+      else if (task.start_date) {
+        datesToCheck.push(task.start_date);
+        if (!taskDateMap.has(task.start_date)) {
+          taskDateMap.set(task.start_date, []);
+        }
+        taskDateMap.get(task.start_date).push(task.id);
+      }
+      // due_date가 있으면 그 날짜만 (하위 호환성)
+      else if (task.due_date) {
+        datesToCheck.push(task.due_date);
+        if (!taskDateMap.has(task.due_date)) {
+          taskDateMap.set(task.due_date, []);
+        }
+        taskDateMap.get(task.due_date).push(task.id);
       }
     }
 
-    // 업데이트 처리
-    for (const todoUpdate of todosToUpdate) {
-      const { error: updateError } = await supabase
-        .from('todos')
-        .update({
-          date: todoUpdate.date,
-          title: todoUpdate.title
-        })
-        .eq('id', todoUpdate.id);
-
-      if (updateError) throw updateError;
+    if (datesToCheck.length === 0) {
+      alert('시작일 또는 종료일이 설정된 할일이 없습니다.');
+      return;
     }
 
-    // 새로 생성할 할일이 있으면 일괄 삽입
+    // 중복 제거
+    const uniqueDates = [...new Set(datesToCheck)];
+
+    // 이미 등록된 할일 조회 (한 번의 쿼리로 모든 날짜와 task_id 조합 체크)
+    const taskIds = tasks.map(t => t.id);
+    const { data: existingTodos, error: existingError } = await supabase
+      .from('todos')
+      .select('date, project_task_id')
+      .in('project_task_id', taskIds)
+      .in('date', uniqueDates)
+      .is('deleted_at', null)
+      .is('carried_over_at', null)  // 이월된 원본 할일 제외
+      .is('skipped_at', null);      // 포기된 원본 할일 제외
+
+    if (existingError) throw existingError;
+
+    // 이미 등록된 (날짜, task_id) 조합을 Set으로 저장
+    const existingSet = new Set();
+    if (existingTodos && existingTodos.length > 0) {
+      existingTodos.forEach(todo => {
+        existingSet.add(`${todo.date}:${todo.project_task_id}`);
+      });
+    }
+
+    // 새로 등록할 할일들 수집
+    const todosToInsert = [];
+    for (const [date, taskIdsForDate] of taskDateMap.entries()) {
+      for (const taskId of taskIdsForDate) {
+        const key = `${date}:${taskId}`;
+        if (!existingSet.has(key)) {
+          const task = tasks.find(t => t.id === taskId);
+          if (task) {
+            todosToInsert.push({
+              user_id: profile.id,
+              date: date,
+              category: todoCategory,
+              title: task.title,
+              project_task_id: task.id,
+              is_done: false
+            });
+          }
+        }
+      }
+    }
+
+    // 새로 등록할 할일이 있으면 일괄 삽입
     if (todosToInsert.length > 0) {
       const { error: insertError } = await supabase
         .from('todos')
         .insert(todosToInsert);
 
       if (insertError) throw insertError;
-    }
 
-    if (updatedCount === 0 && insertedCount === 0) {
-      alert('이미 등록된 할일만 있습니다.');
-      return;
+      alert(`${todosToInsert.length}개의 할일이 등록되었습니다.`);
+    } else {
+      alert('모든 할일이 이미 등록되어 있습니다.');
     }
-
-    let message = '';
-    if (insertedCount > 0) {
-      message += `${insertedCount}개의 할일이 등록되었습니다.`;
-    }
-    if (updatedCount > 0) {
-      message += (message ? ' ' : '') + `${updatedCount}개의 할일 날짜가 업데이트되었습니다.`;
-    }
-    alert(message);
 
     await loadProjects(profile);
   } catch (error) {
     console.error('Error registering project tasks:', error);
     alert('할일 등록 중 오류가 발생했습니다.');
+  } finally {
+    registeringProjectTasks = false;
+    // UI 피드백: 버튼 복구
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 }
 

@@ -2109,6 +2109,8 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
         .eq('project_task_id', originalTodo.project_task_id)
         .eq('date', today)
         .is('deleted_at', null)
+        .is('carried_over_at', null)  // 이월된 원본 할일 제외
+        .is('skipped_at', null)       // 포기된 원본 할일 제외
         .maybeSingle();
 
       if (existingTodo) {
@@ -2161,6 +2163,8 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
         .eq('recurring_task_id', originalTodo.recurring_task_id)
         .eq('date', today)
         .is('deleted_at', null)
+        .is('carried_over_at', null)  // 이월된 원본 할일 제외
+        .is('skipped_at', null)       // 포기된 원본 할일 제외
         .maybeSingle();
 
       if (existingTodo) {
@@ -2228,29 +2232,48 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
 
     if (insertError) throw insertError;
 
-    // 프로젝트 할일인 경우: 마감날짜가 지난 날짜면 오늘로 업데이트
+    // 프로젝트 할일인 경우: end_date를 오늘로 연장
     if (originalTodo.project_task_id) {
-      // project_tasks 테이블에서 실제 마감날짜 조회
+      // project_tasks 테이블에서 날짜 정보 조회
       const { data: projectTask, error: taskFetchError } = await supabase
         .from('project_tasks')
-        .select('due_date')
+        .select('start_date, end_date, due_date')
         .eq('id', originalTodo.project_task_id)
         .single();
 
-      if (!taskFetchError && projectTask && projectTask.due_date) {
-        const originalDueDate = new Date(projectTask.due_date);
+      if (!taskFetchError && projectTask) {
         const todayDate = new Date(today);
-        
-        // 마감날짜가 오늘 이전이면 오늘로 업데이트
-        if (originalDueDate < todayDate) {
+        let needsUpdate = false;
+        const updateData = {};
+
+        // start_date/end_date 방식 (새 방식)
+        if (projectTask.end_date) {
+          const endDate = new Date(projectTask.end_date);
+          // end_date가 오늘 이전이면 오늘로 연장
+          if (endDate < todayDate) {
+            updateData.end_date = today;
+            needsUpdate = true;
+          }
+        }
+        // due_date 방식 (구 방식, 하위 호환성)
+        else if (projectTask.due_date) {
+          const dueDate = new Date(projectTask.due_date);
+          // 마감날짜가 오늘 이전이면 오늘로 업데이트
+          if (dueDate < todayDate) {
+            updateData.due_date = today;
+            needsUpdate = true;
+          }
+        }
+
+        if (needsUpdate) {
           const { error: dateUpdateError } = await supabase
             .from('project_tasks')
-            .update({ due_date: today })
+            .update(updateData)
             .eq('id', originalTodo.project_task_id);
 
           if (dateUpdateError) {
-            console.error('Error updating project task due_date:', dateUpdateError);
-            // 마감날짜 업데이트 실패해도 계속 진행 (치명적이지 않음)
+            console.error('Error updating project task date:', dateUpdateError);
+            // 날짜 업데이트 실패해도 계속 진행 (치명적이지 않음)
           }
         }
       }
@@ -2354,18 +2377,8 @@ async function skipTodo(todoId, profile, timezone = 'Asia/Seoul') {
 
     if (error) throw error;
 
-    // 프로젝트 할일인 경우: 마감날짜를 NULL로 변경 (포기 처리)
-    if (todo && todo.project_task_id) {
-      const { error: dateUpdateError } = await supabase
-        .from('project_tasks')
-        .update({ due_date: null })
-        .eq('id', todo.project_task_id);
-
-      if (dateUpdateError) {
-        console.error('Error updating project task due_date (skip):', dateUpdateError);
-        // 마감날짜 업데이트 실패해도 계속 진행
-      }
-    }
+    // 프로젝트 할일/반복업무 포기 시: project_tasks의 due_date는 수정하지 않음
+    // (시작일/종료일 기반으로 동작하며, 포기한 할일은 skipped_at으로만 표시)
 
     // 모달에서 해당 항목 처리 표시
     const todoItem = document.querySelector(`.carryover-todo-item[data-todo-id="${todoId}"]`);
@@ -2775,16 +2788,38 @@ async function moveTodoDate(todoId, newDate, currentSelectedDate, profile, timez
 
     if (error) throw error;
 
-    // 프로젝트 할일인 경우: 마감날짜도 동기화
+    // 프로젝트 할일인 경우: end_date 또는 due_date 동기화
     if (todo && todo.project_task_id) {
-      const { error: dateUpdateError } = await supabase
+      // project_tasks 테이블에서 날짜 정보 조회
+      const { data: projectTask, error: taskFetchError } = await supabase
         .from('project_tasks')
-        .update({ due_date: newDate })
-        .eq('id', todo.project_task_id);
+        .select('start_date, end_date, due_date')
+        .eq('id', todo.project_task_id)
+        .single();
 
-      if (dateUpdateError) {
-        console.error('Error syncing project task due_date:', dateUpdateError);
-        // 마감날짜 동기화 실패해도 계속 진행
+      if (!taskFetchError && projectTask) {
+        const updateData = {};
+        
+        // start_date/end_date 방식 (새 방식)
+        if (projectTask.end_date) {
+          updateData.end_date = newDate;
+        }
+        // due_date 방식 (구 방식, 하위 호환성)
+        else if (projectTask.due_date) {
+          updateData.due_date = newDate;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          const { error: dateUpdateError } = await supabase
+            .from('project_tasks')
+            .update(updateData)
+            .eq('id', todo.project_task_id);
+
+          if (dateUpdateError) {
+            console.error('Error syncing project task date:', dateUpdateError);
+            // 날짜 동기화 실패해도 계속 진행
+          }
+        }
       }
     }
 
