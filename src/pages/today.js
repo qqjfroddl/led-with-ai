@@ -620,14 +620,12 @@ async function loadTodos(date, profile, timezone = 'Asia/Seoul') {
 
     if (error) throw error;
 
-    // 과거 날짜 조회 시: carried_over_at과 skipped_at이 있는 할일은 제외 (중복 방지)
-    // 단, 오늘 날짜 조회 시에는 모든 할일 표시 (이월된 할일 포함)
+    // 과거 날짜 조회 시에도 이월/포기한 할일을 표시 (배지로 시각적 구분)
+    // - 이월된 할일: "→ 오늘로 이동됨" 녹색 배지 + 회색 배경 + 읽기 전용
+    // - 포기한 할일: "× 포기함" 빨간 배지 + 회색 배경 + 읽기 전용
+    // 중복 방지는 이월/프로젝트/반복업무 등록 시 carried_over_at/skipped_at 체크로 처리됨
+    // (이월 시: 2112-2113, 2166-2167번째 줄, 프로젝트 등록 시: 1367-1368번째 줄)
     let filteredData = data || [];
-    if (date < today) {
-      console.log('[Todos] Filtering past date todos:', { date, today, beforeFilter: filteredData.length });
-      filteredData = filteredData.filter(todo => !todo.carried_over_at && !todo.skipped_at);
-      console.log('[Todos] After filtering:', { afterFilter: filteredData.length });
-    }
 
     todos = filteredData;
     renderTodos(todos, date, profile, timezone);
