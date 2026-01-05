@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
-const PROMPT_VERSION = 'monthly_reflection_v1';
+const PROMPT_VERSION = 'monthly_reflection_v2'; // v1 → v2: 월실천계획 및 월말 결과 추가
 
 interface RequestBody {
   month_start: string;
@@ -112,8 +112,25 @@ serve(async (req) => {
       month_end
     );
 
+    // 월실천계획 수집
+    const monthlyPlan = await collectMonthlyPlan(supabase, user.id, month_start);
+
+    // 디버깅: 월실천계획 데이터 확인
+    console.log('=== Monthly Plan Debug ===');
+    console.log('Month start:', month_start);
+    console.log('Monthly plan exists:', !!monthlyPlan);
+    if (monthlyPlan) {
+      console.log('Plan content:', JSON.stringify(monthlyPlan.plan_content, null, 2));
+      console.log('Results content:', JSON.stringify(monthlyPlan.results_content, null, 2));
+    }
+
     // AI 프롬프트 생성
-    const prompt = generatePrompt(stats, reflectionsText, month_start, month_end, totalDays);
+    const prompt = generatePrompt(stats, reflectionsText, monthlyPlan, month_start, month_end, totalDays);
+    
+    // 디버깅: 프롬프트 미리보기
+    console.log('=== Prompt Preview ===');
+    console.log('Prompt length:', prompt.length);
+    console.log('First 2000 chars:', prompt.substring(0, 2000));
 
     // Gemini API 호출
     if (!GEMINI_API_KEY) {
@@ -457,10 +474,42 @@ async function collectReflectionsText(
 }
 
 /**
+ * 월실천계획 수집
+ */
+async function collectMonthlyPlan(
+  supabase: any,
+  userId: string,
+  monthStart: string
+) {
+  const { data: plan } = await supabase
+    .from('monthly_plans')
+    .select('plan_content, results_content')
+    .eq('user_id', userId)
+    .eq('month_start', monthStart)
+    .maybeSingle();
+
+  if (!plan) {
+    return null;
+  }
+
+  return {
+    plan_content: plan.plan_content || { self_dev: '', relationship: '', work_finance: '' },
+    results_content: plan.results_content || { self_dev: '', relationship: '', work_finance: '' },
+  };
+}
+
+/**
  * AI 프롬프트 생성
  */
-function generatePrompt(stats: any, reflectionsText: string, monthStart: string, monthEnd: string, totalDays: number) {
-  return `다음은 ${monthStart}부터 ${monthEnd}까지의 월간 활동 통계입니다.
+function generatePrompt(
+  stats: any, 
+  reflectionsText: string, 
+  monthlyPlan: any,
+  monthStart: string, 
+  monthEnd: string, 
+  totalDays: number
+) {
+  let prompt = `다음은 ${monthStart}부터 ${monthEnd}까지의 월간 활동 통계입니다.
 
 ## 월간 통계
 
@@ -477,27 +526,62 @@ function generatePrompt(stats: any, reflectionsText: string, monthStart: string,
 ### 성찰
 - 작성한 날: ${stats.reflections.writtenDays}일 (${totalDays}일 중)
 - 작성률: ${stats.reflections.writingRate}%
+`;
 
+  // 월실천계획이 있으면 추가
+  if (monthlyPlan) {
+    const { plan_content, results_content } = monthlyPlan;
+    
+    prompt += `
+## 이번 달 실천계획
+`;
+    if (plan_content.self_dev) {
+      prompt += `### 자기계발\n${plan_content.self_dev}\n\n`;
+    }
+    if (plan_content.relationship) {
+      prompt += `### 관계\n${plan_content.relationship}\n\n`;
+    }
+    if (plan_content.work_finance) {
+      prompt += `### 업무/재정\n${plan_content.work_finance}\n\n`;
+    }
+
+    prompt += `
+## 월말 결과
+`;
+    if (results_content.self_dev) {
+      prompt += `### 자기계발\n${results_content.self_dev}\n\n`;
+    }
+    if (results_content.relationship) {
+      prompt += `### 관계\n${results_content.relationship}\n\n`;
+    }
+    if (results_content.work_finance) {
+      prompt += `### 업무/재정\n${results_content.work_finance}\n\n`;
+    }
+  }
+
+  prompt += `
 ## 일일 성찰 요약
 ${reflectionsText}
 
-위 통계와 성찰을 바탕으로 다음 형식으로 월간 성찰을 작성해주세요:
+위 통계와 성찰${monthlyPlan ? ', 실천계획 및 결과' : ''}를 바탕으로 다음 형식으로 월간 성찰을 작성해주세요:
 
 # 월간 성찰 (${monthStart.substring(0, 7)})
 
 ## 이번 달 요약
-이번 달의 전반적인 활동을 요약해주세요.
+이번 달의 전반적인 활동을 요약해주세요.${monthlyPlan ? ' 계획했던 내용과 실제 결과를 비교해주세요.' : ''}
 
 ## 잘한 점
-이번 달 잘한 점과 성과를 구체적으로 나열해주세요.
+이번 달 잘한 점과 성과를 구체적으로 나열해주세요.${monthlyPlan ? ' 계획 대비 잘 실행한 부분을 강조해주세요.' : ''}
 
 ## 개선할 점
-아쉬웠던 점이나 개선이 필요한 부분을 건설적으로 제시해주세요.
+아쉬웠던 점이나 개선이 필요한 부분을 건설적으로 제시해주세요.${monthlyPlan ? ' 계획 대비 부족했던 부분을 구체적으로 짚어주세요.' : ''}
 
 ## 다음 달 제안
-다음 달을 위한 구체적인 행동 제안을 해주세요.
+다음 달을 위한 구체적인 행동 제안을 해주세요.${monthlyPlan ? ' 이번 달 경험을 바탕으로 개선 방향을 제시해주세요.' : ''}
 
 마크다운 형식으로 작성하고, 격려와 동기부여가 되는 톤으로 작성해주세요.`;
+
+  return prompt;
 }
 
 

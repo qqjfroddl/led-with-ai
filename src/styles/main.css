@@ -1125,4 +1125,44 @@ input[type="date"]:focus {
   .todo-drag-handle {
     display: none !important;
   }
+
+  /* 월간 실천계획 반응형 레이아웃 */
+  /* 보기 모드 - 3컬럼을 1컬럼으로 */
+  #monthly-plans-view-mode > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* 편집 모드 - 3컬럼을 1컬럼으로 */
+  #monthly-plans-edit-mode > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* 구분선 변경: 우측 구분선 → 하단 구분선 */
+  #monthly-plans-view-mode > div:first-child > div,
+  #monthly-plans-edit-mode > div:first-child > div {
+    border-right: none !important;
+    padding-right: 0 !important;
+    padding-bottom: 1.5rem; /* gap과 동일하게 조정 */
+    border-bottom: 1.4px dashed #80E2E2;
+  }
+  
+  /* 마지막 항목은 하단 보더 및 패딩 제거 */
+  #monthly-plans-view-mode > div:first-child > div:last-child,
+  #monthly-plans-edit-mode > div:first-child > div:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* 제목 크기 조정 (모바일에서 가독성 향상) */
+  #monthly-plans-view-mode h4,
+  #monthly-plans-edit-mode h4 {
+    font-size: 1rem !important; /* 1.1rem → 1rem */
+  }
+  
+  /* 텍스트 영역 최소 높이 조정 */
+  #monthly-plans-edit-mode textarea {
+    min-height: 100px !important; /* 모바일에서 입력하기 편하게 */
+  }
 }
