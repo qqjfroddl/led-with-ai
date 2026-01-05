@@ -1199,4 +1199,15 @@ input[type="date"]:focus {
     font-size: 0.85rem !important;
     padding: 0.35rem 0.75rem !important;
   }
+
+  /* 오늘 루틴: 모닝/나이트 세로 배치 */
+  #routines-content > div:first-child {
+    grid-template-columns: 1fr !important; /* 1열로 변경 */
+    gap: 1.5rem !important; /* 간격 조정 */
+  }
+  
+  /* 구분선 숨김 (세로 배치에서는 불필요) */
+  #routines-content > div:first-child > div[style*="width: 2px"] {
+    display: none !important;
+  }
 }
