@@ -312,6 +312,7 @@ async function renderProjectDetail(project, profile) {
     .eq('project_id', project.id)
     .is('deleted_at', null)
     .order('is_done', { ascending: true })
+    .order('start_date', { ascending: true, nullsFirst: false })
     .order('display_order', { ascending: true, nullsFirst: false })
     .order('due_date', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true });
@@ -1039,6 +1040,16 @@ function openProjectTaskDateRangePicker(taskId, profile) {
     dateFormat: 'Y-m-d',
     onChange: (dates, dateStr) => {
       selectedStartDate = dateStr;
+      
+      // 종료일이 비어있으면 시작일과 같은 날짜로 자동 설정 (UX 개선)
+      if (!selectedEndDate) {
+        selectedEndDate = dateStr;
+        endDateInput.value = dateStr;
+        if (endDateInput._fp) {
+          endDateInput._fp.setDate(dateStr);
+        }
+      }
+      
       // 종료일이 시작일보다 이전이면 초기화
       if (selectedEndDate && selectedEndDate < selectedStartDate) {
         selectedEndDate = null;
@@ -1066,7 +1077,11 @@ function openProjectTaskDateRangePicker(taskId, profile) {
         alert('시작일을 선택해주세요.');
         return;
       }
-      if (selectedEndDate && selectedEndDate < selectedStartDate) {
+      if (!selectedEndDate) {
+        alert('종료일을 선택해주세요.');
+        return;
+      }
+      if (selectedEndDate < selectedStartDate) {
         alert('종료일은 시작일보다 이후여야 합니다.');
         return;
       }
@@ -1305,6 +1320,7 @@ async function registerProjectTasksToTodos(projectId, profile) {
       .select('*')
       .eq('project_id', projectId)
       .is('deleted_at', null)
+      .order('start_date', { ascending: true, nullsFirst: false })
       .order('display_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true });
 
