@@ -407,6 +407,10 @@ export async function renderGoals() {
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+          <button id="copy-prev-month-plan-btn" class="btn btn-secondary" style="display: inline-flex;">
+            <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            지난달 계획 복사
+          </button>
           <button id="ai-suggest-monthly-plan-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
             <i data-lucide="sparkles" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
             AI로 제안받기
@@ -452,6 +456,10 @@ export async function renderGoals() {
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem;">
+          <button id="copy-prev-month-plan-edit-btn" class="btn btn-secondary" style="display: inline-flex;">
+            <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            지난달 계획 복사
+          </button>
           <button id="save-monthly-plans-btn" class="btn" style="background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">저장하기</button>
           <button id="cancel-monthly-plans-btn" class="btn btn-secondary">취소</button>
         </div>
@@ -2525,6 +2533,102 @@ export async function renderGoals() {
         `;
       }
 
+      // 지난달 계획 조회
+      async function fetchPreviousMonthPlan() {
+        try {
+          const [year, month] = selectedMonthStart.split('-').map(Number);
+          let prevYear = year;
+          let prevMonth = month - 1;
+          
+          if (prevMonth < 1) {
+            prevMonth = 12;
+            prevYear--;
+          }
+          
+          const prevMonthStart = `${prevYear}-${String(prevMonth).padStart(2, '0')}-01`;
+          
+          const { data, error } = await supabase
+            .from('monthly_plans')
+            .select('plan_content')
+            .eq('user_id', profile.id)
+            .eq('month_start', prevMonthStart)
+            .eq('source', 'manual')
+            .maybeSingle();
+          
+          if (error && error.code !== 'PGRST116') {
+            console.error('[Previous Month Plan Load Error]', error);
+            return null;
+          }
+          
+          return data?.plan_content || null;
+        } catch (error) {
+          console.error('[Previous Month Plan Fetch Failed]', error);
+          return null;
+        }
+      }
+
+      // 지난달 계획 복사
+      async function copyPreviousMonthPlan() {
+        try {
+          const prevPlanContent = await fetchPreviousMonthPlan();
+          
+          if (!prevPlanContent || 
+              (!prevPlanContent.self_dev && !prevPlanContent.relationship && !prevPlanContent.work_finance)) {
+            alert('지난달 계획이 없습니다.');
+            return;
+          }
+          
+          // 지난달과 현재 월 표시용
+          const [currYear, currMonth] = selectedMonthStart.split('-').map(Number);
+          let prevYear = currYear;
+          let prevMonth = currMonth - 1;
+          
+          if (prevMonth < 1) {
+            prevMonth = 12;
+            prevYear--;
+          }
+          
+          // 복사 확인
+          if (!confirm(`${prevYear}년 ${prevMonth}월 계획을 ${currYear}년 ${currMonth}월로 복사하시겠습니까?`)) {
+            return;
+          }
+          
+          // 편집 모드로 전환 (아직 편집 모드가 아니라면)
+          const editMode = document.getElementById('monthly-plans-edit-mode');
+          if (editMode.style.display === 'none') {
+            switchToMonthlyPlanEditMode();
+            // DOM 업데이트를 위해 잠시 대기
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          
+          // 현재 입력된 내용이 있는지 확인
+          const currentSelfDev = document.getElementById('plan-content-self-dev-input')?.value.trim() || '';
+          const currentRelationship = document.getElementById('plan-content-relationship-input')?.value.trim() || '';
+          const currentWorkFinance = document.getElementById('plan-content-work-finance-input')?.value.trim() || '';
+          
+          if (currentSelfDev || currentRelationship || currentWorkFinance) {
+            if (!confirm('현재 입력된 계획이 있습니다. 덮어쓰시겠습니까?')) {
+              return;
+            }
+          }
+          
+          // 입력 필드에 복사
+          const selfDevInput = document.getElementById('plan-content-self-dev-input');
+          const relationshipInput = document.getElementById('plan-content-relationship-input');
+          const workFinanceInput = document.getElementById('plan-content-work-finance-input');
+          
+          if (selfDevInput) selfDevInput.value = prevPlanContent.self_dev || '';
+          if (relationshipInput) relationshipInput.value = prevPlanContent.relationship || '';
+          if (workFinanceInput) workFinanceInput.value = prevPlanContent.work_finance || '';
+          
+          alert('지난달 계획을 복사했습니다. 수정 후 저장해주세요.');
+          
+        } catch (error) {
+          console.error('[Copy Previous Month Plan Failed]', error);
+          alert(`지난달 계획 복사 중 오류가 발생했습니다:\n\n${error.message}`);
+        }
+      }
+
       // 월실천계획 제안 레이트리밋 조회
       // AI 월실천계획 제안 생성
       async function generateAIMonthlyPlan() {
@@ -2699,6 +2803,7 @@ export async function renderGoals() {
         loadMonthlyPlan();
       };
       const handleEditMonthlyPlan = () => switchToMonthlyPlanEditMode();
+      const handleCopyPrevMonthPlan = () => copyPreviousMonthPlan();
       const handleAISuggestMonthlyPlan = () => generateAIMonthlyPlan();
       const handleCancelMonthlyPlan = () => {
         // 데이터가 있으면 보기 모드로, 없으면 다시 로드
@@ -2762,6 +2867,22 @@ export async function renderGoals() {
             }
           }
         });
+      }
+      
+      // 지난달 계획 복사 버튼 (보기 모드) (중복 등록 방지를 위한 cloneNode 패턴)
+      const copyPrevMonthPlanBtn = document.getElementById('copy-prev-month-plan-btn');
+      if (copyPrevMonthPlanBtn) {
+        const newCopyBtn = copyPrevMonthPlanBtn.cloneNode(true);
+        copyPrevMonthPlanBtn.parentNode?.replaceChild(newCopyBtn, copyPrevMonthPlanBtn);
+        newCopyBtn.addEventListener('click', handleCopyPrevMonthPlan);
+      }
+      
+      // 지난달 계획 복사 버튼 (편집 모드) (중복 등록 방지를 위한 cloneNode 패턴)
+      const copyPrevMonthPlanEditBtn = document.getElementById('copy-prev-month-plan-edit-btn');
+      if (copyPrevMonthPlanEditBtn) {
+        const newCopyEditBtn = copyPrevMonthPlanEditBtn.cloneNode(true);
+        copyPrevMonthPlanEditBtn.parentNode?.replaceChild(newCopyEditBtn, copyPrevMonthPlanEditBtn);
+        newCopyEditBtn.addEventListener('click', handleCopyPrevMonthPlan);
       }
       
       // AI 제안받기 버튼 (중복 등록 방지를 위한 cloneNode 패턴)
