@@ -1210,4 +1210,11 @@ input[type="date"]:focus {
   #routines-content > div:first-child > div[style*="width: 2px"] {
     display: none !important;
   }
+
+  /* 월간 데일리 루틴: 모닝/나이트 세로 배치 */
+  #routines-view-mode > div:first-child,
+  #routines-edit-mode > div:first-child {
+    grid-template-columns: 1fr !important; /* 1열로 변경 */
+    gap: 1.5rem !important; /* 간격 조정 */
+  }
 }
