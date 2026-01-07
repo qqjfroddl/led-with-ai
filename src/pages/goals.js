@@ -677,11 +677,20 @@ export async function renderGoals() {
         inputGroup.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
         inputGroup.dataset.type = type;
         inputGroup.dataset.index = index;
+        inputGroup.draggable = true;
 
         inputGroup.innerHTML = `
-          <span style="background: #a78bfa; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; flex-shrink: 0;">
+          <!-- 드래그 핸들 (PC 전용) -->
+          <div class="drag-handle" style="cursor: grab; padding: 0.25rem; display: flex; align-items: center; flex-shrink: 0;">
+            <i data-lucide="grip-vertical" style="width: 18px; height: 18px; color: #9ca3af;"></i>
+          </div>
+          
+          <!-- 번호 -->
+          <span class="routine-number" style="background: #a78bfa; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; flex-shrink: 0;">
             ${index + 1}
           </span>
+          
+          <!-- 입력 필드 -->
           <input 
             type="text" 
             class="input routine-input" 
@@ -691,12 +700,27 @@ export async function renderGoals() {
             maxlength="50"
             style="flex: 1; border: 2px solid #d8b4fe; background: white;"
           />
+          
+          <!-- 순서 조정 버튼 (모바일 대응) -->
+          <div class="order-controls" style="display: flex; flex-direction: column; gap: 0.1rem; flex-shrink: 0;">
+            <button class="btn-icon move-routine-up" data-type="${type}" data-index="${index}" style="padding: 0.15rem; background: #e0e7ff; border: 1px solid #c7d2fe; cursor: pointer;">
+              <i data-lucide="chevron-up" style="width: 14px; height: 14px; color: #6366f1;"></i>
+            </button>
+            <button class="btn-icon move-routine-down" data-type="${type}" data-index="${index}" style="padding: 0.15rem; background: #e0e7ff; border: 1px solid #c7d2fe; cursor: pointer;">
+              <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: #6366f1;"></i>
+            </button>
+          </div>
+          
+          <!-- 삭제 버튼 -->
           <button class="btn btn-sm remove-routine-btn" data-type="${type}" data-index="${index}" style="background: #fecaca; color: #991b1b; border: none; padding: 0.4rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
           </button>
         `;
 
         container.appendChild(inputGroup);
+        
+        // 드래그 앤 드롭 설정 (PC 전용)
+        setupRoutineDragAndDrop(inputGroup, type);
         
         // Enter 키로 다음 필드 추가
         const input = inputGroup.querySelector('.routine-input');
@@ -744,11 +768,15 @@ export async function renderGoals() {
         const groups = container.querySelectorAll('.routine-input-group');
         
         groups.forEach((group, idx) => {
-          const numberSpan = group.querySelector('span:first-child');
+          const numberSpan = group.querySelector('.routine-number');
+          const moveUpBtn = group.querySelector('.move-routine-up');
+          const moveDownBtn = group.querySelector('.move-routine-down');
           const removeBtn = group.querySelector('.remove-routine-btn');
           
           numberSpan.textContent = idx + 1;
           group.dataset.index = idx;
+          if (moveUpBtn) moveUpBtn.dataset.index = idx;
+          if (moveDownBtn) moveDownBtn.dataset.index = idx;
           removeBtn.dataset.index = idx;
         });
       }
@@ -762,6 +790,121 @@ export async function renderGoals() {
           countEl.textContent = `${count}/10`;
           countEl.style.color = count >= 10 ? '#dc2626' : '#9ca3af';
         }
+      }
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 순서 조정 (드래그 앤 드롭 + 위/아래 버튼)
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      
+      // 드래그 상태 저장
+      let draggedRoutineElement = null;
+      let draggedOverRoutineElement = null;
+      
+      function setupRoutineDragAndDrop(inputGroup, type) {
+        // PC 전용: 터치 디바이스에서는 드래그 비활성화
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isSmallScreen = window.innerWidth <= 768;
+        
+        if (isTouchDevice || isSmallScreen) {
+          inputGroup.draggable = false;
+          const dragHandle = inputGroup.querySelector('.drag-handle');
+          if (dragHandle) dragHandle.style.display = 'none';
+          return;
+        }
+        
+        inputGroup.addEventListener('dragstart', (e) => {
+          draggedRoutineElement = inputGroup;
+          inputGroup.style.opacity = '0.4';
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        inputGroup.addEventListener('dragend', (e) => {
+          inputGroup.style.opacity = '1';
+          draggedRoutineElement = null;
+          draggedOverRoutineElement = null;
+          
+          // 모든 드래그 오버 스타일 제거
+          const container = document.getElementById(`${type}-routines-list`);
+          const groups = container.querySelectorAll('.routine-input-group');
+          groups.forEach(g => {
+            g.style.borderTop = '';
+            g.style.borderBottom = '';
+          });
+        });
+        
+        inputGroup.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          
+          if (draggedRoutineElement === inputGroup) return;
+          
+          draggedOverRoutineElement = inputGroup;
+          
+          // 시각적 피드백
+          const rect = inputGroup.getBoundingClientRect();
+          const midpoint = rect.top + rect.height / 2;
+          
+          if (e.clientY < midpoint) {
+            inputGroup.style.borderTop = '2px solid #6366f1';
+            inputGroup.style.borderBottom = '';
+          } else {
+            inputGroup.style.borderTop = '';
+            inputGroup.style.borderBottom = '2px solid #6366f1';
+          }
+        });
+        
+        inputGroup.addEventListener('dragleave', (e) => {
+          inputGroup.style.borderTop = '';
+          inputGroup.style.borderBottom = '';
+        });
+        
+        inputGroup.addEventListener('drop', (e) => {
+          e.preventDefault();
+          
+          if (!draggedRoutineElement || draggedRoutineElement === inputGroup) return;
+          
+          const container = document.getElementById(`${type}-routines-list`);
+          const rect = inputGroup.getBoundingClientRect();
+          const midpoint = rect.top + rect.height / 2;
+          
+          if (e.clientY < midpoint) {
+            container.insertBefore(draggedRoutineElement, inputGroup);
+          } else {
+            container.insertBefore(draggedRoutineElement, inputGroup.nextSibling);
+          }
+          
+          renumberRoutines(type);
+          
+          // 스타일 초기화
+          inputGroup.style.borderTop = '';
+          inputGroup.style.borderBottom = '';
+        });
+      }
+      
+      function moveRoutineUp(type, index) {
+        const container = document.getElementById(`${type}-routines-list`);
+        const groups = Array.from(container.querySelectorAll('.routine-input-group'));
+        
+        if (index === 0) return; // 이미 맨 위
+        
+        const currentGroup = groups[index];
+        const prevGroup = groups[index - 1];
+        
+        container.insertBefore(currentGroup, prevGroup);
+        renumberRoutines(type);
+      }
+      
+      function moveRoutineDown(type, index) {
+        const container = document.getElementById(`${type}-routines-list`);
+        const groups = Array.from(container.querySelectorAll('.routine-input-group'));
+        
+        if (index === groups.length - 1) return; // 이미 맨 아래
+        
+        const currentGroup = groups[index];
+        const nextGroup = groups[index + 1];
+        
+        container.insertBefore(nextGroup, currentGroup);
+        renumberRoutines(type);
       }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1257,20 +1400,38 @@ export async function renderGoals() {
         addNightBtn.addEventListener('click', handleAddNightRoutine);
       }
 
-      // 삭제 버튼 (이벤트 위임)
+      // 삭제 버튼 및 순서 조정 버튼 (이벤트 위임)
       document.getElementById('morning-routines-list')?.addEventListener('click', (e) => {
         const removeBtn = e.target.closest('.remove-routine-btn');
+        const moveUpBtn = e.target.closest('.move-routine-up');
+        const moveDownBtn = e.target.closest('.move-routine-down');
+        
         if (removeBtn && removeBtn.dataset.type === 'morning') {
           const index = parseInt(removeBtn.dataset.index);
           removeRoutineInput('morning', index);
+        } else if (moveUpBtn && moveUpBtn.dataset.type === 'morning') {
+          const index = parseInt(moveUpBtn.dataset.index);
+          moveRoutineUp('morning', index);
+        } else if (moveDownBtn && moveDownBtn.dataset.type === 'morning') {
+          const index = parseInt(moveDownBtn.dataset.index);
+          moveRoutineDown('morning', index);
         }
       });
 
       document.getElementById('night-routines-list')?.addEventListener('click', (e) => {
         const removeBtn = e.target.closest('.remove-routine-btn');
+        const moveUpBtn = e.target.closest('.move-routine-up');
+        const moveDownBtn = e.target.closest('.move-routine-down');
+        
         if (removeBtn && removeBtn.dataset.type === 'night') {
           const index = parseInt(removeBtn.dataset.index);
           removeRoutineInput('night', index);
+        } else if (moveUpBtn && moveUpBtn.dataset.type === 'night') {
+          const index = parseInt(moveUpBtn.dataset.index);
+          moveRoutineUp('night', index);
+        } else if (moveDownBtn && moveDownBtn.dataset.type === 'night') {
+          const index = parseInt(moveDownBtn.dataset.index);
+          moveRoutineDown('night', index);
         }
       });
 

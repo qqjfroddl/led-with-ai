@@ -1217,4 +1217,15 @@ input[type="date"]:focus {
     grid-template-columns: 1fr !important; /* 1열로 변경 */
     gap: 1.5rem !important; /* 간격 조정 */
   }
+  
+  /* 월간 루틴 드래그 핸들 숨김 (모바일) */
+  .routine-input-group .drag-handle {
+    display: none !important;
+  }
+  
+  /* 월간 루틴 순서 조정 버튼 (모바일에서 세로 배치) */
+  .routine-input-group .order-controls {
+    flex-direction: column !important;
+    gap: 0.1rem !important;
+  }
 }
