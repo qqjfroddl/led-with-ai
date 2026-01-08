@@ -279,7 +279,7 @@ function renderProjectCardCompact(project) {
           <i data-lucide="${project.isCompleted ? 'check-circle' : icon}" style="width: 20px; height: 20px; color: white;"></i>
         </div>
         <div style="flex: 1; min-width: 0;">
-          <h4 style="color: ${project.isCompleted ? '#6b7280' : '#1f2937'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${project.name}</h4>
+          <h4 style="color: ${project.isCompleted ? '#6b7280' : '#1f2937'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.3;">${project.name}</h4>
           <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${project.isCompleted ? '#e5e7eb' : colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[project.category]}</span>
           </div>
@@ -334,7 +334,7 @@ async function renderProjectDetail(project, profile) {
   projectDetail.innerHTML = `
     <div style="background: ${project.isCompleted ? '#f9fafb' : colors.bg}; border: 2px solid ${project.isCompleted ? '#e5e7eb' : colors.border}; border-radius: 12px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px dashed ${project.isCompleted ? '#d1d5db' : colors.border};">
-        <h3 style="color: #1f2937; font-size: 1.1rem; font-weight: 700; margin: 0;">
+        <h3 style="color: #1f2937; font-size: 1.1rem; font-weight: 700; margin: 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.4;">
           <i data-lucide="list-checks" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: -3px;"></i>
           ${project.name} 할일 목록
         </h3>
@@ -443,12 +443,12 @@ function renderProjectTask(task, projectCategory) {
   }
   
   return `
-    <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-      <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer;" ${isEditing ? 'disabled' : ''}>
+    <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 0;">
+      <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;" ${isEditing ? 'disabled' : ''}>
       ${isEditing ? `
-        <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; padding: 0.5rem; border: 2px solid #6366f1; border-radius: 4px; font-size: 1rem;">
+        <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid #6366f1; border-radius: 4px; font-size: 1rem;">
       ` : `
-        <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
+        <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
       `}
       ${dateDisplay}
       ${!isEditing ? `
