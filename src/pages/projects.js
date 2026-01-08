@@ -443,32 +443,41 @@ function renderProjectTask(task, projectCategory) {
   }
   
   return `
-    <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 0;">
-      <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;" ${isEditing ? 'disabled' : ''}>
-      ${isEditing ? `
-        <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid #6366f1; border-radius: 4px; font-size: 1rem;">
-      ` : `
-        <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
-      `}
-      ${dateDisplay}
-      ${!isEditing ? `
-        <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem;" title="시작일/종료일 설정">
-          <i data-lucide="calendar-range" style="width: 18px; height: 18px;"></i>
+    <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+      <!-- 첫 번째 줄: 체크박스 + 제목 + 버튼들 -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
+        <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;" ${isEditing ? 'disabled' : ''}>
+        ${isEditing ? `
+          <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid #6366f1; border-radius: 4px; font-size: 1rem;">
+        ` : `
+          <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
+        `}
+        ${!isEditing ? `
+          <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="시작일/종료일 설정">
+            <i data-lucide="calendar-range" style="width: 18px; height: 18px;"></i>
+          </button>
+          <button class="project-task-edit-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="수정">
+            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          </button>
+        ` : `
+          <button class="project-task-save-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
+            <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+          </button>
+          <button class="project-task-cancel-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        `}
+        <button class="project-task-delete-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제" ${isEditing ? 'disabled' : ''}>
+          <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
         </button>
-        <button class="project-task-edit-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem;" title="수정">
-          <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
-        </button>
-      ` : `
-        <button class="project-task-save-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem;">
-          <i data-lucide="check" style="width: 18px; height: 18px;"></i>
-        </button>
-        <button class="project-task-cancel-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem;">
-          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
-        </button>
-      `}
-      <button class="project-task-delete-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem;" title="삭제" ${isEditing ? 'disabled' : ''}>
-        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-      </button>
+      </div>
+      
+      <!-- 두 번째 줄: 날짜 표시 (있을 경우에만) -->
+      ${dateDisplay ? `
+        <div style="margin-top: 0.5rem; padding-left: 2.45rem;">
+          ${dateDisplay}
+        </div>
+      ` : ''}
     </div>
   `;
 }
