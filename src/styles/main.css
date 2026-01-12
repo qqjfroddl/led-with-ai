@@ -1246,4 +1246,24 @@ input[type="date"]:focus {
     flex-direction: column !important;
     gap: 0.1rem !important;
   }
+
+  /* 프로젝트 할일 날짜 표시 - 모바일: PC용 날짜 숨기기, 모바일용 날짜 표시 */
+  .project-task-date-pc {
+    display: none !important;
+  }
+  
+  .project-task-date-mobile {
+    display: block !important;
+  }
+}
+
+/* 프로젝트 할일 날짜 표시 - PC: 모바일용 날짜 숨기기, PC용 날짜 표시 */
+@media (min-width: 769px) {
+  .project-task-date-mobile {
+    display: none !important;
+  }
+  
+  .project-task-date-pc {
+    display: inline-block !important;
+  }
 }

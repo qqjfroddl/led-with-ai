@@ -434,23 +434,28 @@ function renderProjectTask(task, projectCategory) {
   
   // 날짜 표시 로직 개선
   let dateDisplay = '';
+  let dateText = ''; // PC용 텍스트만 추출
   if (task.start_date && task.end_date) {
     dateDisplay = `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.start_date} ~ ${task.end_date}</span>`;
+    dateText = `📅 ${task.start_date} ~ ${task.end_date}`;
   } else if (task.start_date) {
     dateDisplay = `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.start_date}</span>`;
+    dateText = `📅 ${task.start_date}`;
   } else if (task.due_date) {
     dateDisplay = `<span style="font-size: 0.75rem; color: #9ca3af;">📅 ${task.due_date} (구)</span>`;
+    dateText = `📅 ${task.due_date} (구)`;
   }
   
   return `
     <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-      <!-- 첫 번째 줄: 체크박스 + 제목 + 버튼들 -->
-      <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
+      <!-- 첫 번째 줄: 체크박스 + 제목 + 날짜(PC용) + 버튼들 -->
+      <div class="project-task-row" style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
         <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;" ${isEditing ? 'disabled' : ''}>
         ${isEditing ? `
           <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid #6366f1; border-radius: 4px; font-size: 1rem;">
         ` : `
           <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
+          ${dateText ? `<span class="project-task-date-pc" style="font-size: 0.75rem; color: #6b7280; white-space: nowrap; flex-shrink: 0; margin-left: 0.5rem;">${dateText}</span>` : ''}
         `}
         ${!isEditing ? `
           <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="시작일/종료일 설정">
@@ -472,9 +477,9 @@ function renderProjectTask(task, projectCategory) {
         </button>
       </div>
       
-      <!-- 두 번째 줄: 날짜 표시 (있을 경우에만) -->
+      <!-- 두 번째 줄: 날짜 표시 (모바일용) -->
       ${dateDisplay ? `
-        <div style="margin-top: 0.5rem; padding-left: 2.45rem;">
+        <div class="project-task-date-mobile" style="margin-top: 0.5rem; padding-left: 2.45rem;">
           ${dateDisplay}
         </div>
       ` : ''}
