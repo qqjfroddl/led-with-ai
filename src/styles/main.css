@@ -1047,6 +1047,24 @@ input[type="date"]:focus {
     flex-direction: column !important;
     gap: 0.1rem !important;
   }
+
+  /* 모바일에서 루틴 세로 배치 (모닝 - 데이타임 - 나이트) */
+  #today-routines-section #routines-content > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  /* 모바일에서 구분선 숨김 */
+  #today-routines-section #routines-content > div:first-child > div[style*="width: 2px"] {
+    display: none !important;
+  }
+
+  /* 모바일에서 목표 탭 루틴 세로 배치 (모닝 - 데이타임 - 나이트) */
+  #routines-view-mode > div:first-child,
+  #routines-edit-mode > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
 }
 
 /* 드래그 앤 드롭 스타일 */

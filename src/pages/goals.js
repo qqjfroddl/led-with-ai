@@ -38,7 +38,7 @@ export async function renderGoals() {
       <div id="routines-content" style="display: block;">
       <!-- 보기 모드 -->
       <div id="routines-view-mode" style="display: none;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
           <!-- 모닝루틴 표시 -->
           <div id="morning-display-section">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
@@ -48,6 +48,18 @@ export async function renderGoals() {
             <div id="morning-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
             <div id="morning-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">
               등록된 모닝루틴이 없습니다
+            </div>
+          </div>
+
+          <!-- 데이타임 루틴 표시 -->
+          <div id="daytime-display-section">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+              <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
+              <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">데이타임 루틴</h4>
+            </div>
+            <div id="daytime-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            <div id="daytime-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">
+              등록된 데이타임 루틴이 없습니다
             </div>
           </div>
 
@@ -74,7 +86,7 @@ export async function renderGoals() {
 
       <!-- 편집 모드 -->
       <div id="routines-edit-mode" style="display: none;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
           <!-- 모닝루틴 입력 -->
           <div>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
@@ -88,6 +100,22 @@ export async function renderGoals() {
             <button id="add-morning-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
               <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
               모닝루틴 추가
+            </button>
+          </div>
+
+          <!-- 데이타임 루틴 입력 -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
+                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">데이타임 루틴</h4>
+              </div>
+              <span style="font-size: 0.85rem; color: #9ca3af;" id="daytime-count">0/10</span>
+            </div>
+            <div id="daytime-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
+            <button id="add-daytime-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+              <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+              데이타임 루틴 추가
             </button>
           </div>
 
@@ -517,6 +545,7 @@ export async function renderGoals() {
       }
 
       let morningRoutines = [];
+      let daytimeRoutines = [];
       let nightRoutines = [];
       let isEditMode = false;
 
@@ -540,11 +569,12 @@ export async function renderGoals() {
 
           if (data && data.daily_routines) {
             morningRoutines = data.daily_routines.morning || [];
+            daytimeRoutines = data.daily_routines.daytime || [];
             nightRoutines = data.daily_routines.night || [];
           }
 
           // 데이터가 있으면 보기 모드, 없으면 편집 모드
-          if (morningRoutines.length > 0 || nightRoutines.length > 0) {
+          if (morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0) {
             displayRoutines();
           } else {
             switchToEditMode();
@@ -563,8 +593,10 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       function displayRoutines() {
         const morningList = document.getElementById('morning-display-list');
+        const daytimeList = document.getElementById('daytime-display-list');
         const nightList = document.getElementById('night-display-list');
         const morningEmpty = document.getElementById('morning-empty');
+        const daytimeEmpty = document.getElementById('daytime-empty');
         const nightEmpty = document.getElementById('night-empty');
 
         // 모닝루틴 표시
@@ -581,6 +613,22 @@ export async function renderGoals() {
         } else {
           morningList.innerHTML = '';
           morningEmpty.style.display = 'block';
+        }
+
+        // 데이타임 루틴 표시
+        if (daytimeRoutines.length > 0) {
+          daytimeList.innerHTML = daytimeRoutines.map((routine, idx) => `
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
+                ${idx + 1}
+              </span>
+              <span style="color: #374151; font-weight: 500;">${routine}</span>
+            </div>
+          `).join('');
+          daytimeEmpty.style.display = 'none';
+        } else {
+          daytimeList.innerHTML = '';
+          daytimeEmpty.style.display = 'block';
         }
 
         // 나이트루틴 표시
@@ -643,6 +691,7 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       function renderEditInputs() {
         renderRoutineInputs('morning', morningRoutines);
+        renderRoutineInputs('daytime', daytimeRoutines);
         renderRoutineInputs('night', nightRoutines);
       }
 
@@ -912,9 +961,14 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       async function saveRoutines() {
         const morningInputs = document.querySelectorAll('#morning-routines-list .routine-input');
+        const daytimeInputs = document.querySelectorAll('#daytime-routines-list .routine-input');
         const nightInputs = document.querySelectorAll('#night-routines-list .routine-input');
 
         const newMorningRoutines = Array.from(morningInputs)
+          .map(input => input.value.trim())
+          .filter(v => v.length > 0);
+
+        const newDaytimeRoutines = Array.from(daytimeInputs)
           .map(input => input.value.trim())
           .filter(v => v.length > 0);
 
@@ -923,13 +977,14 @@ export async function renderGoals() {
           .filter(v => v.length > 0);
 
         // 유효성 검사
-        if (newMorningRoutines.length === 0 && newNightRoutines.length === 0) {
+        if (newMorningRoutines.length === 0 && newDaytimeRoutines.length === 0 && newNightRoutines.length === 0) {
           alert('최소 1개의 루틴을 입력해주세요.');
           return;
         }
 
         const dailyRoutines = {
           morning: newMorningRoutines,
+          daytime: newDaytimeRoutines,
           night: newNightRoutines
         };
 
@@ -984,6 +1039,7 @@ export async function renderGoals() {
 
           // 3. 상태 업데이트
           morningRoutines = newMorningRoutines;
+          daytimeRoutines = newDaytimeRoutines;
           nightRoutines = newNightRoutines;
 
           alert('저장되었습니다!');
@@ -999,7 +1055,7 @@ export async function renderGoals() {
       // routines 테이블 동기화
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       async function syncMonthlyRoutines(userId, monthStart, dailyRoutines, activeFromDate) {
-        const { morning = [], night = [] } = dailyRoutines;
+        const { morning = [], daytime = [], night = [] } = dailyRoutines;
 
         try {
           // A. 기존 월간 루틴 비활성화 (Soft Delete - 과거 기록 보존)
@@ -1133,6 +1189,45 @@ export async function renderGoals() {
                   month: monthStart,
                   source: 'monthly_goal',
                   category: 'night',
+                  order: index,
+                  active_from_date: activeFromDate
+                },
+                is_active: true
+              });
+            }
+          });
+          
+          // 데이타임 루틴 처리
+          daytime.forEach((title, index) => {
+            const trimmedTitle = title.trim();
+            const existingRoutine = allRoutines?.find(r => 
+              r.title === trimmedTitle && 
+              r.schedule?.category === 'daytime'
+            );
+            
+            if (existingRoutine && !existingRoutine.is_active) {
+              // 비활성 루틴이 있으면 재활성화 (active_from_date는 기존 값 유지)
+              routinesToReactivate.push({
+                id: existingRoutine.id,
+                schedule: {
+                  ...existingRoutine.schedule,
+                  order: index
+                  // active_from_date는 기존 값 유지하여 과거 기록 보존
+                }
+              });
+            } else if (existingRoutine && existingRoutine.is_active) {
+              // 이미 활성인 루틴은 그대로 유지 (아무것도 안함)
+              console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
+            } else if (!existingRoutine) {
+              // 루틴이 없으면 새로 생성
+              routinesToInsert.push({
+                user_id: userId,
+                title: trimmedTitle,
+                schedule: {
+                  type: 'monthly',
+                  month: monthStart,
+                  source: 'monthly_goal',
+                  category: 'daytime',
                   order: index,
                   active_from_date: activeFromDate
                 },
@@ -1354,6 +1449,7 @@ export async function renderGoals() {
       };
       const handleSaveRoutines = () => saveRoutines();
       const handleAddMorningRoutine = () => addRoutineInput('morning');
+      const handleAddDaytimeRoutine = () => addRoutineInput('daytime');
       const handleAddNightRoutine = () => addRoutineInput('night');
       const handleCopyPrevMonthRoutines = () => copyPreviousMonthRoutines();
       
@@ -1363,6 +1459,7 @@ export async function renderGoals() {
       const cancelBtn = document.getElementById('cancel-edit-btn');
       const saveBtn = document.getElementById('save-routines-btn');
       const addMorningBtn = document.getElementById('add-morning-routine-btn');
+      const addDaytimeBtn = document.getElementById('add-daytime-routine-btn');
       const addNightBtn = document.getElementById('add-night-routine-btn');
       
       if (editBtn) {
@@ -1393,6 +1490,11 @@ export async function renderGoals() {
       if (addMorningBtn) {
         addMorningBtn.removeEventListener('click', handleAddMorningRoutine);
         addMorningBtn.addEventListener('click', handleAddMorningRoutine);
+      }
+      
+      if (addDaytimeBtn) {
+        addDaytimeBtn.removeEventListener('click', handleAddDaytimeRoutine);
+        addDaytimeBtn.addEventListener('click', handleAddDaytimeRoutine);
       }
       
       if (addNightBtn) {
@@ -1432,6 +1534,23 @@ export async function renderGoals() {
         } else if (moveDownBtn && moveDownBtn.dataset.type === 'night') {
           const index = parseInt(moveDownBtn.dataset.index);
           moveRoutineDown('night', index);
+        }
+      });
+
+      document.getElementById('daytime-routines-list')?.addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('.remove-routine-btn');
+        const moveUpBtn = e.target.closest('.move-routine-up');
+        const moveDownBtn = e.target.closest('.move-routine-down');
+        
+        if (removeBtn && removeBtn.dataset.type === 'daytime') {
+          const index = parseInt(removeBtn.dataset.index);
+          removeRoutineInput('daytime', index);
+        } else if (moveUpBtn && moveUpBtn.dataset.type === 'daytime') {
+          const index = parseInt(moveUpBtn.dataset.index);
+          moveRoutineUp('daytime', index);
+        } else if (moveDownBtn && moveDownBtn.dataset.type === 'daytime') {
+          const index = parseInt(moveDownBtn.dataset.index);
+          moveRoutineDown('daytime', index);
         }
       });
 

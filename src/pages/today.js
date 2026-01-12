@@ -41,17 +41,33 @@ export async function renderToday() {
         </div>
       </div>
       <div id="routines-content" style="display: block;">
-        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: start;">
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 1rem; align-items: start;">
           <!-- 모닝루틴 -->
           <div id="morning-routines">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
               <i data-lucide="sunrise" style="width: 20px; height: 20px; color: #f59e0b;"></i>
               <h4 style="color: #0f766e; font-weight: 600; margin: 0;">모닝루틴</h4>
-              <span id="morning-progress" style="font-size: 0.85rem; color: #6b7280;">☀ 0 / 0</span>
+              <span id="morning-progress" style="font-size: 0.85rem; color: #6b7280;">0 / 0</span>
             </div>
             <div id="morning-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
             <div id="morning-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
               오늘 수행할 모닝루틴이 없습니다
+            </div>
+          </div>
+          
+          <!-- 구분선 -->
+          <div style="width: 2px; height: 100%; background: linear-gradient(180deg, transparent, #14b8a6, transparent); min-height: 100px;"></div>
+          
+          <!-- 데이타임 루틴 -->
+          <div id="daytime-routines">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+              <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
+              <h4 style="color: #0f766e; font-weight: 600; margin: 0;">데이타임 루틴</h4>
+              <span id="daytime-progress" style="font-size: 0.85rem; color: #6b7280;">0 / 0</span>
+            </div>
+            <div id="daytime-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            <div id="daytime-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
+              오늘 수행할 데이타임 루틴이 없습니다
             </div>
           </div>
           
@@ -63,7 +79,7 @@ export async function renderToday() {
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
               <i data-lucide="moon" style="width: 20px; height: 20px; color: #6366f1;"></i>
               <h4 style="color: #0f766e; font-weight: 600; margin: 0;">나이트루틴</h4>
-              <span id="night-progress" style="font-size: 0.85rem; color: #6b7280;">🌙 0 / 0</span>
+              <span id="night-progress" style="font-size: 0.85rem; color: #6b7280;">0 / 0</span>
             </div>
             <div id="night-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
             <div id="night-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
@@ -432,12 +448,18 @@ async function loadRoutines(date, profile) {
 
     const checkedRoutineIds = new Set(logs?.map(log => log.routine_id) || []);
 
-    // 모닝/나이트 분리 (schedule이 JSONB이므로 안전하게 파싱)
+    // 모닝/데이타임/나이트 분리 (schedule이 JSONB이므로 안전하게 파싱)
     const morningRoutines = todayRoutines.filter(r => {
       const schedule = typeof r.schedule === 'string' 
         ? (() => { try { return JSON.parse(r.schedule); } catch { return r.schedule; } })()
         : r.schedule;
       return schedule?.category === 'morning';
+    });
+    const daytimeRoutines = todayRoutines.filter(r => {
+      const schedule = typeof r.schedule === 'string' 
+        ? (() => { try { return JSON.parse(r.schedule); } catch { return r.schedule; } })()
+        : r.schedule;
+      return schedule?.category === 'daytime';
     });
     const nightRoutines = todayRoutines.filter(r => {
       const schedule = typeof r.schedule === 'string' 
@@ -447,16 +469,18 @@ async function loadRoutines(date, profile) {
     });
 
     // 렌더링
-    renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date, profile);
+    renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checkedRoutineIds, date, profile);
   } catch (error) {
     console.error('Error loading routines:', error);
   }
 }
 
-function renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date, profile) {
+function renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checkedRoutineIds, date, profile) {
   const morningList = document.getElementById('morning-routines-list');
+  const daytimeList = document.getElementById('daytime-routines-list');
   const nightList = document.getElementById('night-routines-list');
   const morningEmpty = document.getElementById('morning-empty');
+  const daytimeEmpty = document.getElementById('daytime-empty');
   const nightEmpty = document.getElementById('night-empty');
   const noData = document.getElementById('routines-no-data');
 
@@ -480,6 +504,7 @@ function renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date,
 
   // ✅ 정렬된 루틴 사용
   const sortedMorningRoutines = sortRoutines(morningRoutines);
+  const sortedDaytimeRoutines = sortRoutines(daytimeRoutines);
   const sortedNightRoutines = sortRoutines(nightRoutines);
 
   // 모닝루틴 렌더링
@@ -490,6 +515,24 @@ function renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date,
     morningList.style.display = 'flex';
     morningEmpty.style.display = 'none';
     morningList.innerHTML = sortedMorningRoutines.map(routine => {
+      const isChecked = checkedRoutineIds.has(routine.id);
+      return `
+        <div class="routine-item" data-routine-id="${routine.id}" style="background: white; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+          <input type="checkbox" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer;">
+          <span style="flex: 1; ${isChecked ? 'text-decoration: line-through; color: #9ca3af;' : ''}">${routine.title}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 데이타임 루틴 렌더링
+  if (sortedDaytimeRoutines.length === 0) {
+    daytimeList.style.display = 'none';
+    daytimeEmpty.style.display = 'block';
+  } else {
+    daytimeList.style.display = 'flex';
+    daytimeEmpty.style.display = 'none';
+    daytimeList.innerHTML = sortedDaytimeRoutines.map(routine => {
       const isChecked = checkedRoutineIds.has(routine.id);
       return `
         <div class="routine-item" data-routine-id="${routine.id}" style="background: white; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
@@ -519,7 +562,7 @@ function renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date,
   }
 
   // 전체 데이터 없음 처리
-  if (sortedMorningRoutines.length === 0 && sortedNightRoutines.length === 0) {
+  if (sortedMorningRoutines.length === 0 && sortedDaytimeRoutines.length === 0 && sortedNightRoutines.length === 0) {
     document.getElementById('routines-content').style.display = 'none';
     noData.style.display = 'block';
   } else {
@@ -528,7 +571,7 @@ function renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date,
   }
 
   // 진행률 업데이트
-  const totalRoutines = sortedMorningRoutines.length + sortedNightRoutines.length;
+  const totalRoutines = sortedMorningRoutines.length + sortedDaytimeRoutines.length + sortedNightRoutines.length;
   const checkedCount = checkedRoutineIds.size;
   const progress = totalRoutines > 0 ? (checkedCount / totalRoutines * 100).toFixed(0) : 0;
 
@@ -541,10 +584,12 @@ function renderRoutines(morningRoutines, nightRoutines, checkedRoutineIds, date,
   `;
 
   const morningChecked = sortedMorningRoutines.filter(r => checkedRoutineIds.has(r.id)).length;
+  const daytimeChecked = sortedDaytimeRoutines.filter(r => checkedRoutineIds.has(r.id)).length;
   const nightChecked = sortedNightRoutines.filter(r => checkedRoutineIds.has(r.id)).length;
 
-  document.getElementById('morning-progress').textContent = `☀ ${morningChecked} / ${sortedMorningRoutines.length}`;
-  document.getElementById('night-progress').textContent = `🌙 ${nightChecked} / ${sortedNightRoutines.length}`;
+  document.getElementById('morning-progress').textContent = `${morningChecked} / ${sortedMorningRoutines.length}`;
+  document.getElementById('daytime-progress').textContent = `${daytimeChecked} / ${sortedDaytimeRoutines.length}`;
+  document.getElementById('night-progress').textContent = `${nightChecked} / ${sortedNightRoutines.length}`;
 
   // 체크박스 이벤트 바인딩
   document.querySelectorAll('.routine-item input[type="checkbox"]').forEach(checkbox => {
