@@ -1,8 +1,9 @@
 // 오늘 페이지 (루틴 + 할일)
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
-import { getSelectedDate } from '../state/dateState.js';
+import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
 import { getToday } from '../utils/date.js';
+import { router } from '../router.js';
 
 export async function renderToday() {
   // ✅ 페이지 진입 시 필터 초기화 (다른 탭에서 돌아올 때 필터 상태 리셋)
@@ -97,7 +98,8 @@ export async function renderToday() {
     <!-- 오늘 할일 -->
     <div id="today-todos-section" class="card" style="background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); border: 2px solid #6366f1; border-radius: 12px; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);">
       <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(99, 102, 241, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <!-- 왼쪽: 오늘 할일 -->
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
           <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
             <i data-lucide="list-checks" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
@@ -108,7 +110,32 @@ export async function renderToday() {
             <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #4f46e5;"></i>
           </button>
         </div>
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
+        
+        <!-- 가운데: 날짜 이동 바 -->
+        <div id="todo-date-nav-section" style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center; margin: 0 1rem; min-width: 0;">
+          <button id="todo-date-prev" class="date-nav-btn" title="이전 날짜" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); color: #6b7280; width: 32px; height: 32px; flex-shrink: 0;">
+            <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
+          </button>
+          <button id="todo-date-display" class="date-display-btn" style="display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.875rem; background: var(--primary-blue, #5B5FC7); color: white; border: none; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; flex-shrink: 0;">
+            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+            <span id="todo-date-display-text">${formatSelectedDate(timezone)}</span>
+          </button>
+          <button id="todo-date-next" class="date-nav-btn" title="다음 날짜" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); color: #6b7280; width: 32px; height: 32px; flex-shrink: 0;">
+            <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+          </button>
+          <!-- 오늘로 이동 버튼 (PC만 표시) -->
+          <button id="todo-date-today" class="date-today-btn date-today-btn-pc" style="display: ${selectedDate === today ? 'none' : 'inline-flex'}; align-items: center; gap: 0.375rem; padding: 0.375rem 0.875rem; font-size: 0.875rem; background: #E8EBFA; color: #1f2937; border: 1px solid rgba(91, 95, 199, 0.2); border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;">
+            <i data-lucide="sun" style="width: 16px; height: 16px;"></i>
+            오늘로 이동
+          </button>
+          <!-- 오늘로 이동 아이콘 (모바일만 표시) -->
+          <button id="todo-date-today-mobile" class="date-today-icon-btn date-today-btn-mobile" title="오늘로 이동" style="display: ${selectedDate === today ? 'none' : 'inline-flex'}; align-items: center; justify-content: center; padding: 0.4rem; background: #E8EBFA; color: #1f2937; border: 1px solid rgba(91, 95, 199, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.2s; width: 32px; height: 32px; flex-shrink: 0;">
+            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        
+        <!-- 오른쪽: 카테고리 탭 -->
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-shrink: 0;">
           <div id="todo-filter-tabs" style="display: none;">
             <button class="todo-filter-tab" data-filter="today" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 8px; border: 2px solid #6366f1; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; font-weight: 600; cursor: pointer;">오늘</button>
             <button class="todo-filter-tab" data-filter="future" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 8px; border: 2px solid #e5e7eb; background: #f9fafb; color: #6b7280; font-weight: 600; cursor: pointer;">미래</button>
@@ -315,6 +342,28 @@ export async function renderToday() {
             오늘
           </button>
           <button id="todo-duplicate-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 할일 입력 필드 날짜 이동 모달 -->
+    <div id="todo-input-date-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+      <div id="todo-input-date-modal" class="date-modal" style="background: white; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18); width: min(400px, 90vw); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div class="date-modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid #e5e7eb;">
+          <span style="font-weight: 700; font-size: 1.125rem; color: #111827;">날짜 선택</span>
+          <button id="todo-input-date-close" class="date-close-btn" style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #6b7280;">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        <div class="date-modal-body" style="padding: 1.25rem; flex: 1; overflow-y: auto;">
+          <input type="text" id="todo-input-date-calendar-input" readonly style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 0.75rem;" />
+        </div>
+        <div class="date-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem; border-top: 1px solid #e5e7eb;">
+          <button id="todo-input-date-today-modal" class="btn btn-secondary" style="padding: 0.625rem 1.25rem; background: #f3f4f6; color: #1f2937; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+            오늘
+          </button>
+          <button id="todo-input-date-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
         </div>
       </div>
     </div>
@@ -943,6 +992,216 @@ function setupEventHandlers(date, profile, timezone) {
   // 첫 번째 탭 활성화
   document.querySelector('.category-tab[data-category="work"]')?.classList.add('active');
 
+  // 날짜 이동 바 이벤트 핸들러 (별도 모달 사용으로 충돌 방지)
+  const setupTodoDateNav = () => {
+    const todoDatePrevBtn = document.getElementById('todo-date-prev');
+    const todoDateNextBtn = document.getElementById('todo-date-next');
+    const todoDateDisplayBtn = document.getElementById('todo-date-display');
+    const todoDateTodayBtn = document.getElementById('todo-date-today'); // PC용
+    const todoDateTodayMobileBtn = document.getElementById('todo-date-today-mobile'); // 모바일용
+    const todoDateDisplayText = document.getElementById('todo-date-display-text');
+    
+    if (!todoDatePrevBtn || !todoDateNextBtn || !todoDateDisplayBtn) {
+      return; // 요소가 없으면 종료
+    }
+    
+    // 별도 모달 요소들
+    const overlay = document.getElementById('todo-input-date-overlay');
+    const calendarInput = document.getElementById('todo-input-date-calendar-input');
+    const closeBtn = document.getElementById('todo-input-date-close');
+    const closeFooterBtn = document.getElementById('todo-input-date-close-footer');
+    const todayBtn = document.getElementById('todo-input-date-today-modal');
+    
+    // 스크롤 중복 방지 플래그
+    let isScrolling = false;
+    
+    const updateTodoDateDisplay = () => {
+      const currentSelected = getSelectedDate(timezone);
+      const currentToday = getToday(timezone);
+      const isToday = currentSelected === currentToday;
+      
+      if (todoDateDisplayText) {
+        todoDateDisplayText.textContent = formatSelectedDate(timezone);
+      }
+      // PC용 "오늘로 이동" 버튼 표시/숨김
+      if (todoDateTodayBtn) {
+        todoDateTodayBtn.style.display = isToday ? 'none' : 'inline-flex';
+      }
+      // 모바일용 "오늘로 이동" 아이콘 버튼 표시/숨김
+      if (todoDateTodayMobileBtn) {
+        todoDateTodayMobileBtn.style.display = isToday ? 'none' : 'inline-flex';
+      }
+    };
+    
+    const rerenderTodos = async () => {
+      updateTodoDateDisplay();
+      // 날짜 변경 시 강제 재렌더링
+      router.lastRenderedState = null;
+      
+      try {
+        await router.handleRoute();
+        
+        // ✅ 렌더링 완료 후 "오늘 할일" 섹션으로 스크롤 (오늘 할일 헤더의 날짜 이동에서만)
+        // 중복 스크롤 방지
+        if (isScrolling) {
+          return;
+        }
+        
+        isScrolling = true;
+        
+        // DOM 업데이트를 기다리기 위해 requestAnimationFrame 사용
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const todosSection = document.getElementById('today-todos-section');
+            if (todosSection) {
+              todosSection.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start',
+                inline: 'nearest'
+              });
+              
+              // 스크롤 완료 후 플래그 해제 (스크롤 애니메이션 시간 고려)
+              setTimeout(() => {
+                isScrolling = false;
+              }, 500); // smooth 스크롤 애니메이션 시간
+            } else {
+              // 요소가 없으면 즉시 플래그 해제
+              isScrolling = false;
+            }
+          }, 100); // 렌더링 완료 대기
+        });
+      } catch (error) {
+        console.error('Error in rerenderTodos:', error);
+        isScrolling = false; // 에러 발생 시 플래그 해제
+      }
+    };
+    
+    const closeOverlay = () => {
+      if (overlay) {
+        overlay.style.display = 'none';
+        overlay.classList.add('hidden');
+      }
+    };
+    
+    const openOverlay = () => {
+      if (!overlay || !calendarInput || !window.flatpickr) {
+        console.error('Todo input date picker elements not found or flatpickr not loaded');
+        return;
+      }
+      
+      const currentSelected = getSelectedDate(timezone);
+      overlay.style.display = 'flex';
+      overlay.classList.remove('hidden');
+      
+      // flatpickr 인스턴스가 있으면 날짜 업데이트, 없으면 새로 생성
+      if (calendarInput._fp) {
+        calendarInput._fp.setDate(currentSelected, true);
+      } else {
+        const DateTime = window.luxon?.DateTime;
+        if (!DateTime) {
+          console.error('Luxon not available');
+          return;
+        }
+        
+        calendarInput._fp = window.flatpickr(calendarInput, {
+          inline: true,
+          defaultDate: currentSelected,
+          dateFormat: 'Y-m-d',
+          locale: (window.flatpickr.l10ns && window.flatpickr.l10ns.ko) ? window.flatpickr.l10ns.ko : undefined,
+          onChange: (dates) => {
+            if (dates && dates[0]) {
+              // 로컬 날짜 사용 (UTC 변환 방지)
+              const d = dates[0];
+              const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              setSelectedDate(iso);
+              closeOverlay();
+              rerenderTodos();
+            }
+          },
+        });
+      }
+    };
+    
+    // 이전 날짜 버튼 (cloneNode 패턴)
+    const newPrevBtn = todoDatePrevBtn.cloneNode(true);
+    todoDatePrevBtn.parentNode?.replaceChild(newPrevBtn, todoDatePrevBtn);
+    newPrevBtn.onclick = () => {
+      shiftSelectedDate(-1, timezone);
+      rerenderTodos();
+    };
+    
+    // 다음 날짜 버튼 (cloneNode 패턴)
+    const newNextBtn = todoDateNextBtn.cloneNode(true);
+    todoDateNextBtn.parentNode?.replaceChild(newNextBtn, todoDateNextBtn);
+    newNextBtn.onclick = () => {
+      shiftSelectedDate(1, timezone);
+      rerenderTodos();
+    };
+    
+    // 날짜 표시 버튼 (cloneNode 패턴) - 별도 모달 사용
+    const newDisplayBtn = todoDateDisplayBtn.cloneNode(true);
+    todoDateDisplayBtn.parentNode?.replaceChild(newDisplayBtn, todoDateDisplayBtn);
+    newDisplayBtn.onclick = openOverlay;
+    
+    // 오늘로 이동 버튼 - PC용 (cloneNode 패턴)
+    if (todoDateTodayBtn) {
+      const newTodayBtn = todoDateTodayBtn.cloneNode(true);
+      todoDateTodayBtn.parentNode?.replaceChild(newTodayBtn, todoDateTodayBtn);
+      newTodayBtn.onclick = () => {
+        resetSelectedDate(timezone);
+        rerenderTodos();
+      };
+    }
+    
+    // 오늘로 이동 버튼 - 모바일용 (cloneNode 패턴)
+    if (todoDateTodayMobileBtn) {
+      const newTodayMobileBtn = todoDateTodayMobileBtn.cloneNode(true);
+      todoDateTodayMobileBtn.parentNode?.replaceChild(newTodayMobileBtn, todoDateTodayMobileBtn);
+      newTodayMobileBtn.onclick = () => {
+        resetSelectedDate(timezone);
+        rerenderTodos();
+      };
+    }
+    
+    // 모달 닫기 버튼들 (cloneNode 패턴)
+    if (closeBtn) {
+      const newCloseBtn = closeBtn.cloneNode(true);
+      closeBtn.parentNode?.replaceChild(newCloseBtn, closeBtn);
+      newCloseBtn.onclick = closeOverlay;
+    }
+    
+    if (closeFooterBtn) {
+      const newCloseFooterBtn = closeFooterBtn.cloneNode(true);
+      closeFooterBtn.parentNode?.replaceChild(newCloseFooterBtn, closeFooterBtn);
+      newCloseFooterBtn.onclick = closeOverlay;
+    }
+    
+    if (todayBtn) {
+      const newTodayModalBtn = todayBtn.cloneNode(true);
+      todayBtn.parentNode?.replaceChild(newTodayModalBtn, todayBtn);
+      newTodayModalBtn.onclick = () => {
+        const today = getToday(timezone);
+        setSelectedDate(today);
+        closeOverlay();
+        rerenderTodos();
+      };
+    }
+    
+    // 모달 배경 클릭 시 닫기
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          closeOverlay();
+        }
+      });
+    }
+    
+    // 초기 날짜 표시 업데이트
+    updateTodoDateDisplay();
+  };
+  
+  setupTodoDateNav();
+
   // 할일 추가
   const addTodoBtn = document.getElementById('add-todo-btn');
   const todoInput = document.getElementById('todo-input');
@@ -971,13 +1230,16 @@ function setupEventHandlers(date, profile, timezone) {
 
       const activeTab = document.querySelector('.category-tab.active');
       const category = activeTab?.dataset.category || 'work';
+      
+      // ✅ 날짜 이동 바에서 변경된 날짜 사용
+      const currentDate = getSelectedDate(timezone);
 
       try {
         const { error } = await supabase
           .from('todos')
           .insert({
             user_id: profile.id,
-            date: date,
+            date: currentDate, // ✅ getSelectedDate 사용
             category: category,
             title: title,
             memo: null,
@@ -989,7 +1251,7 @@ function setupEventHandlers(date, profile, timezone) {
         if (error) throw error;
 
         newInput.value = '';
-        await loadTodos(date, profile, timezone);
+        await loadTodos(currentDate, profile, timezone); // ✅ currentDate 사용
       } catch (error) {
         console.error('Error adding todo:', error);
         alert('할일 추가 중 오류가 발생했습니다.');

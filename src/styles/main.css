@@ -1267,3 +1267,93 @@ input[type="date"]:focus {
     display: inline-block !important;
   }
 }
+
+/* 할일 날짜 이동 바 모바일 최적화 */
+@media (max-width: 768px) {
+  /* 헤더 레이아웃 변경: 3개 영역 → 2개 영역 (날짜 이동 바는 별도 줄) */
+  #today-todos-section .card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  /* 날짜 이동 바를 별도 줄로 배치 */
+  #todo-date-nav-section {
+    order: 2; /* 두 번째 줄로 이동 */
+    margin: 0 !important;
+    justify-content: center;
+    gap: 0.4rem !important;
+  }
+  
+  /* PC용 "오늘로 이동" 버튼 숨김 (모바일) */
+  .date-today-btn-pc {
+    display: none !important;
+  }
+  
+  /* 모바일용 "오늘로 이동" 아이콘 버튼 표시 */
+  .date-today-btn-mobile {
+    display: inline-flex !important;
+  }
+  
+  /* 날짜 이동 바 버튼 크기 조정 */
+  #todo-date-nav-section .date-nav-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0.4rem !important;
+  }
+  
+  #todo-date-nav-section .date-nav-btn i {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  
+  #todo-date-display {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.75rem !important;
+  }
+  
+  #todo-date-display i {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* 모바일용 "오늘로 이동" 아이콘 버튼 크기 */
+  .date-today-icon-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0.4rem !important;
+  }
+  
+  .date-today-icon-btn i {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  
+  /* 카테고리 탭 가로 스크롤 (기존 유지) */
+  #category-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  
+  /* 할일 입력 필드 모바일 최적화 */
+  #todo-input-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  #todo-input {
+    width: 100%;
+  }
+  
+  #add-todo-btn {
+    width: 100%;
+    padding: 0.75rem 1rem !important;
+  }
+}
+
+/* PC에서 모바일용 "오늘로 이동" 아이콘 버튼 숨김 */
+@media (min-width: 769px) {
+  .date-today-btn-mobile {
+    display: none !important;
+  }
+}
