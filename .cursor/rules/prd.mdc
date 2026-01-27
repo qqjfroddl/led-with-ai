@@ -13,6 +13,7 @@ alwaysApply: true
 - [x] 관리자 페이지 - 기한 만료 탭 추가 (2025-01-30)
 - [x] 전월 루틴 자동 복사 기능 추가 (2025-01-30)
 - [x] 데이타임 루틴 추가 (2026-01-XX) - 모닝/데이타임/나이트 3컬럼 레이아웃, 모바일 세로 배치
+- [x] 반복업무 - 여러 요일 선택 기능 추가 (2026-01-27) - 월, 수, 금 등 여러 요일을 선택하여 반복 주기 설정 가능
 
 ---
 
@@ -41,7 +42,7 @@ alwaysApply: true
   - 연간 리포트 (통계 지표 + 연간 분석 + AI 연간 성찰) - 연도 선택, 실천율/완료율/성찰 작성률, 연간 통계 요약, 월별 통계 요약, AI 성찰 생성/조회 (Gemini API, maxOutputTokens: 8000, 마크다운 변환, 스크롤바 지원, 레이트리밋 연 2회)
   - 관리자 기능 - 사용자 승인/거절/차단, 사용 기한 설정 (개별/일괄), 만료된 사용자 접근 제어, 챌린지 참가자 관리 (추가/제외/통계 확인), 관리자 페이지 배포 설정 (Vite 다중 HTML 빌드, Vercel rewrites 설정), 관리자 통계 조회 RLS 정책 (todos/routines/routine_logs/daily_reflections 테이블에 admin_select_all 정책 추가), 챌린지 참가자 탭 통계 표시 버그 수정 (섹션별 querySelector로 DOM 요소 정확하게 찾기), **기한 만료 탭 추가 (2025-01-30)** - 기한 만료된 사용자 별도 관리, 일괄 기한 연장 기능
   - **프로젝트 관리 (완료)** - 프로젝트 CRUD, 프로젝트 할일 관리, 진행중/완료 탭 분류, 카드 그리드 + 아코디언 UI, 오늘 할일 연동, 양방향 동기화, 마감날짜 관리, 다시 진행하기 기능, 헤더 토글 버튼 제거 (항상 표시)
-  - **반복업무 관리 (완료)** - 반복업무 CRUD, 반복 주기 설정(주중 매일/주간/월간), 시작일/종료일 설정, 오늘 할일 일괄 등록, 반복업무 배지 표시, 삭제 시 연결된 할일 동기화, 종료일 없을 때 3개월 후까지 자동 등록, 카드 그리드 UI 레이아웃 (프로젝트와 일관된 디자인), 헤더 토글 버튼 제거 (항상 표시)
+  - **반복업무 관리 (완료)** - 반복업무 CRUD, 반복 주기 설정(주중 매일/주간/여러 요일 선택/월간), 시작일/종료일 설정, 오늘 할일 일괄 등록, 반복업무 배지 표시, 삭제 시 연결된 할일 동기화, 종료일 없을 때 3개월 후까지 자동 등록, 카드 그리드 UI 레이아웃 (프로젝트와 일관된 디자인), 헤더 토글 버튼 제거 (항상 표시), **여러 요일 선택 기능 (2026-01-27)** - 월, 수, 금 등 여러 요일을 선택하여 반복 주기 설정 가능
   - **배포 및 저장소 관리 (완료)** - GitHub 저장소 이름 변경 (`led-with-ai`), Vercel 자동 배포 설정, Git → GitHub → Vercel 자동 배포 파이프라인 구축, 관리자 페이지(`admin.html`) 배포 문제 해결 (vite.config.js rollupOptions.input 설정, vercel.json rewrites에서 admin.html 제외)
   - **모바일 레이아웃 최적화 (완료)** - 로그인 화면: 로고 크기 조정 (100% 너비), 버튼 크기 축소 및 이미지와 분리, 한 줄 표시 유지 / 헤더: 모바일에서 사용자 이름 숨김, 로그아웃 버튼 크기 축소 / 오늘 할일: 제목 줄바꿈 방지 (`white-space: nowrap`), 카테고리 탭 가로 스크롤 지원 (한 줄 표시) / 순서 조정 버튼: PC는 가로 배치, 모바일은 세로 배치 (반응형) / 네비게이션 메뉴: 계획/실행/리뷰 그룹 균형 조정 (모바일에서 세로 배치, 각 항목이 균등하게 공간 차지), "오늘" 버튼 높이 50%로 조정 및 가운데 정렬 / 루틴 섹션: "나이트루틴" 텍스트 줄바꿈 방지 (`white-space: nowrap`, 폰트 크기 0.9rem), 모바일에서 모닝/나이트 루틴 세로 배치 (가독성 향상) - 오늘 탭과 목표 탭 모두 적용 / 주간 리포트: 주간 선택 버튼 텍스트 줄바꿈 방지 (`white-space: nowrap`, 폰트 크기 0.9rem, 간격 조정) / 월간 실천계획: 모바일에서 3컬럼 → 세로 배치, 헤더 2줄 레이아웃
   - **세션 관리 및 로그인 성능 최적화 (완료)** - Supabase 클라이언트 설정: `autoRefreshToken: true`, `persistSession: true`, `detectSessionInUrl: true` 명시적 설정으로 세션 자동 유지 보장 / 인증 함수 안정성 개선: `getSupabase()` 패턴으로 초기화 전 null 에러 방지 / 세션 조회 로직 간소화: 복잡한 localStorage 체크 제거, 단순 `getSession()` 호출로 변경 (초기 로딩 속도 2-3배 향상) / 타임아웃 최적화: `getCurrentProfile` 타임아웃 5초 → 3초, 재시도 대기 500ms → 300ms / 토큰 갱신 시 페이지 재렌더링 방지: `TOKEN_REFRESHED` 이벤트에서 `router.handleRoute()` 호출 제거하여 입력 중인 내용 보존 / **탭 전환 시 불필요한 새로고침 방지**: Router에 상태 기반 렌더링 스킵 로직 추가 (해시 + 프로필 ID + 프로필 상태가 동일하면 렌더링 스킵), 동시 실행 방지 플래그(`isHandlingRoute`) 및 중복 해시 변경 방지로 입력 중인 내용 보존 보장
@@ -466,6 +467,29 @@ alwaysApply: true
     - 네비게이션 바 날짜 이동은 기존과 동일하게 유지 (스크롤 없음)
     - PC와 모바일 각각 최적화된 UI 제공
     - 날짜 변경 후 자동 스크롤로 현재 작업 위치 유지
+
+---
+
+### v1.2.10 (2026-01-27) 🎯
+**반복업무 - 여러 요일 선택 기능 추가**
+
+#### 반복업무 반복 주기 확장
+- ✅ **여러 요일 선택 기능 (2026-01-27)**
+  - 문제: 월, 수, 금처럼 여러 요일을 선택하여 반복 주기를 설정하고 싶은 요구
+  - 해결: "주간 (여러 요일 선택)" 옵션 추가 및 체크박스 UI 구현
+  - 구현:
+    - **DB 스키마 수정**: `recurring_tasks` 테이블의 CHECK 제약조건에 `'custom_weekly'` 타입 추가
+    - **반복 주기 옵션 추가**: "주간 (여러 요일 선택)" 옵션 추가
+    - **체크박스 UI**: 4x2 그리드 레이아웃으로 월~일 요일 선택 (호버 효과 포함)
+    - **repeat_config 형식**: `{ "days_of_week": [1,3,5] }` (0=일요일, 1=월요일, ..., 6=토요일)
+    - **할일 등록 로직**: `shouldCreateTodoToday` 함수에 `custom_weekly` case 추가
+    - **라벨 표시**: 카드에 "매주 월, 수, 금" 형식으로 표시 (`formatCustomWeeklyLabel` 함수)
+    - **입력 검증**: 최소 1개 선택 필수, 중복 제거, 0~6 범위 체크
+    - **모달 초기화**: 체크박스 초기화 및 수정 모드 처리
+  - 효과:
+    - 사용자가 원하는 여러 요일을 선택하여 반복 주기 설정 가능
+    - 기존 단일 요일 선택(`weekly`)과 구분되어 명확한 UX 제공
+    - 월, 수, 금 등 불규칙한 반복 패턴도 쉽게 설정 가능
 
 ---
 
@@ -1622,6 +1646,7 @@ alwaysApply: true
   - `weekdays`: 주중 매일 (월~금)
   - `weekends`: 매주 주말 (토, 일)
   - `weekly`: 매주 특정 요일 (예: 매주 월요일)
+  - `custom_weekly`: 매주 여러 요일 선택 (예: 월, 수, 금) ✅ 2026-01-27 추가
   - `monthly`: 매월 특정 날짜 (예: 매월 20일)
 - FR-JR3. 시작일/종료일 설정 ✅
   - 시작일: 필수
@@ -1868,8 +1893,8 @@ alwaysApply: true
 - user_id uuid not null FK → profiles(id) ON DELETE CASCADE
 - category text not null CHECK (category IN ('work', 'job', 'self_dev', 'personal'))
 - title text not null
-- repeat_type text not null CHECK (repeat_type IN ('daily', 'weekdays', 'weekends', 'weekly', 'monthly'))
-- repeat_config jsonb not null              -- daily/weekdays/weekends: {}, weekly: { "day_of_week": 1 } (0=일요일, 1=월요일, ..., 6=토요일), monthly: { "day_of_month": 20 } (1~31)
+- repeat_type text not null CHECK (repeat_type IN ('daily', 'weekdays', 'weekends', 'weekly', 'custom_weekly', 'monthly'))
+- repeat_config jsonb not null              -- daily/weekdays/weekends: {}, weekly: { "day_of_week": 1 } (0=일요일, 1=월요일, ..., 6=토요일), custom_weekly: { "days_of_week": [1,3,5] } (여러 요일 배열, 0=일요일, 1=월요일, ..., 6=토요일), monthly: { "day_of_month": 20 } (1~31)
 - start_date date not null
 - end_date date                             -- NULL 허용 (없으면 3개월 후까지 자동 등록)
 - created_at timestamptz not null default now()

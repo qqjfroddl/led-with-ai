@@ -85,6 +85,7 @@ export async function renderRecurring() {
               <option value="weekdays">주중 매일 (월~금)</option>
               <option value="weekends">매주 주말 (토, 일)</option>
               <option value="weekly">주간 (특정 요일)</option>
+              <option value="custom_weekly">주간 (여러 요일 선택)</option>
               <option value="monthly">월간 (특정 날짜)</option>
             </select>
           </div>
@@ -101,6 +102,41 @@ export async function renderRecurring() {
               <option value="5">금요일</option>
               <option value="6">토요일</option>
             </select>
+          </div>
+
+          <!-- 여러 요일 선택 (custom_weekly 선택 시에만 표시) -->
+          <div id="recurring-custom-weekly-config" style="display: none;">
+            <label style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: #1f2937;">요일 선택 (여러 개 가능)</label>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="1" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">월</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="2" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">화</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="3" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">수</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="4" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">목</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="5" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">금</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="6" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">토</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                <input type="checkbox" class="recurring-day-checkbox" value="0" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.9rem; font-weight: 500;">일</span>
+              </label>
+            </div>
           </div>
 
           <!-- 월간 선택 (월간 선택 시에만 표시) -->
@@ -218,6 +254,7 @@ function renderRecurringTaskCard(task) {
     weekdays: '주중 매일 (월~금)',
     weekends: '매주 주말 (토, 일)',
     weekly: `매주 ${getDayOfWeekLabel(task.repeat_config.day_of_week)}`,
+    custom_weekly: formatCustomWeeklyLabel(task.repeat_config.days_of_week),
     monthly: `매월 ${task.repeat_config.day_of_month}일`
   };
 
@@ -288,6 +325,19 @@ function getDayOfWeekLabel(dayOfWeek) {
   return days[dayOfWeek] || '알 수 없음';
 }
 
+function formatCustomWeeklyLabel(daysOfWeek) {
+  if (!daysOfWeek || !Array.isArray(daysOfWeek) || daysOfWeek.length === 0) {
+    return '요일 미선택';
+  }
+  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+  // 0~6 범위 검증 및 중복 제거
+  const validDays = [...new Set(daysOfWeek.filter(d => d >= 0 && d <= 6))];
+  if (validDays.length === 0) return '요일 미선택';
+  // 요일 순서대로 정렬 (일요일부터)
+  validDays.sort((a, b) => a - b);
+  return '매주 ' + validDays.map(d => dayLabels[d]).join(', ');
+}
+
 function setupEventHandlers(profile) {
   // 반복업무 추가 버튼
   const addBtn = document.getElementById('add-recurring-btn');
@@ -311,16 +361,24 @@ function setupEventHandlers(profile) {
     repeatTypeInput.parentNode.replaceChild(newInput, repeatTypeInput);
     newInput.addEventListener('change', () => {
       const weeklyConfig = document.getElementById('recurring-weekly-config');
+      const customWeeklyConfig = document.getElementById('recurring-custom-weekly-config');
       const monthlyConfig = document.getElementById('recurring-monthly-config');
       
       if (newInput.value === 'weekly') {
         if (weeklyConfig) weeklyConfig.style.display = 'block';
+        if (customWeeklyConfig) customWeeklyConfig.style.display = 'none';
+        if (monthlyConfig) monthlyConfig.style.display = 'none';
+      } else if (newInput.value === 'custom_weekly') {
+        if (weeklyConfig) weeklyConfig.style.display = 'none';
+        if (customWeeklyConfig) customWeeklyConfig.style.display = 'block';
         if (monthlyConfig) monthlyConfig.style.display = 'none';
       } else if (newInput.value === 'monthly') {
         if (weeklyConfig) weeklyConfig.style.display = 'none';
+        if (customWeeklyConfig) customWeeklyConfig.style.display = 'none';
         if (monthlyConfig) monthlyConfig.style.display = 'block';
       } else {
         if (weeklyConfig) weeklyConfig.style.display = 'none';
+        if (customWeeklyConfig) customWeeklyConfig.style.display = 'none';
         if (monthlyConfig) monthlyConfig.style.display = 'none';
       }
     });
@@ -390,10 +448,16 @@ function setupRecurringModalEvents(profile) {
     if (startDateInput) startDateInput.value = '';
     if (endDateInput) endDateInput.value = '';
     
+    // 체크박스 초기화
+    const checkboxes = document.querySelectorAll('.recurring-day-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
     // 설정 UI 숨기기
     const weeklyConfig = document.getElementById('recurring-weekly-config');
+    const customWeeklyConfig = document.getElementById('recurring-custom-weekly-config');
     const monthlyConfig = document.getElementById('recurring-monthly-config');
     if (weeklyConfig) weeklyConfig.style.display = 'none';
+    if (customWeeklyConfig) customWeeklyConfig.style.display = 'none';
     if (monthlyConfig) monthlyConfig.style.display = 'none';
   };
 
@@ -429,6 +493,27 @@ function setupRecurringModalEvents(profile) {
           return;
         }
         repeatConfig = { day_of_week: parseInt(weeklyDayInput.value) };
+      } else if (repeatTypeInput.value === 'custom_weekly') {
+        // 체크박스에서 선택된 요일 수집
+        const checkboxes = document.querySelectorAll('.recurring-day-checkbox:checked');
+        const selectedDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        // 검증: 최소 1개 선택
+        if (selectedDays.length === 0) {
+          alert('최소 1개 이상의 요일을 선택해주세요.');
+          return;
+        }
+        
+        // 검증: 0~6 범위 체크 및 중복 제거
+        const validDays = [...new Set(selectedDays.filter(d => d >= 0 && d <= 6))];
+        if (validDays.length === 0) {
+          alert('올바른 요일을 선택해주세요.');
+          return;
+        }
+        
+        // 요일 순서대로 정렬
+        validDays.sort((a, b) => a - b);
+        repeatConfig = { days_of_week: validDays };
       } else if (repeatTypeInput.value === 'monthly') {
         if (!monthlyDayInput || !monthlyDayInput.value || parseInt(monthlyDayInput.value) < 1 || parseInt(monthlyDayInput.value) > 31) {
           alert('날짜를 1~31 사이로 입력해주세요.');
@@ -499,6 +584,14 @@ function setupRecurringModalEvents(profile) {
         }
         if (weeklyDayInput && task.repeat_config.day_of_week !== undefined) {
           weeklyDayInput.value = task.repeat_config.day_of_week.toString();
+        }
+        // custom_weekly 체크박스 설정
+        if (task.repeat_type === 'custom_weekly' && task.repeat_config.days_of_week) {
+          const daysOfWeek = task.repeat_config.days_of_week;
+          const checkboxes = document.querySelectorAll('.recurring-day-checkbox');
+          checkboxes.forEach(cb => {
+            cb.checked = daysOfWeek.includes(parseInt(cb.value));
+          });
         }
         if (monthlyDayInput && task.repeat_config.day_of_month !== undefined) {
           monthlyDayInput.value = task.repeat_config.day_of_month.toString();
@@ -576,6 +669,13 @@ function shouldCreateTodoToday(recurringTask, today) {
       // 특정 요일 체크
       const targetDay = repeat_config.day_of_week; // 0=일요일, 1=월요일, ...
       return new Date(today + 'T00:00:00').getDay() === targetDay;
+    
+    case 'custom_weekly':
+      // 여러 요일 선택 체크 (NEW!)
+      const daysOfWeek = repeat_config.days_of_week || []; // [1,3,5] 형식
+      if (!Array.isArray(daysOfWeek) || daysOfWeek.length === 0) return false;
+      const currentDay = new Date(today + 'T00:00:00').getDay();
+      return daysOfWeek.includes(currentDay);
     
     case 'monthly':
       // 특정 날짜 체크
