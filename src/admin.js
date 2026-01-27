@@ -1,6 +1,5 @@
 import { supabase, getSupabase } from './config/supabase.js';
 import { getCurrentProfile, isAdmin, signOut } from './utils/auth.js';
-import { createIcons, icons } from 'https://unpkg.com/lucide@latest?module';
 import { getTodosStats, getRoutinesStats, getReflectionsStats } from './utils/weeklyStats.js';
 import { getWeekStart, getWeekEnd, getToday } from './utils/date.js';
 
@@ -432,7 +431,9 @@ function render() {
   `;
 
   // Lucide 아이콘 렌더링
-  createIcons({ icons });
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
   
   // 주간 라벨 업데이트
   updateWeekLabel();
