@@ -1,7 +1,6 @@
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
-import { DateTime } from 'luxon';
 
 // 동기화 플래그 (무한 루프 방지)
 let syncingTodo = false;
@@ -1351,9 +1350,9 @@ async function registerProjectTasksToTodos(projectId, profile) {
     const datesToCheck = [];
     const taskDateMap = new Map(); // { date: [taskIds] }
     
-    // 오늘 날짜 계산 (타임존 고려)
+    // 오늘 날짜 계산 (타임존 고려) - CDN Luxon 사용
     const timezone = profile.timezone || 'Asia/Seoul';
-    const today = DateTime.now().setZone(timezone).toISODate(); // YYYY-MM-DD
+    const today = window.luxon.DateTime.now().setZone(timezone).toISODate(); // YYYY-MM-DD
     
     for (const task of tasks) {
       // start_date와 end_date가 있으면 그 범위의 모든 날짜 (오늘 이후만)
