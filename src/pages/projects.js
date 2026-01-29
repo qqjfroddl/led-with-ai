@@ -1328,12 +1328,13 @@ async function registerProjectTasksToTodos(projectId, profile) {
     };
     const todoCategory = categoryMap[project.category] || 'work';
 
-    // 프로젝트의 모든 할일 조회 (완료/미완료 관계없이)
+    // 프로젝트의 미완료 할일만 조회
     const { data: tasks, error: tasksError } = await supabase
       .from('project_tasks')
       .select('*')
       .eq('project_id', projectId)
       .is('deleted_at', null)
+      .eq('is_done', false)  // 미완료 할일만 필터링
       .order('start_date', { ascending: true, nullsFirst: false })
       .order('display_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true });
