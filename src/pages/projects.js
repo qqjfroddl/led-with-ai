@@ -1,6 +1,7 @@
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
+import { DateTime } from 'luxon';
 
 // 동기화 플래그 (무한 루프 방지)
 let syncingTodo = false;
@@ -1346,41 +1347,52 @@ async function registerProjectTasksToTodos(projectId, profile) {
       return;
     }
 
-    // 등록할 날짜들을 모두 수집 (start_date ~ end_date 범위)
+    // 등록할 날짜들을 모두 수집 (오늘 이후 날짜만)
     const datesToCheck = [];
     const taskDateMap = new Map(); // { date: [taskIds] }
     
+    // 오늘 날짜 계산 (타임존 고려)
+    const timezone = profile.timezone || 'Asia/Seoul';
+    const today = DateTime.now().setZone(timezone).toISODate(); // YYYY-MM-DD
+    
     for (const task of tasks) {
-      // start_date와 end_date가 있으면 그 범위의 모든 날짜
+      // start_date와 end_date가 있으면 그 범위의 모든 날짜 (오늘 이후만)
       if (task.start_date && task.end_date) {
         for (const date of iterateDates(task.start_date, task.end_date)) {
-          datesToCheck.push(date);
-          if (!taskDateMap.has(date)) {
-            taskDateMap.set(date, []);
+          // 오늘 이후 날짜만 등록 (오늘 포함)
+          if (date >= today) {
+            datesToCheck.push(date);
+            if (!taskDateMap.has(date)) {
+              taskDateMap.set(date, []);
+            }
+            taskDateMap.get(date).push(task.id);
           }
-          taskDateMap.get(date).push(task.id);
         }
       }
-      // start_date만 있으면 그 날짜만
+      // start_date만 있으면 그 날짜만 (오늘 이후만)
       else if (task.start_date) {
-        datesToCheck.push(task.start_date);
-        if (!taskDateMap.has(task.start_date)) {
-          taskDateMap.set(task.start_date, []);
+        if (task.start_date >= today) {
+          datesToCheck.push(task.start_date);
+          if (!taskDateMap.has(task.start_date)) {
+            taskDateMap.set(task.start_date, []);
+          }
+          taskDateMap.get(task.start_date).push(task.id);
         }
-        taskDateMap.get(task.start_date).push(task.id);
       }
-      // due_date가 있으면 그 날짜만 (하위 호환성)
+      // due_date가 있으면 그 날짜만 (하위 호환성, 오늘 이후만)
       else if (task.due_date) {
-        datesToCheck.push(task.due_date);
-        if (!taskDateMap.has(task.due_date)) {
-          taskDateMap.set(task.due_date, []);
+        if (task.due_date >= today) {
+          datesToCheck.push(task.due_date);
+          if (!taskDateMap.has(task.due_date)) {
+            taskDateMap.set(task.due_date, []);
+          }
+          taskDateMap.get(task.due_date).push(task.id);
         }
-        taskDateMap.get(task.due_date).push(task.id);
       }
     }
 
     if (datesToCheck.length === 0) {
-      alert('시작일 또는 종료일이 설정된 할일이 없습니다.');
+      alert('오늘 이후 등록할 할일이 없습니다.');
       return;
     }
 
