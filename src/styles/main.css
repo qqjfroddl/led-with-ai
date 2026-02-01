@@ -1357,3 +1357,84 @@ input[type="date"]:focus {
     display: none !important;
   }
 }
+
+/* 과거 루틴 선택 모달 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    0 20px 48px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  padding: 1.5rem;
+}
+
+/* 과거 월 카드 스타일 */
+.past-month-card {
+  padding: 1rem;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.past-month-card:hover {
+  border-color: #6366f1;
+  background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.past-month-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.past-month-card p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* 루틴 상세 리스트 스타일 */
+#routine-detail-content ul li {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f9fafb;
+  border-left: 3px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+#detail-morning-list li {
+  border-left-color: #f59e0b;
+  background: #fff7e6;
+}
+
+#detail-daytime-list li {
+  border-left-color: #22d3ee;
+  background: #e7f8ff;
+}
+
+#detail-night-list li {
+  border-left-color: #6366f1;
+  background: #eef2ff;
+}

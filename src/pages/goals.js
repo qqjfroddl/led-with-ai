@@ -153,6 +153,86 @@ export async function renderGoals() {
       </div>
     </div>
 
+    <!-- 과거 루틴 선택 모달 -->
+    <div id="past-routines-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">
+            <i data-lucide="calendar-clock" style="width: 20px; height: 20px; margin-right: 0.5rem; vertical-align: middle;"></i>
+            과거 루틴 선택
+          </h3>
+          <button id="close-past-routines-modal" class="btn-icon" style="padding: 0.5rem;">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        
+        <!-- 1단계: 월 목록 -->
+        <div id="month-list-view" style="display: block;">
+          <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem;">
+            복사할 루틴이 있는 월을 선택하세요
+          </p>
+          <div id="past-months-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+            <!-- 동적 생성: 월 카드들 -->
+          </div>
+        </div>
+        
+        <!-- 2단계: 선택한 월의 루틴 상세 -->
+        <div id="routine-detail-view" style="display: none;">
+          <button id="back-to-month-list" class="btn btn-secondary" style="margin-bottom: 1rem;">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+            목록으로
+          </button>
+          
+          <h4 id="selected-month-title" style="font-size: 1.1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">
+            <!-- 동적: 2025년 12월 루틴 -->
+          </h4>
+          
+          <div id="routine-detail-content">
+            <!-- 모닝루틴 -->
+            <div id="detail-morning-section" style="margin-bottom: 1.5rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: #f59e0b; margin-bottom: 0.75rem;">
+                <i data-lucide="sunrise" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
+                모닝루틴
+              </h5>
+              <ul id="detail-morning-list" style="list-style: none; padding: 0; margin: 0;">
+                <!-- 동적 생성 -->
+              </ul>
+            </div>
+            
+            <!-- 데이타임루틴 -->
+            <div id="detail-daytime-section" style="margin-bottom: 1.5rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: #22d3ee; margin-bottom: 0.75rem;">
+                <i data-lucide="sun" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
+                데이타임루틴
+              </h5>
+              <ul id="detail-daytime-list" style="list-style: none; padding: 0; margin: 0;">
+                <!-- 동적 생성 -->
+              </ul>
+            </div>
+            
+            <!-- 나이트루틴 -->
+            <div id="detail-night-section" style="margin-bottom: 1.5rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: #6366f1; margin-bottom: 0.75rem;">
+                <i data-lucide="moon" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
+                나이트루틴
+              </h5>
+              <ul id="detail-night-list" style="list-style: none; padding: 0; margin: 0;">
+                <!-- 동적 생성 -->
+              </ul>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <button id="cancel-copy-routines" class="btn btn-secondary">취소</button>
+            <button id="confirm-copy-routines" class="btn btn-primary">
+              <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+              이 루틴 복사하기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 연간 목표 -->
     <div class="card" style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); border: 2px solid #6366f1; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15); margin-top: 1.5rem;">
       <div class="card-header" style="border-bottom: 2px solid rgba(99, 102, 241, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
@@ -1330,46 +1410,223 @@ export async function renderGoals() {
       }
       
       /**
-       * 전월 루틴 복사
+       * 과거 모든 루틴 월 목록 조회
        */
-      async function copyPreviousMonthRoutines() {
+      async function fetchAllPastRoutineMonths(userId, currentMonth) {
         try {
-          // 전월 루틴 조회
-          const prevRoutines = await fetchPreviousMonthRoutines(profile.id, currentMonth);
+          const { data: plans, error } = await supabase
+            .from('monthly_plans')
+            .select('month_start, daily_routines')
+            .eq('user_id', userId)
+            .eq('source', 'manual')
+            .lt('month_start', currentMonth)  // 현재 월보다 이전
+            .not('daily_routines', 'is', null)  // 루틴이 있는 월만
+            .order('month_start', { ascending: false });  // 최신순
           
-          if (prevRoutines.morning.length === 0 && prevRoutines.daytime.length === 0 && prevRoutines.night.length === 0) {
-            alert('전월 루틴이 없습니다.');
+          if (error) throw error;
+          
+          // 루틴이 실제로 있는 월만 필터링
+          const validPlans = plans.filter(plan => {
+            const routines = plan.daily_routines;
+            return routines && (
+              (routines.morning && routines.morning.length > 0) ||
+              (routines.daytime && routines.daytime.length > 0) ||
+              (routines.night && routines.night.length > 0)
+            );
+          });
+          
+          return validPlans;
+          
+        } catch (err) {
+          console.error('[Fetch Past Routines Error]', err);
+          throw err;
+        }
+      }
+
+      /**
+       * 과거 루틴 모달 표시 (1단계: 월 목록)
+       */
+      async function showPastRoutinesModal() {
+        try {
+          // 과거 루틴 월 목록 조회
+          const pastPlans = await fetchAllPastRoutineMonths(profile.id, currentMonth);
+          
+          if (pastPlans.length === 0) {
+            alert('과거 루틴이 없습니다.\n루틴을 최소 한 달 이상 사용해야 합니다.');
             return;
           }
+          
+          // 월 목록 렌더링
+          const monthsList = document.getElementById('past-months-list');
+          monthsList.innerHTML = '';
+          
+          pastPlans.forEach(plan => {
+            const date = new Date(plan.month_start);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            
+            const routines = plan.daily_routines;
+            const totalCount = 
+              (routines.morning?.length || 0) + 
+              (routines.daytime?.length || 0) + 
+              (routines.night?.length || 0);
+            
+            const card = document.createElement('div');
+            card.className = 'past-month-card';
+            card.dataset.monthStart = plan.month_start;
+            card.innerHTML = `
+              <h4>${year}년 ${month}월</h4>
+              <p>루틴 ${totalCount}개</p>
+            `;
+            
+            card.addEventListener('click', () => showRoutineDetail(plan));
+            
+            monthsList.appendChild(card);
+          });
+          
+          // 1단계 표시
+          document.getElementById('month-list-view').style.display = 'block';
+          document.getElementById('routine-detail-view').style.display = 'none';
+          
+          // 모달 열기
+          document.getElementById('past-routines-modal').style.display = 'flex';
+          
+          // Lucide 아이콘 렌더링
+          if (window.lucide?.createIcons) window.lucide.createIcons();
+          
+        } catch (err) {
+          console.error('[Show Modal Error]', err);
+          alert('과거 루틴 조회 실패: ' + err.message);
+        }
+      }
+
+      /**
+       * 선택한 월의 루틴 상세 표시 (2단계)
+       */
+      function showRoutineDetail(plan) {
+        const date = new Date(plan.month_start);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        
+        // 제목 업데이트
+        document.getElementById('selected-month-title').textContent = `${year}년 ${month}월 루틴`;
+        
+        const routines = plan.daily_routines;
+        
+        // 모닝루틴
+        const morningList = document.getElementById('detail-morning-list');
+        morningList.innerHTML = '';
+        if (routines.morning && routines.morning.length > 0) {
+          routines.morning.forEach((routine, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${index + 1}. ${routine}`;
+            morningList.appendChild(li);
+          });
+          document.getElementById('detail-morning-section').style.display = 'block';
+        } else {
+          document.getElementById('detail-morning-section').style.display = 'none';
+        }
+        
+        // 데이타임루틴
+        const daytimeList = document.getElementById('detail-daytime-list');
+        daytimeList.innerHTML = '';
+        if (routines.daytime && routines.daytime.length > 0) {
+          routines.daytime.forEach((routine, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${index + 1}. ${routine}`;
+            daytimeList.appendChild(li);
+          });
+          document.getElementById('detail-daytime-section').style.display = 'block';
+        } else {
+          document.getElementById('detail-daytime-section').style.display = 'none';
+        }
+        
+        // 나이트루틴
+        const nightList = document.getElementById('detail-night-list');
+        nightList.innerHTML = '';
+        if (routines.night && routines.night.length > 0) {
+          routines.night.forEach((routine, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${index + 1}. ${routine}`;
+            nightList.appendChild(li);
+          });
+          document.getElementById('detail-night-section').style.display = 'block';
+        } else {
+          document.getElementById('detail-night-section').style.display = 'none';
+        }
+        
+        // 선택한 루틴 데이터 저장 (복사 시 사용)
+        window._selectedRoutinesToCopy = {
+          month_start: plan.month_start,
+          routines: routines,
+          year: year,
+          month: month
+        };
+        
+        // 2단계로 전환
+        document.getElementById('month-list-view').style.display = 'none';
+        document.getElementById('routine-detail-view').style.display = 'block';
+        
+        // Lucide 아이콘 렌더링
+        if (window.lucide?.createIcons) window.lucide.createIcons();
+      }
+
+      /**
+       * 목록으로 돌아가기
+       */
+      function backToMonthList() {
+        document.getElementById('month-list-view').style.display = 'block';
+        document.getElementById('routine-detail-view').style.display = 'none';
+        window._selectedRoutinesToCopy = null;
+      }
+
+      /**
+       * 선택한 루틴 복사 실행
+       */
+      async function executeCopySelectedRoutines() {
+        try {
+          const selected = window._selectedRoutinesToCopy;
+          
+          if (!selected) {
+            alert('선택한 루틴이 없습니다.');
+            return;
+          }
+          
+          const routines = selected.routines;
+          const totalRoutines = 
+            (routines.morning?.length || 0) + 
+            (routines.daytime?.length || 0) + 
+            (routines.night?.length || 0);
+          
+          // 모달 닫기
+          document.getElementById('past-routines-modal').style.display = 'none';
           
           // 현재 월 루틴이 있는지 확인
           if (morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0) {
             const totalCurrent = morningRoutines.length + daytimeRoutines.length + nightRoutines.length;
-            const totalPrev = prevRoutines.morning.length + prevRoutines.daytime.length + prevRoutines.night.length;
             
             const confirmed = confirm(
               `⚠️ 이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
-              `기존 루틴을 삭제하고 전월 루틴 ${totalPrev}개를 복사하시겠습니까?\n\n` +
+              `기존 루틴을 삭제하고 ${selected.year}년 ${selected.month}월 루틴 ${totalRoutines}개를 복사하시겠습니까?\n\n` +
               `(오늘부터 적용됩니다)`
             );
             
-            if (!confirmed) return;
+            if (!confirmed) {
+              // 모달 다시 열기
+              document.getElementById('past-routines-modal').style.display = 'flex';
+              return;
+            }
           } else {
-            const totalPrev = prevRoutines.morning.length + prevRoutines.daytime.length + prevRoutines.night.length;
-            
-            // 전월/현재월 이름 계산
-            const currentDate = new Date(currentMonth);
-            const prevDate = new Date(currentMonth);
-            prevDate.setMonth(prevDate.getMonth() - 1);
-            const prevMonthName = `${prevDate.getMonth() + 1}월`;
-            const currentMonthName = `${currentDate.getMonth() + 1}월`;
-            
             const confirmed = confirm(
-              `${prevMonthName} 루틴 ${totalPrev}개를 ${currentMonthName}에 복사하시겠습니까?\n\n` +
-              `⚠️ 오늘(${today})부터 적용됩니다.`
+              `${selected.year}년 ${selected.month}월 루틴 ${totalRoutines}개를 현재 월에 복사하시겠습니까?\n\n` +
+              `⚠️ 오늘부터 적용됩니다.`
             );
             
-            if (!confirmed) return;
+            if (!confirmed) {
+              // 모달 다시 열기
+              document.getElementById('past-routines-modal').style.display = 'flex';
+              return;
+            }
           }
           
           // monthly_plans에 저장
@@ -1385,7 +1642,7 @@ export async function renderGoals() {
             user_id: profile.id,
             month_start: currentMonth,
             source: 'manual',
-            daily_routines: prevRoutines,
+            daily_routines: routines,
             status: 'draft'
           };
           
@@ -1416,28 +1673,36 @@ export async function renderGoals() {
           await syncMonthlyRoutines(profile.id, currentMonth, savedPlan.daily_routines, today);
           
           // 상태 업데이트
-          morningRoutines = prevRoutines.morning;
-          daytimeRoutines = prevRoutines.daytime;
-          nightRoutines = prevRoutines.night;
+          morningRoutines = routines.morning || [];
+          daytimeRoutines = routines.daytime || [];
+          nightRoutines = routines.night || [];
           
-          // 전월/현재월 이름 계산
-          const currentDate = new Date(currentMonth);
-          const prevDate = new Date(currentMonth);
-          prevDate.setMonth(prevDate.getMonth() - 1);
-          const prevMonthName = `${prevDate.getMonth() + 1}월`;
-          const currentMonthName = `${currentDate.getMonth() + 1}월`;
-          
-          alert(
-            `✅ ${prevMonthName} 루틴이 ${currentMonthName}에 복사되었습니다!\n\n` +
-            `오늘(${today})부터 적용됩니다.`
-          );
+          alert(`✅ ${selected.year}년 ${selected.month}월 루틴이 복사되었습니다!`);
           
           displayRoutines();
           
-        } catch (error) {
-          console.error('[Copy Failed]', error);
-          alert(`복사 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+          // 전역 변수 초기화
+          window._selectedRoutinesToCopy = null;
+          
+        } catch (err) {
+          console.error('[Execute Copy Error]', err);
+          alert('루틴 복사 실패: ' + err.message);
         }
+      }
+
+      /**
+       * 모달 닫기
+       */
+      function closePastRoutinesModal() {
+        document.getElementById('past-routines-modal').style.display = 'none';
+        window._selectedRoutinesToCopy = null;
+      }
+
+      /**
+       * 전월 루틴 복사 (새 기능: 과거 루틴 선택 모달 표시)
+       */
+      async function copyPreviousMonthRoutines() {
+        await showPastRoutinesModal();
       }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1554,6 +1819,44 @@ export async function renderGoals() {
           moveRoutineDown('daytime', index);
         }
       });
+
+      // 과거 루틴 모달 이벤트 리스너
+      const closePastModalBtn = document.getElementById('close-past-routines-modal');
+      const backToListBtn = document.getElementById('back-to-month-list');
+      const cancelCopyBtn = document.getElementById('cancel-copy-routines');
+      const confirmCopyBtn = document.getElementById('confirm-copy-routines');
+
+      if (closePastModalBtn) {
+        closePastModalBtn.removeEventListener('click', closePastRoutinesModal);
+        closePastModalBtn.addEventListener('click', closePastRoutinesModal);
+      }
+
+      if (backToListBtn) {
+        backToListBtn.removeEventListener('click', backToMonthList);
+        backToListBtn.addEventListener('click', backToMonthList);
+      }
+
+      if (cancelCopyBtn) {
+        cancelCopyBtn.removeEventListener('click', closePastRoutinesModal);
+        cancelCopyBtn.addEventListener('click', closePastRoutinesModal);
+      }
+
+      if (confirmCopyBtn) {
+        confirmCopyBtn.removeEventListener('click', executeCopySelectedRoutines);
+        confirmCopyBtn.addEventListener('click', executeCopySelectedRoutines);
+      }
+
+      // 모달 배경 클릭 시 닫기
+      const pastModal = document.getElementById('past-routines-modal');
+      if (pastModal) {
+        const handleModalBackgroundClick = (e) => {
+          if (e.target.id === 'past-routines-modal') {
+            closePastRoutinesModal();
+          }
+        };
+        pastModal.removeEventListener('click', handleModalBackgroundClick);
+        pastModal.addEventListener('click', handleModalBackgroundClick);
+      }
 
       // 초기 로드
       await loadRoutines();
