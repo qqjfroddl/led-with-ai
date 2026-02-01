@@ -145,7 +145,7 @@ supabase secrets set GEMINI_API_KEY=your_gemini_api_key
 자세한 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참고하세요.
 
 ### v1.2.1 (2025-02-01) 🎯
-**프로젝트 할일 UX 개선**
+**프로젝트 할일 UX 개선 및 버그 수정**
 
 #### UX 개선
 - ✅ **프로젝트 이름 표시**: 오늘 탭의 프로젝트 할일 배지에 프로젝트 이름 표시
@@ -153,6 +153,12 @@ supabase secrets set GEMINI_API_KEY=your_gemini_api_key
   - 이월 모달에도 동일하게 적용
   - 프로젝트 삭제 시 "프로젝트"만 표시 (안전한 폴백)
 - ✅ **데이터 조회 최적화**: todos 조회 시 project_tasks/projects JOIN으로 성능 개선
+
+#### 버그 수정
+- ✅ **전월 루틴 복사 - 데이타임 루틴 누락 수정** (2025-02-01)
+  - 문제: 전월 루틴 복사 시 모닝/나이트만 복사되고 데이타임 루틴 누락
+  - 해결: `fetchPreviousMonthRoutines`, `copyPreviousMonthRoutines` 함수에 daytime 처리 추가
+  - 영향: 전월 루틴 복사 시 모든 루틴(모닝/데이타임/나이트) 정상 복사
 
 ### v1.2 (2025-01-31) ✅
 **안정 버전 릴리즈 - 사용자 편의성 및 AI 기능 개선**

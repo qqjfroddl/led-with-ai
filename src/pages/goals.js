@@ -1311,21 +1311,21 @@ export async function renderGoals() {
           
           if (error) {
             console.error('[Copy Error] Failed to fetch previous month routines:', error);
-            return { morning: [], night: [] };
+            return { morning: [], daytime: [], night: [] };
           }
           
           if (!prevPlan || !prevPlan.daily_routines) {
             console.log('[Copy] No routines found in previous month');
-            return { morning: [], night: [] };
+            return { morning: [], daytime: [], night: [] };
           }
           
-          const { morning = [], night = [] } = prevPlan.daily_routines;
-          console.log(`[Copy] Found ${morning.length} morning + ${night.length} night routines`);
+          const { morning = [], daytime = [], night = [] } = prevPlan.daily_routines;
+          console.log(`[Copy] Found ${morning.length} morning + ${daytime.length} daytime + ${night.length} night routines`);
           
-          return { morning, night };
+          return { morning, daytime, night };
         } catch (error) {
           console.error('[Copy Error]', error);
-          return { morning: [], night: [] };
+          return { morning: [], daytime: [], night: [] };
         }
       }
       
@@ -1337,15 +1337,15 @@ export async function renderGoals() {
           // 전월 루틴 조회
           const prevRoutines = await fetchPreviousMonthRoutines(profile.id, currentMonth);
           
-          if (prevRoutines.morning.length === 0 && prevRoutines.night.length === 0) {
+          if (prevRoutines.morning.length === 0 && prevRoutines.daytime.length === 0 && prevRoutines.night.length === 0) {
             alert('전월 루틴이 없습니다.');
             return;
           }
           
           // 현재 월 루틴이 있는지 확인
-          if (morningRoutines.length > 0 || nightRoutines.length > 0) {
-            const totalCurrent = morningRoutines.length + nightRoutines.length;
-            const totalPrev = prevRoutines.morning.length + prevRoutines.night.length;
+          if (morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0) {
+            const totalCurrent = morningRoutines.length + daytimeRoutines.length + nightRoutines.length;
+            const totalPrev = prevRoutines.morning.length + prevRoutines.daytime.length + prevRoutines.night.length;
             
             const confirmed = confirm(
               `⚠️ 이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
@@ -1355,7 +1355,7 @@ export async function renderGoals() {
             
             if (!confirmed) return;
           } else {
-            const totalPrev = prevRoutines.morning.length + prevRoutines.night.length;
+            const totalPrev = prevRoutines.morning.length + prevRoutines.daytime.length + prevRoutines.night.length;
             
             // 전월/현재월 이름 계산
             const currentDate = new Date(currentMonth);
@@ -1417,6 +1417,7 @@ export async function renderGoals() {
           
           // 상태 업데이트
           morningRoutines = prevRoutines.morning;
+          daytimeRoutines = prevRoutines.daytime;
           nightRoutines = prevRoutines.night;
           
           // 전월/현재월 이름 계산
