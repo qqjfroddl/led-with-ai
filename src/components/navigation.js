@@ -158,6 +158,14 @@ export async function renderNavigation(currentRoute, profile) {
           <i data-lucide="sun"></i>
           오늘로 이동
         </button>
+        <button id="scroll-to-todos" class="quick-nav-btn" data-target="today-todos-section" style="background: #e0e7ff; border: 1px solid rgba(99, 102, 241, 0.2); color: #1f2937; padding: 0.375rem 0.875rem; font-size: 0.875rem; cursor: pointer; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;">
+          <i data-lucide="list-checks" style="width: 16px; height: 16px;"></i>
+          <span>오늘 할일</span>
+        </button>
+        <button id="scroll-to-reflection" class="quick-nav-btn" data-target="today-reflection-section" style="background: #f3e8ff; border: 1px solid rgba(167, 139, 250, 0.2); color: #1f2937; padding: 0.375rem 0.875rem; font-size: 0.875rem; cursor: pointer; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;">
+          <i data-lucide="pen-square" style="width: 16px; height: 16px;"></i>
+          <span>하루 성찰</span>
+        </button>
       </div>
       <!-- 날짜 선택 오버레이 -->
       <div id="date-overlay" class="date-overlay hidden">

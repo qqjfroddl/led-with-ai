@@ -556,8 +556,10 @@ body {
 .date-bar-footer {
   display: flex;
   justify-content: center;
+  gap: 0.5rem;
   padding: 0.5rem 0 0 0;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .date-today-btn {
@@ -582,6 +584,31 @@ body {
 .date-today-btn i {
   width: 16px;
   height: 16px;
+}
+
+/* 퀵 네비게이션 버튼 */
+.quick-nav-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.quick-nav-btn:hover:not(.active) {
+  transform: translateY(-1px);
+}
+
+#scroll-to-todos:hover:not(.active) {
+  background: #c7d2fe !important;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+}
+
+#scroll-to-reflection:hover:not(.active) {
+  background: #e9d5ff !important;
+  box-shadow: 0 2px 4px rgba(167, 139, 250, 0.2);
+}
+
+/* 활성 상태 호버 효과 */
+.quick-nav-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* 날짜 선택 오버레이 */
@@ -787,6 +814,29 @@ body {
   .date-display-btn {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
+  }
+
+  /* 퀵 네비게이션 버튼 모바일 최적화 */
+  .date-bar-footer {
+    flex-wrap: wrap;
+    gap: 0.4rem !important;
+  }
+  
+  .date-bar-footer .date-chip,
+  .date-bar-footer .quick-nav-btn {
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .date-bar-footer .date-chip i,
+  .date-bar-footer .quick-nav-btn i {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  .date-bar-footer .date-chip span,
+  .date-bar-footer .quick-nav-btn span {
+    display: inline; /* 모바일에서도 텍스트 표시 */
   }
 
   .user-box {

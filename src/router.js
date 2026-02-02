@@ -171,6 +171,97 @@ class Router {
         }
       });
     }
+
+    // 퀵 네비게이션: 스크롤 + 위치 표시 기능
+    this.setupQuickNav();
+  }
+
+  setupQuickNav() {
+    const quickNavButtons = document.querySelectorAll('.quick-nav-btn');
+    if (quickNavButtons.length === 0) return;
+    
+    // 기존 Observer 정리
+    if (this.currentObserver) {
+      this.currentObserver.disconnect();
+      this.currentObserver = null;
+    }
+    
+    // Intersection Observer 설정 (화면의 30% 이상 보이면 활성화)
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -20% 0px', // 화면 중앙 60% 영역
+      threshold: 0.3
+    };
+    
+    const observerCallback = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // 현재 보이는 섹션에 해당하는 버튼 활성화
+          const targetId = entry.target.id;
+          quickNavButtons.forEach(btn => {
+            const btnTarget = btn.getAttribute('data-target');
+            if (btnTarget === targetId) {
+              btn.classList.add('active');
+              // 활성 스타일 적용
+              if (targetId === 'today-todos-section') {
+                btn.style.background = 'linear-gradient(120deg, #6366f1 0%, #8b5cf6 100%)';
+                btn.style.color = 'white';
+                btn.style.borderColor = 'transparent';
+                btn.style.boxShadow = '0 2px 4px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(99, 102, 241, 0.25)';
+              } else if (targetId === 'today-reflection-section') {
+                btn.style.background = 'linear-gradient(120deg, #a78bfa 0%, #c084fc 100%)';
+                btn.style.color = 'white';
+                btn.style.borderColor = 'transparent';
+                btn.style.boxShadow = '0 2px 4px rgba(167, 139, 250, 0.2), 0 4px 12px rgba(167, 139, 250, 0.25)';
+              }
+            } else {
+              btn.classList.remove('active');
+              // 비활성 스타일 복원
+              if (btn.id === 'scroll-to-todos') {
+                btn.style.background = '#e0e7ff';
+                btn.style.color = '#1f2937';
+                btn.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+                btn.style.boxShadow = '';
+              } else if (btn.id === 'scroll-to-reflection') {
+                btn.style.background = '#f3e8ff';
+                btn.style.color = '#1f2937';
+                btn.style.borderColor = 'rgba(167, 139, 250, 0.2)';
+                btn.style.boxShadow = '';
+              }
+            }
+          });
+        }
+      });
+    };
+    
+    this.currentObserver = new IntersectionObserver(observerCallback, observerOptions);
+    
+    // 관찰 대상 섹션 등록
+    const todosSection = document.getElementById('today-todos-section');
+    const reflectionSection = document.getElementById('today-reflection-section');
+    
+    if (todosSection) this.currentObserver.observe(todosSection);
+    if (reflectionSection) this.currentObserver.observe(reflectionSection);
+    
+    // 스크롤 기능 (cloneNode 패턴으로 중복 방지)
+    quickNavButtons.forEach(btn => {
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode?.replaceChild(newBtn, btn);
+      
+      newBtn.addEventListener('click', () => {
+        const targetId = newBtn.getAttribute('data-target');
+        const targetSection = document.getElementById(targetId);
+        
+        if (targetSection) {
+          // 부드러운 스크롤
+          targetSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
+          });
+        }
+      });
+    });
   }
 
   // 모바일에서 외부 링크 클릭 핸들러 (target="_blank"가 모바일에서 작동하지 않을 수 있음)
