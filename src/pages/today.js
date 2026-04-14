@@ -388,31 +388,35 @@ export async function renderToday() {
       }, 50);
       
       // Carry-over 모달 체크 (오늘 날짜일 때만)
+      // ⭐ 인사 메시지 후 약간의 딜레이로 자연스러운 UX
       console.log('[Carryover] Checking modal...', { selectedDate, today, match: selectedDate === today });
       if (selectedDate === today) {
-        // ⭐ 중요: 할일이 실제로 있는지 먼저 확인
-        const todos = await fetchCarryoverTodos(profile, timezone);
-        console.log('[Carryover] Found carryover todos:', todos.length);
-        
-        if (todos.length > 0) {
-          // 할일이 있으면 localStorage 마킹 여부와 관계없이 모달 표시
-          const shouldShow = shouldShowCarryoverModal(timezone);
-          console.log('[Carryover] shouldShowCarryoverModal:', shouldShow);
-          if (shouldShow) {
-            console.log('[Carryover] Calling showCarryoverModal...');
-            await showCarryoverModal(profile, timezone);
+        // 인사 메시지가 먼저 표시되도록 1.5초 딜레이
+        setTimeout(async () => {
+          // ⭐ 중요: 할일이 실제로 있는지 먼저 확인
+          const todos = await fetchCarryoverTodos(profile, timezone);
+          console.log('[Carryover] Found carryover todos:', todos.length);
+          
+          if (todos.length > 0) {
+            // 할일이 있으면 localStorage 마킹 여부와 관계없이 모달 표시
+            const shouldShow = shouldShowCarryoverModal(timezone);
+            console.log('[Carryover] shouldShowCarryoverModal:', shouldShow);
+            if (shouldShow) {
+              console.log('[Carryover] Calling showCarryoverModal...');
+              await showCarryoverModal(profile, timezone);
+            } else {
+              // localStorage에 마킹이 되어 있지만 할일이 있으면 강제로 표시
+              console.log('[Carryover] Modal marked as shown but todos exist, showing anyway');
+              // localStorage 마킹 제거 (할일이 있으므로 다시 표시)
+              const today = getToday(timezone);
+              const key = `carryover_shown_${today}`;
+              localStorage.removeItem(key);
+              await showCarryoverModal(profile, timezone);
+            }
           } else {
-            // localStorage에 마킹이 되어 있지만 할일이 있으면 강제로 표시
-            console.log('[Carryover] Modal marked as shown but todos exist, showing anyway');
-            // localStorage 마킹 제거 (할일이 있으므로 다시 표시)
-            const today = getToday(timezone);
-            const key = `carryover_shown_${today}`;
-            localStorage.removeItem(key);
-            await showCarryoverModal(profile, timezone);
+            console.log('[Carryover] No carryover todos found');
           }
-        } else {
-          console.log('[Carryover] No carryover todos found');
-        }
+        }, 1500); // 인사 메시지(500ms) + 읽을 시간(1000ms) = 1500ms 후 이월 모달
       } else {
         console.log('[Carryover] Not today, skipping modal check');
       }
@@ -2078,12 +2082,12 @@ async function moveTodoUp(todoId, date, profile, timezone = 'Asia/Seoul') {
 
     // todo의 실제 category 사용 (activeTab에 의존하지 않음)
     const todoCategory = todo.category;
-    
+
     // 같은 카테고리, 미완료, 같은 날짜 필터링
     const sameCategoryTodos = todos.filter(
       t => t.category === todoCategory && !t.is_done && t.date === date
     );
-    
+
     // loadTodos와 동일한 정렬 적용
     const sortedTodos = sortTodosForDisplay(sameCategoryTodos);
 
@@ -2091,12 +2095,17 @@ async function moveTodoUp(todoId, date, profile, timezone = 'Asia/Seoul') {
     if (currentIndex <= 0) return;
 
     const prevIndex = currentIndex - 1;
-    
-    // 인덱스 기반으로 display_order 재할당 (10 단위 간격으로 안정적 유지)
-    await Promise.all([
-      supabase.from('todos').update({ display_order: (prevIndex + 1) * 10 }).eq('id', todoId),
-      supabase.from('todos').update({ display_order: (currentIndex + 1) * 10 }).eq('id', sortedTodos[prevIndex].id)
-    ]);
+
+    // 현재 항목과 이전 항목의 위치를 스왑한 배열 생성
+    const reordered = [...sortedTodos];
+    [reordered[prevIndex], reordered[currentIndex]] = [reordered[currentIndex], reordered[prevIndex]];
+
+    // 모든 항목의 display_order를 재할당 (handleDragDrop과 동일한 방식)
+    // NULL 항목이 섞여 있을 때 정렬이 꼬이는 문제 방지
+    const updatePromises = reordered.map((t, index) =>
+      supabase.from('todos').update({ display_order: (index + 1) * 10 }).eq('id', t.id)
+    );
+    await Promise.all(updatePromises);
 
     await loadTodos(date, profile, timezone);
   } catch (error) {
@@ -2112,12 +2121,12 @@ async function moveTodoDown(todoId, date, profile, timezone = 'Asia/Seoul') {
 
     // todo의 실제 category 사용 (activeTab에 의존하지 않음)
     const todoCategory = todo.category;
-    
+
     // 같은 카테고리, 미완료, 같은 날짜 필터링
     const sameCategoryTodos = todos.filter(
       t => t.category === todoCategory && !t.is_done && t.date === date
     );
-    
+
     // loadTodos와 동일한 정렬 적용
     const sortedTodos = sortTodosForDisplay(sameCategoryTodos);
 
@@ -2125,12 +2134,17 @@ async function moveTodoDown(todoId, date, profile, timezone = 'Asia/Seoul') {
     if (currentIndex < 0 || currentIndex >= sortedTodos.length - 1) return;
 
     const nextIndex = currentIndex + 1;
-    
-    // 인덱스 기반으로 display_order 재할당 (10 단위 간격으로 안정적 유지)
-    await Promise.all([
-      supabase.from('todos').update({ display_order: (nextIndex + 1) * 10 }).eq('id', todoId),
-      supabase.from('todos').update({ display_order: (currentIndex + 1) * 10 }).eq('id', sortedTodos[nextIndex].id)
-    ]);
+
+    // 현재 항목과 다음 항목의 위치를 스왑한 배열 생성
+    const reordered = [...sortedTodos];
+    [reordered[currentIndex], reordered[nextIndex]] = [reordered[nextIndex], reordered[currentIndex]];
+
+    // 모든 항목의 display_order를 재할당 (handleDragDrop과 동일한 방식)
+    // NULL 항목이 섞여 있을 때 정렬이 꼬이는 문제 방지
+    const updatePromises = reordered.map((t, index) =>
+      supabase.from('todos').update({ display_order: (index + 1) * 10 }).eq('id', t.id)
+    );
+    await Promise.all(updatePromises);
 
     await loadTodos(date, profile, timezone);
   } catch (error) {

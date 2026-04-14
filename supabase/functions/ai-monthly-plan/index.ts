@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
+const GEMINI_FALLBACK_MODEL = Deno.env.get('GEMINI_FALLBACK_MODEL') || 'gemini-2.0-flash';
 const PROMPT_VERSION = 'monthly_plan_v8';
 
 interface RequestBody {
@@ -150,56 +151,95 @@ serve(async (req) => {
 
     const systemInstruction = '당신은 사용자의 연간 목표(결과 목표)를 달성하기 위한 이번 달 핵심 행동 계획을 제안하는 AI 코치입니다. 한국어로 답변하세요. JSON 형식으로만 응답하세요.';
 
-    const requestBody: any = {
-      contents: [
-        {
-          parts: [
-            {
-              text: prompt,
-            },
-          ],
+    // Gemini API 요청 본문을 모델에 맞게 구성하는 헬퍼
+    function buildRequestBody(model: string) {
+      const body: any = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8000,
+          responseMimeType: 'application/json',
         },
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8000,
-        responseMimeType: 'application/json',
-      },
-    };
-
-    if (GEMINI_MODEL.includes('2.5') || GEMINI_MODEL.includes('2.0')) {
-      requestBody.systemInstruction = {
-        parts: [
-          {
-            text: systemInstruction,
-          },
-        ],
       };
-    } else {
-      requestBody.contents[0].parts[0].text = `${systemInstruction}\n\n${prompt}`;
+      if (model.includes('2.5') || model.includes('2.0')) {
+        body.systemInstruction = { parts: [{ text: systemInstruction }] };
+      } else {
+        body.contents[0].parts[0].text = `${systemInstruction}\n\n${prompt}`;
+      }
+      return body;
     }
 
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    // 재시도 + 폴백 모델로 Gemini API 호출
+    async function callGeminiWithRetry(): Promise<{ data: any; model: string }> {
+      const modelsToTry = [GEMINI_MODEL, GEMINI_FALLBACK_MODEL];
+      const maxRetries = 2;
 
-    if (!geminiResponse.ok) {
-      const errorData = await geminiResponse.json().catch(() => ({ message: 'Unknown error' }));
-      console.error('Gemini API error:', errorData);
+      for (const model of modelsToTry) {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          if (attempt > 0 || model !== GEMINI_MODEL) {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 2000);
+            console.log(`Retrying with ${model} (attempt ${attempt + 1}) after ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+
+          const requestBody = buildRequestBody(model);
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(requestBody),
+            }
+          );
+
+          if (response.ok) {
+            return { data: await response.json(), model };
+          }
+
+          const status = response.status;
+          if (status !== 503 && status !== 429) {
+            const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+            throw { errorData, status };
+          }
+          console.warn(`Gemini API ${status} with model ${model}, attempt ${attempt + 1}/${maxRetries}`);
+        }
+        console.warn(`All retries exhausted for model ${model}, trying fallback...`);
+      }
+
+      throw {
+        errorData: {
+          error: {
+            code: 503,
+            message: 'AI 서버가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.',
+            status: 'UNAVAILABLE',
+          },
+        },
+        status: 503,
+      };
+    }
+
+    let geminiData: any;
+    let usedModel: string;
+    try {
+      const result = await callGeminiWithRetry();
+      geminiData = result.data;
+      usedModel = result.model;
+      if (usedModel !== GEMINI_MODEL) {
+        console.log(`Used fallback model: ${usedModel} (primary: ${GEMINI_MODEL})`);
+      }
+    } catch (err: any) {
+      console.error('Gemini API error after retries:', err.errorData);
+      const errorMessage = err.errorData?.error?.message || err.errorData?.message || 'Unknown error';
       return new Response(
-        JSON.stringify({ error: 'AI generation failed', details: errorData }),
+        JSON.stringify({
+          error: 'AI generation failed',
+          message: errorMessage,
+          details: err.errorData,
+        }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    const geminiData = await geminiResponse.json();
     let planContentText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // JSON 파싱 시도 (다양한 형식 처리)
@@ -251,7 +291,7 @@ serve(async (req) => {
       source: 'ai_suggested',
       status: 'draft',
       plan_content: formattedPlanContent,
-      model: GEMINI_MODEL,
+      model: usedModel,
       prompt_version: PROMPT_VERSION,
     };
 
@@ -313,7 +353,7 @@ serve(async (req) => {
         month_start,
         plan_content: formattedPlanContent,
         linked_year,
-        model: GEMINI_MODEL,
+        model: usedModel,
         prompt_version: PROMPT_VERSION,
       }),
       {

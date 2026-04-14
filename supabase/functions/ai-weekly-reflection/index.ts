@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
+const GEMINI_FALLBACK_MODEL = Deno.env.get('GEMINI_FALLBACK_MODEL') || 'gemini-2.0-flash';
 const PROMPT_VERSION = 'weekly_reflection_v3';
 
 interface RequestBody {
@@ -144,76 +145,100 @@ serve(async (req) => {
     }
 
     const systemInstruction = '당신은 사용자의 주간 활동을 분석하고 성찰을 제공하는 AI 어시스턴트입니다. 한국어로 답변하세요.';
-    
-    // Gemini API 요청 본문 구성
-    const requestBody: any = {
-      contents: [
-        {
-          parts: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8000, // 2000 → 8000으로 증가 (Gemini 2.5 Flash는 최대 65,536까지 가능)
-      },
-    };
-    
-    // systemInstruction을 별도 필드로 추가 (지원되는 경우)
-    // 참고: 일부 모델은 systemInstruction을 지원하지 않을 수 있음
-    if (GEMINI_MODEL.includes('2.5') || GEMINI_MODEL.includes('2.0')) {
-      requestBody.systemInstruction = {
-        parts: [
-          {
-            text: systemInstruction,
-          },
-        ],
-      };
-    } else {
-      // systemInstruction을 지원하지 않는 경우 프롬프트에 포함
-      requestBody.contents[0].parts[0].text = `${systemInstruction}\n\n${prompt}`;
-    }
-    
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
 
-    if (!geminiResponse.ok) {
-      let errorData: any;
-      try {
-        const errorText = await geminiResponse.text();
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { message: `HTTP ${geminiResponse.status}: ${geminiResponse.statusText}` };
+    // Gemini API 요청 본문을 모델에 맞게 구성하는 헬퍼
+    function buildRequestBody(model: string) {
+      const body: any = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8000,
+        },
+      };
+      if (model.includes('2.5') || model.includes('2.0')) {
+        body.systemInstruction = { parts: [{ text: systemInstruction }] };
+      } else {
+        body.contents[0].parts[0].text = `${systemInstruction}\n\n${prompt}`;
       }
-      
-      console.error('Gemini API error:', errorData);
-      
-      // 에러 메시지 추출
-      let errorMessage = errorData.error?.message || errorData.message || 'Unknown error';
-      
-      // 전체 에러 정보를 details에 포함
+      return body;
+    }
+
+    // 재시도 + 폴백 모델로 Gemini API 호출
+    async function callGeminiWithRetry(): Promise<{ data: any; model: string }> {
+      const modelsToTry = [GEMINI_MODEL, GEMINI_FALLBACK_MODEL];
+      const maxRetries = 2;
+
+      for (const model of modelsToTry) {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          if (attempt > 0 || model !== GEMINI_MODEL) {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 2000);
+            console.log(`Retrying with ${model} (attempt ${attempt + 1}) after ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+
+          const requestBody = buildRequestBody(model);
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(requestBody),
+            }
+          );
+
+          if (response.ok) {
+            return { data: await response.json(), model };
+          }
+
+          const status = response.status;
+          if (status !== 503 && status !== 429) {
+            let errorData: any;
+            try {
+              errorData = JSON.parse(await response.text());
+            } catch {
+              errorData = { message: `HTTP ${status}: ${response.statusText}` };
+            }
+            throw { errorData, status };
+          }
+          console.warn(`Gemini API ${status} with model ${model}, attempt ${attempt + 1}/${maxRetries}`);
+        }
+        console.warn(`All retries exhausted for model ${model}, trying fallback...`);
+      }
+
+      throw {
+        errorData: {
+          error: {
+            code: 503,
+            message: 'AI 서버가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.',
+            status: 'UNAVAILABLE',
+          },
+        },
+        status: 503,
+      };
+    }
+
+    let geminiData: any;
+    let usedModel: string;
+    try {
+      const result = await callGeminiWithRetry();
+      geminiData = result.data;
+      usedModel = result.model;
+      if (usedModel !== GEMINI_MODEL) {
+        console.log(`Used fallback model: ${usedModel} (primary: ${GEMINI_MODEL})`);
+      }
+    } catch (err: any) {
+      console.error('Gemini API error after retries:', err.errorData);
+      const errorMessage = err.errorData?.error?.message || err.errorData?.message || 'Unknown error';
       return new Response(
-        JSON.stringify({ 
-          error: 'AI generation failed', 
+        JSON.stringify({
+          error: 'AI generation failed',
           message: errorMessage,
-          details: errorData
+          details: err.errorData,
         }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    const geminiData = await geminiResponse.json();
     const contentMd = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     if (!contentMd) {
@@ -232,7 +257,7 @@ serve(async (req) => {
           week_start,
           week_end,
           content_md: contentMd,
-          model: GEMINI_MODEL,
+          model: usedModel,
           prompt_version: PROMPT_VERSION,
         },
         { onConflict: 'user_id,week_start' }
@@ -276,7 +301,7 @@ serve(async (req) => {
         week_start,
         week_end,
         content_md: contentMd,
-        model: GEMINI_MODEL,
+        model: usedModel,
         prompt_version: PROMPT_VERSION,
       }),
       {
