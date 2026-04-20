@@ -195,7 +195,11 @@ function translateErrorMessage(errorMessage) {
   }
   
   // 모델 과부하
-  if (message.includes('overloaded') || message.includes('overload')) {
+  if (
+    message.includes('overloaded') ||
+    message.includes('overload') ||
+    message.includes('high demand')
+  ) {
     return 'AI 모델이 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.';
   }
   

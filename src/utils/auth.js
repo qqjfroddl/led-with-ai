@@ -1,5 +1,9 @@
 import { getSupabase } from '../config/supabase.js';
 
+const PROFILE_TIMEOUT_MS = 8000;
+let cachedProfile = null;
+let profileLoadPromise = null;
+
 /**
  * Google OAuth 로그인
  * 삼성 인터넷 및 모바일 브라우저 호환성 개선
@@ -24,6 +28,8 @@ export async function signInWithGoogle() {
  */
 export async function signOut() {
   const supabase = await getSupabase();
+  cachedProfile = null;
+  profileLoadPromise = null;
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
@@ -102,13 +108,14 @@ async function createProfileIfMissing(user) {
  * 프로필이 없으면 자동 생성 시도
  */
 export async function getCurrentProfile() {
-  // 타임아웃 2초로 단축 (속도 개선, 안정성 유지)
+  // Keep a longer timeout so brief Supabase delays do not look like logout.
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('getCurrentProfile timeout')), 2000);
+    setTimeout(() => reject(new Error('getCurrentProfile timeout')), PROFILE_TIMEOUT_MS);
   });
 
   try {
-    const profilePromise = (async () => {
+    if (!profileLoadPromise) {
+      profileLoadPromise = (async () => {
       const supabase = await getSupabase();
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
@@ -164,15 +171,22 @@ export async function getCurrentProfile() {
         return null;
       }
       
-      return data;
-    })();
+        return data;
+      })().finally(() => {
+        profileLoadPromise = null;
+      });
+    }
 
     // 타임아웃과 프로필 조회 중 먼저 완료되는 것 반환
-    return await Promise.race([profilePromise, timeoutPromise]);
+    const profile = await Promise.race([profileLoadPromise, timeoutPromise]);
+    if (profile) {
+      cachedProfile = profile;
+    }
+    return profile;
   } catch (error) {
     if (error.message === 'getCurrentProfile timeout') {
       console.warn('[Auth] getCurrentProfile timeout, returning null');
-      return null;
+      return cachedProfile;
     }
     console.error('getCurrentProfile exception:', error);
     return null;
@@ -214,4 +228,3 @@ export async function isAdmin() {
   });
   return isAdminResult;
 }
-

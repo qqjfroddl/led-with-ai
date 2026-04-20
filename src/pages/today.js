@@ -1464,6 +1464,7 @@ function setupDragAndDrop(date, profile, timezone) {
   if (!window._dragDropState) {
     window._dragDropState = {
       isDragging: false,
+      hasMoved: false,
       draggedElement: null,
       draggedTodoId: null,
       draggedCategory: null,
@@ -1507,14 +1508,16 @@ function setupDragAndDrop(date, profile, timezone) {
     if (!todo || todo.is_done) return;
     
     console.log('[Drag] mousedown on handle', todoId);
-    
+
     state.isDragging = true;
+    state.hasMoved = false;
     state.draggedElement = todoItem;
     state.draggedTodoId = todoId;
     state.draggedCategory = todoItem.dataset.category;
     
     const rect = todoItem.getBoundingClientRect();
     state.dragStartY = e.clientY;
+    state.dragStartX = e.clientX;
     state.dragOffsetY = e.clientY - rect.top;
     
     // 시각적 피드백
@@ -1531,9 +1534,20 @@ function setupDragAndDrop(date, profile, timezone) {
   // mousemove 이벤트 핸들러
   const handleMouseMove = (e) => {
     if (!state.isDragging || !state.draggedElement) return;
-    
+
     e.preventDefault();
-    
+
+    // 5px 이상 이동 시 실제 드래그로 인정 (단순 클릭과 구분)
+    if (!state.hasMoved) {
+      const dy = Math.abs(e.clientY - state.dragStartY);
+      const dx = Math.abs(e.clientX - (state.dragStartX || e.clientX));
+      if (dy >= 5 || dx >= 5) {
+        state.hasMoved = true;
+      } else {
+        return;
+      }
+    }
+
     // todos-content 내부 요소 찾기
     const todosContent = document.getElementById('todos-content');
     if (!todosContent) return;
@@ -1670,7 +1684,13 @@ function setupDragAndDrop(date, profile, timezone) {
       }
       return;
     }
-    
+
+    // 실제로 이동하지 않은 경우(단순 클릭) 드롭 취소
+    if (!state.hasMoved) {
+      cleanup();
+      return;
+    }
+
     const currentDraggedElement = state.draggedElement;
     const currentDraggedTodoId = state.draggedTodoId;
     
@@ -1788,10 +1808,12 @@ function setupDragAndDrop(date, profile, timezone) {
     
     // 상태 완전 초기화
     state.isDragging = false;
+    state.hasMoved = false;
     state.draggedElement = null;
     state.draggedTodoId = null;
     state.draggedCategory = null;
     state.dragStartY = 0;
+    state.dragStartX = 0;
     state.dragOffsetY = 0;
     state.lastTargetTodoId = null;
     state.lastInsertBefore = null;

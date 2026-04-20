@@ -1,4 +1,4 @@
-import { signOut, isAdmin } from '../utils/auth.js';
+import { signOut } from '../utils/auth.js';
 import { formatSelectedDate } from '../state/dateState.js';
 
 /**
@@ -41,7 +41,7 @@ export async function renderNavigation(currentRoute, profile) {
   ];
 
   // 관리자인 경우 관리자 그룹 추가
-  const isUserAdmin = await isAdmin();
+  const isUserAdmin = profile?.role === 'admin';
   if (isUserAdmin) {
     navGroups.push({
       id: 'admin',
