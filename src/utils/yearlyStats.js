@@ -1,6 +1,7 @@
 // 연간 통계 계산 유틸리티
 import { supabase } from '../config/supabase.js';
 import { getToday } from './date.js';
+import { isRoutineDue } from './routineFilter.js';
 
 // Luxon DateTime 가져오기
 function getDateTimeLib() {
@@ -156,62 +157,6 @@ export async function getTodosStats(userId, yearStart, yearEnd, totalDays) {
 }
 
 /**
- * 날짜 기준 루틴 필터링 함수 (PRD FR-C5 준수)
- * @param {Object} routine - 루틴 객체
- * @param {string} selectedDate - 선택 날짜 (YYYY-MM-DD)
- * @returns {boolean} 해당 날짜에 루틴이 활성 상태인지 여부
- */
-function isRoutineDue(routine, selectedDate) {
-  const schedule = typeof routine.schedule === 'string' 
-    ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
-    : routine.schedule;
-  
-  if (!schedule) return false;
-
-  // 적용 시작일 확인
-  let activeFromDate;
-  if (schedule.active_from_date) {
-    activeFromDate = schedule.active_from_date;
-  } else if (routine.created_at) {
-    activeFromDate = routine.created_at.substring(0, 10);
-  } else {
-    return false;
-  }
-
-  // 비활성화일 확인
-  let deletedAtDate = null;
-  if (routine.deleted_at) {
-    deletedAtDate = routine.deleted_at.substring(0, 10);
-  }
-
-  // 날짜 범위 체크
-  if (activeFromDate > selectedDate) {
-    return false;
-  }
-  if (deletedAtDate && deletedAtDate <= selectedDate) {
-    return false;
-  }
-
-  // 타입별 필터링
-  if (schedule.type === 'daily') return true;
-  
-  if (schedule.type === 'weekly') {
-    const today = new Date(selectedDate);
-    const dayOfWeek = today.getDay();
-    const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-    return schedule.days?.includes(adjustedDay);
-  }
-  
-  if (schedule.type === 'monthly') {
-    const monthStart = schedule.month;
-    const currentMonth = selectedDate.substring(0, 7) + '-01';
-    return monthStart === currentMonth;
-  }
-  
-  return false;
-}
-
-/**
  * 루틴 통계
  * @param {string} userId - 사용자 ID
  * @param {string} yearStart - 연도 시작일 (YYYY-MM-DD)
@@ -220,6 +165,14 @@ function isRoutineDue(routine, selectedDate) {
  * @returns {Promise<Object>} 루틴 통계 객체
  */
 export async function getRoutinesStats(userId, yearStart, yearEnd, totalDays) {
+  // 주말 루틴 분리 토글 상태 조회
+  const { data: profileRow } = await supabase
+    .from('profiles')
+    .select('weekend_routines_enabled')
+    .eq('id', userId)
+    .maybeSingle();
+  const weekendEnabled = profileRow?.weekend_routines_enabled === true;
+
   // ✅ PRD 요구사항: is_active 조건 없이 모든 루틴 조회 (비활성화된 루틴 포함)
   const { data: routines, error: routinesError } = await supabase
     .from('routines')
@@ -260,7 +213,7 @@ export async function getRoutinesStats(userId, yearStart, yearEnd, totalDays) {
     const month = dt.month;
     
     // 해당 날짜에 활성인 루틴 필터링
-    const activeRoutines = routines.filter(r => isRoutineDue(r, dateStr));
+    const activeRoutines = routines.filter(r => isRoutineDue(r, dateStr, weekendEnabled));
     totalPossibleChecks += activeRoutines.length;
     
     // 월별 통계 초기화

@@ -1,6 +1,7 @@
 // 주간 통계 계산 유틸리티
 import { supabase, getSupabase } from '../config/supabase.js';
 import { getWeekStart, getWeekEnd, getToday } from './date.js';
+import { isRoutineDue } from './routineFilter.js';
 
 /**
  * 주간 통계 조회
@@ -144,63 +145,6 @@ export async function getTodosStats(userId, weekStart, weekEnd, supabaseClient =
 }
 
 /**
- * 날짜 기준 루틴 필터링 함수 (PRD FR-C5 준수)
- * @param {Object} routine - 루틴 객체
- * @param {string} selectedDate - 선택 날짜 (YYYY-MM-DD)
- * @returns {boolean} 해당 날짜에 루틴이 활성 상태인지 여부
- */
-function isRoutineDue(routine, selectedDate) {
-  const schedule = typeof routine.schedule === 'string' 
-    ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
-    : routine.schedule;
-  
-  if (!schedule) return false;
-
-  // 적용 시작일 확인
-  let activeFromDate;
-  if (schedule.active_from_date) {
-    activeFromDate = schedule.active_from_date;
-  } else if (routine.created_at) {
-    // active_from_date가 없으면 created_at의 날짜 부분 사용
-    activeFromDate = routine.created_at.substring(0, 10);
-  } else {
-    return false; // 시작일을 알 수 없으면 제외
-  }
-
-  // 비활성화일 확인
-  let deletedAtDate = null;
-  if (routine.deleted_at) {
-    deletedAtDate = routine.deleted_at.substring(0, 10);
-  }
-
-  // 날짜 범위 체크: 적용 시작일 <= 선택 날짜 < 비활성화일
-  if (activeFromDate > selectedDate) {
-    return false; // 아직 적용 시작 전
-  }
-  if (deletedAtDate && deletedAtDate <= selectedDate) {
-    return false; // 이미 비활성화됨
-  }
-
-  // 타입별 필터링
-  if (schedule.type === 'daily') return true;
-  
-  if (schedule.type === 'weekly') {
-    const today = new Date(selectedDate);
-    const dayOfWeek = today.getDay(); // 0=일요일, 1=월요일...
-    const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 일요일을 7로 변환
-    return schedule.days?.includes(adjustedDay);
-  }
-  
-  if (schedule.type === 'monthly') {
-    const monthStart = schedule.month;
-    const currentMonth = selectedDate.substring(0, 7) + '-01';
-    return monthStart === currentMonth;
-  }
-  
-  return false;
-}
-
-/**
  * 루틴 통계
  * @param {string} userId - 사용자 ID
  * @param {string} weekStart - 주 시작일 (YYYY-MM-DD)
@@ -215,6 +159,14 @@ export async function getRoutinesStats(userId, weekStart, weekEnd, supabaseClien
     return getEmptyRoutinesStats();
   }
   
+  // 주말 루틴 분리 토글 상태 조회
+  const { data: profileRow } = await client
+    .from('profiles')
+    .select('weekend_routines_enabled')
+    .eq('id', userId)
+    .maybeSingle();
+  const weekendEnabled = profileRow?.weekend_routines_enabled === true;
+
   // ✅ PRD 요구사항: is_active 조건 없이 모든 루틴 조회 (비활성화된 루틴 포함)
   const { data: routines, error: routinesError } = await client
     .from('routines')
@@ -222,7 +174,7 @@ export async function getRoutinesStats(userId, weekStart, weekEnd, supabaseClien
     .eq('user_id', userId);
     // is_active 조건 제거
     // deleted_at 조건 제거 (날짜 기준으로 필터링)
-  
+
   if (routinesError) {
     console.error(`[getRoutinesStats] Error fetching routines for user ${userId}:`, routinesError);
     console.error(`[getRoutinesStats] Error code: ${routinesError.code}, message: ${routinesError.message}`);
@@ -267,7 +219,7 @@ export async function getRoutinesStats(userId, weekStart, weekEnd, supabaseClien
     const dateStr = d.toISOString().split('T')[0];
     
     // 해당 날짜에 활성인 루틴 필터링
-    const activeRoutines = routines.filter(r => isRoutineDue(r, dateStr));
+    const activeRoutines = routines.filter(r => isRoutineDue(r, dateStr, weekendEnabled));
     dailyActiveRoutines[dateStr] = activeRoutines.length;
     totalPossibleChecks += activeRoutines.length;
     

@@ -4,6 +4,7 @@ import { getCurrentProfile } from '../utils/auth.js';
 import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
 import { getToday } from '../utils/date.js';
 import { router } from '../router.js';
+import { isRoutineDue } from '../utils/routineFilter.js';
 
 export async function renderToday() {
   // ✅ 페이지 진입 시 필터 초기화 (다른 탭에서 돌아올 때 필터 상태 리셋)
@@ -436,60 +437,9 @@ async function loadRoutines(date, profile) {
 
     if (error) throw error;
 
-    // 날짜 기준 필터링 함수
-    function isRoutineDue(routine, selectedDate) {
-      const schedule = typeof routine.schedule === 'string' 
-        ? (() => { try { return JSON.parse(routine.schedule); } catch { return routine.schedule; } })()
-        : routine.schedule;
-      
-      if (!schedule) return false;
-
-      // 적용 시작일 확인
-      let activeFromDate;
-      if (schedule.active_from_date) {
-        activeFromDate = schedule.active_from_date;
-      } else if (routine.created_at) {
-        // active_from_date가 없으면 created_at의 날짜 부분 사용
-        activeFromDate = routine.created_at.substring(0, 10);
-      } else {
-        return false; // 시작일을 알 수 없으면 제외
-      }
-
-      // 비활성화일 확인
-      let deletedAtDate = null;
-      if (routine.deleted_at) {
-        deletedAtDate = routine.deleted_at.substring(0, 10);
-      }
-
-      // 날짜 범위 체크: 적용 시작일 <= 선택 날짜 < 비활성화일
-      if (activeFromDate > selectedDate) {
-        return false; // 아직 적용 시작 전
-      }
-      if (deletedAtDate && deletedAtDate <= selectedDate) {
-        return false; // 이미 비활성화됨
-      }
-
-      // 타입별 필터링
-      if (schedule.type === 'daily') return true;
-      
-      if (schedule.type === 'weekly') {
-        const today = new Date(selectedDate);
-        const dayOfWeek = today.getDay(); // 0=일요일, 1=월요일...
-        const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 일요일을 7로 변환
-        return schedule.days?.includes(adjustedDay);
-      }
-      
-      if (schedule.type === 'monthly') {
-        const monthStart = schedule.month;
-        const currentMonth = selectedDate.substring(0, 7) + '-01';
-        return monthStart === currentMonth;
-      }
-      
-      return false;
-    }
-
-    // ✅ 날짜 기준 필터링 적용
-    const todayRoutines = routines.filter(routine => isRoutineDue(routine, date));
+    // ✅ 날짜 기준 필터링 적용 (주말 루틴 분리 토글 반영)
+    const weekendEnabled = profile?.weekend_routines_enabled === true;
+    const todayRoutines = routines.filter(routine => isRoutineDue(routine, date, weekendEnabled));
 
     // 루틴 로그 조회
     const { data: logs } = await supabase

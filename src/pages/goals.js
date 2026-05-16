@@ -644,8 +644,11 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       // 주말 루틴 분리 토글 (베타) - 화이트리스트 사용자만 노출
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      const WEEKEND_ROUTINES_WHITELIST = ['deeptactlearning@gmail.com'];
-      const isWeekendRoutinesWhitelisted = WEEKEND_ROUTINES_WHITELIST.includes(profile.email);
+      const WEEKEND_ROUTINES_WHITELIST = ['qqjfroddl@kakao.com'];
+      const profileEmail = (profile.email || '').toLowerCase().trim();
+      const isWeekendRoutinesWhitelisted = WEEKEND_ROUTINES_WHITELIST.some(
+        e => e.toLowerCase() === profileEmail
+      );
       const weekendToggleContainer = document.getElementById('weekend-routines-toggle-container');
       const weekendToggleInput = document.getElementById('weekend-routines-toggle');
       const weekendToggleSlider = document.getElementById('weekend-routines-toggle-slider');
@@ -663,18 +666,132 @@ export async function renderGoals() {
         }
       }
 
+      // 첫 ON 시 마이그레이션: 기존 day_type 없는 활성 루틴을 weekday 신규 row로 분리
+      // - 기존 row는 deactivate (deleted_at=now, is_active=false)
+      // - 신규 row는 active_from_date=today, schedule.day_type='weekday'
+      // - Idempotent: 이미 weekday 버전 존재 시 신규 INSERT 스킵
+      async function runWeekendRoutinesMigration() {
+        const { data: allRoutinesRaw, error: fetchErr } = await supabase
+          .from('routines')
+          .select('*')
+          .eq('user_id', profile.id);
+        if (fetchErr) throw new Error('루틴 조회 실패: ' + fetchErr.message);
+
+        const allRoutines = allRoutinesRaw || [];
+        const parseSched = (r) => {
+          if (!r.schedule) return null;
+          return typeof r.schedule === 'string'
+            ? (() => { try { return JSON.parse(r.schedule); } catch { return null; } })()
+            : r.schedule;
+        };
+
+        const toMigrate = allRoutines.filter(r => {
+          const s = parseSched(r);
+          // 안전: monthly 타입의 활성 루틴 중 day_type 미지정 항목만 마이그레이션
+          return s && s.type === 'monthly' && !s.day_type && r.is_active === true;
+        });
+
+        for (const old of toMigrate) {
+          const oldSchedule = parseSched(old);
+          if (!oldSchedule) continue;
+
+          const existingWeekday = allRoutines.find(r => {
+            if (r.id === old.id) return false;
+            if (r.is_active !== true) return false;
+            if (r.title !== old.title) return false;
+            const s = parseSched(r);
+            return s
+              && s.day_type === 'weekday'
+              && s.category === oldSchedule.category
+              && s.month === oldSchedule.month;
+          });
+
+          if (!existingWeekday) {
+            const newSchedule = {
+              ...oldSchedule,
+              day_type: 'weekday',
+              active_from_date: today
+            };
+            const { error: insertErr } = await supabase
+              .from('routines')
+              .insert({
+                user_id: profile.id,
+                title: old.title,
+                schedule: newSchedule,
+                is_active: true
+              });
+            if (insertErr) throw new Error('신규 weekday 루틴 생성 실패: ' + insertErr.message);
+          }
+
+          const { error: updErr } = await supabase
+            .from('routines')
+            .update({ is_active: false, deleted_at: new Date().toISOString() })
+            .eq('id', old.id);
+          if (updErr) throw new Error('기존 루틴 비활성화 실패: ' + updErr.message);
+        }
+
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .update({ weekend_routines_enabled: true })
+          .eq('id', profile.id);
+        if (profileErr) throw new Error('토글 저장 실패: ' + profileErr.message);
+
+        profile.weekend_routines_enabled = true;
+      }
+
+      async function disableWeekendRoutines() {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ weekend_routines_enabled: false })
+          .eq('id', profile.id);
+        if (error) throw new Error('토글 저장 실패: ' + error.message);
+        profile.weekend_routines_enabled = false;
+      }
+
       if (isWeekendRoutinesWhitelisted && weekendToggleContainer) {
         weekendToggleContainer.style.display = 'flex';
         paintWeekendToggle(profile.weekend_routines_enabled === true);
 
         if (weekendToggleInput) {
           weekendToggleInput.addEventListener('change', async (e) => {
-            // TODO: 다음 커밋에서 실제 마이그레이션/필터 로직 연결
             const next = e.target.checked;
-            paintWeekendToggle(next);
-            alert('주말 루틴 분리 기능은 곧 활성화됩니다. (스켈레톤 단계)');
-            // 임시: 토글 상태 즉시 되돌림
-            paintWeekendToggle(profile.weekend_routines_enabled === true);
+
+            if (next) {
+              const todayDow = new Date(today).getDay();
+              const isWeekendToday = todayDow === 0 || todayDow === 6;
+              const proceed = confirm(
+                '주말 루틴 분리를 활성화합니다.\n\n' +
+                '· 기존 모든 루틴은 "주중 루틴(평일 전용)"으로 자동 분류됩니다.\n' +
+                '· 주말 루틴 입력 UI는 이후 업데이트에서 추가될 예정입니다.\n' +
+                (isWeekendToday
+                  ? '\n⚠ 오늘은 주말입니다. 켜면 오늘(주말) 화면의 루틴 목록이 비게 됩니다.\n평일에 켜는 것을 권장합니다.\n'
+                  : '') +
+                '\n계속하시겠습니까?'
+              );
+              if (!proceed) {
+                paintWeekendToggle(profile.weekend_routines_enabled === true);
+                return;
+              }
+            }
+
+            weekendToggleInput.disabled = true;
+            try {
+              if (next) {
+                await runWeekendRoutinesMigration();
+                paintWeekendToggle(true);
+                alert('주말 루틴 분리가 활성화되었습니다.\n기존 루틴은 "주중 루틴"으로 옮겨졌습니다.');
+              } else {
+                await disableWeekendRoutines();
+                paintWeekendToggle(false);
+              }
+              await loadRoutines();
+            } catch (err) {
+              console.error('[WeekendRoutines] Toggle error:', err);
+              alert('처리 중 오류가 발생했습니다.\n' + err.message);
+              paintWeekendToggle(profile.weekend_routines_enabled === true);
+            } finally {
+              weekendToggleInput.disabled = false;
+            }
           });
         }
       }
@@ -1191,29 +1308,49 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       async function syncMonthlyRoutines(userId, monthStart, dailyRoutines, activeFromDate) {
         const { morning = [], daytime = [], night = [] } = dailyRoutines;
+        // 주말 루틴 분리 토글 ON일 때 이 흐름이 다루는 입력은 "주중 루틴"이므로 day_type='weekday'
+        const useDayType = profile.weekend_routines_enabled === true;
+        const dayTypeTag = useDayType ? 'weekday' : null;
+
+        const matchesCategory = (r, category) => {
+          if (!r.schedule || r.schedule.category !== category) return false;
+          if (useDayType) return r.schedule.day_type === 'weekday';
+          // OFF 모드: weekend가 아닌 것은 모두 매칭 (legacy all_days, 과거에 migrated된 weekday 포함)
+          return r.schedule.day_type !== 'weekend';
+        };
 
         try {
           // A. 기존 월간 루틴 비활성화 (Soft Delete - 과거 기록 보존)
           // 해당 월의 모든 활성 월간 루틴을 비활성화하여 오늘부터 새 루틴이 적용되도록 함
           console.log('[Sync] 🔍 Deactivating existing monthly routines for', monthStart);
 
-          const { data: existingRoutines, error: fetchError } = await supabase
+          // 주말 토글 ON 시 weekday 루틴만 deactivate (weekend 루틴은 보존)
+          let existingQuery = supabase
             .from('routines')
-            .select('id')
+            .select('id, schedule')
             .eq('user_id', userId)
             .eq('schedule->>type', 'monthly')
             .eq('schedule->>month', monthStart)
             .eq('is_active', true)
             .is('deleted_at', null);
-          
+          if (useDayType) {
+            existingQuery = existingQuery.eq('schedule->>day_type', 'weekday');
+          }
+          const { data: existingRoutines, error: fetchError } = await existingQuery;
+
           if (fetchError) {
             console.error('[Sync Error] Failed to fetch existing routines:', fetchError);
             throw new Error('기존 루틴 조회 실패: ' + fetchError.message);
           }
-          
-          if (existingRoutines && existingRoutines.length > 0) {
+
+          // OFF 모드일 때는 weekend 루틴만 보존, 나머지(legacy + migrated weekday)는 deactivate 대상
+          const filteredExisting = useDayType
+            ? existingRoutines
+            : (existingRoutines || []).filter(r => r.schedule?.day_type !== 'weekend');
+
+          if (filteredExisting && filteredExisting.length > 0) {
             // 해당 월의 모든 활성 월간 루틴 비활성화
-            const idsToDeactivate = existingRoutines.map(r => r.id);
+            const idsToDeactivate = filteredExisting.map(r => r.id);
 
             console.log(`[Sync] 🗑️ Found ${idsToDeactivate.length} active routines to deactivate`);
             
@@ -1254,122 +1391,45 @@ export async function renderGoals() {
           const routinesToInsert = [];
           const routinesToReactivate = [];
           
-          // 모닝루틴 처리
-          morning.forEach((title, index) => {
-            const trimmedTitle = title.trim();
-            const existingRoutine = allRoutines?.find(r => 
-              r.title === trimmedTitle && 
-              r.schedule?.category === 'morning'
-            );
-            
-            if (existingRoutine && !existingRoutine.is_active) {
-              // 비활성 루틴이 있으면 재활성화 (active_from_date는 기존 값 유지)
-              routinesToReactivate.push({
-                id: existingRoutine.id,
-                schedule: {
-                  ...existingRoutine.schedule,
-                  order: index
-                  // active_from_date는 기존 값 유지하여 과거 기록 보존
-                }
-              });
-            } else if (existingRoutine && existingRoutine.is_active) {
-              // 이미 활성인 루틴은 그대로 유지 (아무것도 안함)
-              console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
-            } else if (!existingRoutine) {
-              // 루틴이 없으면 새로 생성
-              routinesToInsert.push({
-                user_id: userId,
-                title: trimmedTitle,
-                schedule: {
-                  type: 'monthly',
-                  month: monthStart,
-                  source: 'monthly_goal',
-                  category: 'morning',
-                  order: index,
-                  active_from_date: activeFromDate
-                },
-                is_active: true
-              });
-            }
-          });
-          
-          // 나이트루틴 처리
-          night.forEach((title, index) => {
-            const trimmedTitle = title.trim();
-            const existingRoutine = allRoutines?.find(r => 
-              r.title === trimmedTitle && 
-              r.schedule?.category === 'night'
-            );
-            
-            if (existingRoutine && !existingRoutine.is_active) {
-              // 비활성 루틴이 있으면 재활성화 (active_from_date는 기존 값 유지)
-              routinesToReactivate.push({
-                id: existingRoutine.id,
-                schedule: {
-                  ...existingRoutine.schedule,
-                  order: index
-                  // active_from_date는 기존 값 유지하여 과거 기록 보존
-                }
-              });
-            } else if (existingRoutine && existingRoutine.is_active) {
-              // 이미 활성인 루틴은 그대로 유지 (아무것도 안함)
-              console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
-            } else if (!existingRoutine) {
-              // 루틴이 없으면 새로 생성
-              routinesToInsert.push({
-                user_id: userId,
-                title: trimmedTitle,
-                schedule: {
-                  type: 'monthly',
-                  month: monthStart,
-                  source: 'monthly_goal',
-                  category: 'night',
-                  order: index,
-                  active_from_date: activeFromDate
-                },
-                is_active: true
-              });
-            }
-          });
-          
-          // 데이타임 루틴 처리
-          daytime.forEach((title, index) => {
-            const trimmedTitle = title.trim();
-            const existingRoutine = allRoutines?.find(r => 
-              r.title === trimmedTitle && 
-              r.schedule?.category === 'daytime'
-            );
-            
-            if (existingRoutine && !existingRoutine.is_active) {
-              // 비활성 루틴이 있으면 재활성화 (active_from_date는 기존 값 유지)
-              routinesToReactivate.push({
-                id: existingRoutine.id,
-                schedule: {
-                  ...existingRoutine.schedule,
-                  order: index
-                  // active_from_date는 기존 값 유지하여 과거 기록 보존
-                }
-              });
-            } else if (existingRoutine && existingRoutine.is_active) {
-              // 이미 활성인 루틴은 그대로 유지 (아무것도 안함)
-              console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
-            } else if (!existingRoutine) {
-              // 루틴이 없으면 새로 생성
-              routinesToInsert.push({
-                user_id: userId,
-                title: trimmedTitle,
-                schedule: {
-                  type: 'monthly',
-                  month: monthStart,
-                  source: 'monthly_goal',
-                  category: 'daytime',
-                  order: index,
-                  active_from_date: activeFromDate
-                },
-                is_active: true
-              });
-            }
-          });
+          const processCategory = (list, category) => {
+            list.forEach((title, index) => {
+              const trimmedTitle = title.trim();
+              const existingRoutine = allRoutines?.find(r =>
+                r.title === trimmedTitle && matchesCategory(r, category)
+              );
+
+              if (existingRoutine && !existingRoutine.is_active) {
+                routinesToReactivate.push({
+                  id: existingRoutine.id,
+                  schedule: {
+                    ...existingRoutine.schedule,
+                    order: index
+                  }
+                });
+              } else if (existingRoutine && existingRoutine.is_active) {
+                console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
+              } else {
+                routinesToInsert.push({
+                  user_id: userId,
+                  title: trimmedTitle,
+                  schedule: {
+                    type: 'monthly',
+                    month: monthStart,
+                    source: 'monthly_goal',
+                    category,
+                    order: index,
+                    active_from_date: activeFromDate,
+                    ...(dayTypeTag ? { day_type: dayTypeTag } : {})
+                  },
+                  is_active: true
+                });
+              }
+            });
+          };
+
+          processCategory(morning, 'morning');
+          processCategory(night, 'night');
+          processCategory(daytime, 'daytime');
           
           // 재활성화할 루틴이 있으면 업데이트
           if (routinesToReactivate.length > 0) {
