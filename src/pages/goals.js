@@ -35,6 +35,23 @@ export async function renderGoals() {
         </div>
       </div>
 
+      <!-- 주말 루틴 분리 토글 (베타: 화이트리스트 사용자만 노출) -->
+      <div id="weekend-routines-toggle-container" style="display: none; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.6); border-radius: 8px; margin-bottom: 1rem; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+          <i data-lucide="calendar-days" style="width: 18px; height: 18px; color: #7c3aed;"></i>
+          <div>
+            <div style="font-weight: 600; color: #1f2937; font-size: 0.95rem;">주말 루틴 분리 사용 <span style="font-size: 0.75rem; background: #fde68a; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 999px; margin-left: 0.25rem;">베타</span></div>
+            <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.125rem;">켜면 평일/주말 루틴을 분리하여 관리합니다.</div>
+          </div>
+        </div>
+        <label style="position: relative; display: inline-block; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0;">
+          <input type="checkbox" id="weekend-routines-toggle" style="opacity: 0; width: 0; height: 0;" />
+          <span id="weekend-routines-toggle-slider" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #d1d5db; border-radius: 24px; transition: 0.2s;">
+            <span style="position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.2s;"></span>
+          </span>
+        </label>
+      </div>
+
       <div id="routines-content" style="display: block;">
       <!-- 보기 모드 -->
       <div id="routines-view-mode" style="display: none;">
@@ -622,6 +639,44 @@ export async function renderGoals() {
       if (monthLabel) {
         const monthNum = parseInt(today.substring(5, 7));
         monthLabel.textContent = `${monthNum}월 매일 실천할 루틴`;
+      }
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // 주말 루틴 분리 토글 (베타) - 화이트리스트 사용자만 노출
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      const WEEKEND_ROUTINES_WHITELIST = ['deeptactlearning@gmail.com'];
+      const isWeekendRoutinesWhitelisted = WEEKEND_ROUTINES_WHITELIST.includes(profile.email);
+      const weekendToggleContainer = document.getElementById('weekend-routines-toggle-container');
+      const weekendToggleInput = document.getElementById('weekend-routines-toggle');
+      const weekendToggleSlider = document.getElementById('weekend-routines-toggle-slider');
+
+      function paintWeekendToggle(enabled) {
+        if (!weekendToggleInput || !weekendToggleSlider) return;
+        weekendToggleInput.checked = !!enabled;
+        const knob = weekendToggleSlider.firstElementChild;
+        if (enabled) {
+          weekendToggleSlider.style.background = '#a78bfa';
+          if (knob) knob.style.transform = 'translateX(20px)';
+        } else {
+          weekendToggleSlider.style.background = '#d1d5db';
+          if (knob) knob.style.transform = 'translateX(0)';
+        }
+      }
+
+      if (isWeekendRoutinesWhitelisted && weekendToggleContainer) {
+        weekendToggleContainer.style.display = 'flex';
+        paintWeekendToggle(profile.weekend_routines_enabled === true);
+
+        if (weekendToggleInput) {
+          weekendToggleInput.addEventListener('change', async (e) => {
+            // TODO: 다음 커밋에서 실제 마이그레이션/필터 로직 연결
+            const next = e.target.checked;
+            paintWeekendToggle(next);
+            alert('주말 루틴 분리 기능은 곧 활성화됩니다. (스켈레톤 단계)');
+            // 임시: 토글 상태 즉시 되돌림
+            paintWeekendToggle(profile.weekend_routines_enabled === true);
+          });
+        }
       }
 
       let morningRoutines = [];
