@@ -55,6 +55,7 @@ export async function renderGoals() {
       <div id="routines-content" style="display: block;">
       <!-- 보기 모드 -->
       <div id="routines-view-mode" style="display: none;">
+        <div id="weekday-view-label" style="display: none; font-weight: 700; color: #7c3aed; margin-bottom: 0.5rem; font-size: 1rem;">주중 루틴 (월~금)</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
           <!-- 모닝루틴 표시 -->
           <div id="morning-display-section">
@@ -92,6 +93,38 @@ export async function renderGoals() {
             </div>
           </div>
         </div>
+
+        <!-- 주말 보기 (토글 ON 시 노출) -->
+        <div id="weekend-view-section" style="display: none; margin-bottom: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed rgba(167,139,250,0.4);">
+          <div style="font-weight: 700; color: #7c3aed; margin-bottom: 0.75rem; font-size: 1rem;">주말 루틴 (토~일)</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem;">
+            <div id="weekend-morning-display-section">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <i data-lucide="sunrise" style="width: 20px; height: 20px; color: #f59e0b;"></i>
+                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">주말 모닝</h4>
+              </div>
+              <div id="weekend-morning-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+              <div id="weekend-morning-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">등록된 주말 모닝 루틴이 없습니다</div>
+            </div>
+            <div id="weekend-daytime-display-section">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
+                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">주말 데이타임</h4>
+              </div>
+              <div id="weekend-daytime-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+              <div id="weekend-daytime-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">등록된 주말 데이타임 루틴이 없습니다</div>
+            </div>
+            <div id="weekend-night-display-section">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <i data-lucide="moon" style="width: 20px; height: 20px; color: #6366f1;"></i>
+                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">주말 나이트</h4>
+              </div>
+              <div id="weekend-night-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+              <div id="weekend-night-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">등록된 주말 나이트 루틴이 없습니다</div>
+            </div>
+          </div>
+        </div>
+
         <div style="display: flex; gap: 0.75rem;">
           <button id="copy-prev-month-routines-btn" class="btn btn-secondary" style="display: none;">
             <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
@@ -103,6 +136,7 @@ export async function renderGoals() {
 
       <!-- 편집 모드 -->
       <div id="routines-edit-mode" style="display: none;">
+        <div id="weekday-edit-label" style="display: none; font-weight: 700; color: #7c3aed; margin-bottom: 0.5rem; font-size: 1rem;">주중 루틴 (월~금)</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
           <!-- 모닝루틴 입력 -->
           <div>
@@ -152,6 +186,56 @@ export async function renderGoals() {
             </button>
           </div>
         </div>
+
+        <!-- 주말 편집 (토글 ON 시 노출) -->
+        <div id="weekend-edit-section" style="display: none; margin-bottom: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed rgba(167,139,250,0.4);">
+          <div style="font-weight: 700; color: #7c3aed; margin-bottom: 0.75rem; font-size: 1rem;">주말 루틴 (토~일)</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem;">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="sunrise" style="width: 20px; height: 20px; color: #f59e0b;"></i>
+                  <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">주말 모닝</h4>
+                </div>
+                <span style="font-size: 0.85rem; color: #9ca3af;" id="weekend-morning-count">0/10</span>
+              </div>
+              <div id="weekend-morning-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
+              <button id="add-weekend-morning-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                주말 모닝 추가
+              </button>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
+                  <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">주말 데이타임</h4>
+                </div>
+                <span style="font-size: 0.85rem; color: #9ca3af;" id="weekend-daytime-count">0/10</span>
+              </div>
+              <div id="weekend-daytime-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
+              <button id="add-weekend-daytime-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                주말 데이타임 추가
+              </button>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="moon" style="width: 20px; height: 20px; color: #6366f1;"></i>
+                  <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">주말 나이트</h4>
+                </div>
+                <span style="font-size: 0.85rem; color: #9ca3af;" id="weekend-night-count">0/10</span>
+              </div>
+              <div id="weekend-night-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
+              <button id="add-weekend-night-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                주말 나이트 추가
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div style="display: flex; gap: 0.75rem;">
           <button id="copy-prev-month-routines-edit-btn" class="btn btn-secondary" style="display: inline-flex;">
             <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
@@ -762,9 +846,9 @@ export async function renderGoals() {
               const proceed = confirm(
                 '주말 루틴 분리를 활성화합니다.\n\n' +
                 '· 기존 모든 루틴은 "주중 루틴(평일 전용)"으로 자동 분류됩니다.\n' +
-                '· 주말 루틴 입력 UI는 이후 업데이트에서 추가될 예정입니다.\n' +
+                '· 활성화 후 목표 탭의 "수정하기"에서 주말 루틴을 추가할 수 있습니다.\n' +
                 (isWeekendToday
-                  ? '\n⚠ 오늘은 주말입니다. 켜면 오늘(주말) 화면의 루틴 목록이 비게 됩니다.\n평일에 켜는 것을 권장합니다.\n'
+                  ? '\n⚠ 오늘은 주말입니다. 켜자마자 주말 루틴을 추가하지 않으면 오늘 탭의 루틴 목록이 비게 됩니다.\n'
                   : '') +
                 '\n계속하시겠습니까?'
               );
@@ -779,7 +863,7 @@ export async function renderGoals() {
               if (next) {
                 await runWeekendRoutinesMigration();
                 paintWeekendToggle(true);
-                alert('주말 루틴 분리가 활성화되었습니다.\n기존 루틴은 "주중 루틴"으로 옮겨졌습니다.');
+                alert('주말 루틴 분리가 활성화되었습니다.\n기존 루틴은 "주중 루틴"으로 옮겨졌습니다.\n\n"수정하기" 버튼으로 주말 루틴을 추가해보세요.');
               } else {
                 await disableWeekendRoutines();
                 paintWeekendToggle(false);
@@ -799,7 +883,26 @@ export async function renderGoals() {
       let morningRoutines = [];
       let daytimeRoutines = [];
       let nightRoutines = [];
+      let weekendMorningRoutines = [];
+      let weekendDaytimeRoutines = [];
+      let weekendNightRoutines = [];
       let isEditMode = false;
+
+      function isWeekendModeOn() {
+        return profile.weekend_routines_enabled === true;
+      }
+
+      function applyWeekendSectionsVisibility() {
+        const on = isWeekendModeOn();
+        const viewSec = document.getElementById('weekend-view-section');
+        const editSec = document.getElementById('weekend-edit-section');
+        const weekdayViewLabel = document.getElementById('weekday-view-label');
+        const weekdayEditLabel = document.getElementById('weekday-edit-label');
+        if (viewSec) viewSec.style.display = on ? 'block' : 'none';
+        if (editSec) editSec.style.display = on ? 'block' : 'none';
+        if (weekdayViewLabel) weekdayViewLabel.style.display = on ? 'block' : 'none';
+        if (weekdayEditLabel) weekdayEditLabel.style.display = on ? 'block' : 'none';
+      }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       // 조회
@@ -823,10 +926,17 @@ export async function renderGoals() {
             morningRoutines = data.daily_routines.morning || [];
             daytimeRoutines = data.daily_routines.daytime || [];
             nightRoutines = data.daily_routines.night || [];
+            weekendMorningRoutines = data.daily_routines.weekend_morning || [];
+            weekendDaytimeRoutines = data.daily_routines.weekend_daytime || [];
+            weekendNightRoutines = data.daily_routines.weekend_night || [];
           }
 
+          applyWeekendSectionsVisibility();
+
+          const anyWeekday = morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0;
+          const anyWeekend = weekendMorningRoutines.length > 0 || weekendDaytimeRoutines.length > 0 || weekendNightRoutines.length > 0;
           // 데이터가 있으면 보기 모드, 없으면 편집 모드
-          if (morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0) {
+          if (anyWeekday || anyWeekend) {
             displayRoutines();
           } else {
             switchToEditMode();
@@ -843,62 +953,36 @@ export async function renderGoals() {
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       // 보기 모드 표시
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      function renderDisplayList(listId, emptyId, items) {
+        const listEl = document.getElementById(listId);
+        const emptyEl = document.getElementById(emptyId);
+        if (!listEl || !emptyEl) return;
+        if (items.length > 0) {
+          listEl.innerHTML = items.map((routine, idx) => `
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
+                ${idx + 1}
+              </span>
+              <span style="color: #374151; font-weight: 500;">${routine}</span>
+            </div>
+          `).join('');
+          emptyEl.style.display = 'none';
+        } else {
+          listEl.innerHTML = '';
+          emptyEl.style.display = 'block';
+        }
+      }
+
       function displayRoutines() {
-        const morningList = document.getElementById('morning-display-list');
-        const daytimeList = document.getElementById('daytime-display-list');
-        const nightList = document.getElementById('night-display-list');
-        const morningEmpty = document.getElementById('morning-empty');
-        const daytimeEmpty = document.getElementById('daytime-empty');
-        const nightEmpty = document.getElementById('night-empty');
-
-        // 모닝루틴 표시
-        if (morningRoutines.length > 0) {
-          morningList.innerHTML = morningRoutines.map((routine, idx) => `
-            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
-                ${idx + 1}
-              </span>
-              <span style="color: #374151; font-weight: 500;">${routine}</span>
-            </div>
-          `).join('');
-          morningEmpty.style.display = 'none';
-        } else {
-          morningList.innerHTML = '';
-          morningEmpty.style.display = 'block';
+        renderDisplayList('morning-display-list', 'morning-empty', morningRoutines);
+        renderDisplayList('daytime-display-list', 'daytime-empty', daytimeRoutines);
+        renderDisplayList('night-display-list', 'night-empty', nightRoutines);
+        if (isWeekendModeOn()) {
+          renderDisplayList('weekend-morning-display-list', 'weekend-morning-empty', weekendMorningRoutines);
+          renderDisplayList('weekend-daytime-display-list', 'weekend-daytime-empty', weekendDaytimeRoutines);
+          renderDisplayList('weekend-night-display-list', 'weekend-night-empty', weekendNightRoutines);
         }
-
-        // 데이타임 루틴 표시
-        if (daytimeRoutines.length > 0) {
-          daytimeList.innerHTML = daytimeRoutines.map((routine, idx) => `
-            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
-                ${idx + 1}
-              </span>
-              <span style="color: #374151; font-weight: 500;">${routine}</span>
-            </div>
-          `).join('');
-          daytimeEmpty.style.display = 'none';
-        } else {
-          daytimeList.innerHTML = '';
-          daytimeEmpty.style.display = 'block';
-        }
-
-        // 나이트루틴 표시
-        if (nightRoutines.length > 0) {
-          nightList.innerHTML = nightRoutines.map((routine, idx) => `
-            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
-                ${idx + 1}
-              </span>
-              <span style="color: #374151; font-weight: 500;">${routine}</span>
-            </div>
-          `).join('');
-          nightEmpty.style.display = 'none';
-        } else {
-          nightList.innerHTML = '';
-          nightEmpty.style.display = 'block';
-        }
-
+        applyWeekendSectionsVisibility();
         switchToViewMode();
       }
 
@@ -945,7 +1029,32 @@ export async function renderGoals() {
         renderRoutineInputs('morning', morningRoutines);
         renderRoutineInputs('daytime', daytimeRoutines);
         renderRoutineInputs('night', nightRoutines);
+        if (isWeekendModeOn()) {
+          renderRoutineInputs('weekend-morning', weekendMorningRoutines);
+          renderRoutineInputs('weekend-daytime', weekendDaytimeRoutines);
+          renderRoutineInputs('weekend-night', weekendNightRoutines);
+        }
+        applyWeekendSectionsVisibility();
       }
+
+      const ROUTINE_TYPE_LABEL = {
+        'morning': '모닝루틴',
+        'daytime': '데이타임 루틴',
+        'night': '나이트루틴',
+        'weekend-morning': '주말 모닝 루틴',
+        'weekend-daytime': '주말 데이타임 루틴',
+        'weekend-night': '주말 나이트 루틴'
+      };
+      const ROUTINE_TYPE_PLACEHOLDER = {
+        'morning': '예: 아침 명상 10분',
+        'daytime': '예: 점심 산책',
+        'night': '예: 감사 일기',
+        'weekend-morning': '예: 늦은 아침 요가',
+        'weekend-daytime': '예: 가족 시간',
+        'weekend-night': '예: 영화 감상'
+      };
+      function labelFor(type) { return ROUTINE_TYPE_LABEL[type] || type; }
+      function placeholderFor(type) { return ROUTINE_TYPE_PLACEHOLDER[type] || '예: 루틴 내용'; }
 
       function renderRoutineInputs(type, routines) {
         const container = document.getElementById(`${type}-routines-list`);
@@ -968,7 +1077,7 @@ export async function renderGoals() {
         const currentCount = container.children.length;
         
         if (currentCount >= 10) {
-          alert(`${type === 'morning' ? '모닝' : '나이트'}루틴은 최대 10개까지 가능합니다.`);
+          alert(`${labelFor(type)}은 최대 10개까지 가능합니다.`);
           return;
         }
 
@@ -996,7 +1105,7 @@ export async function renderGoals() {
             type="text" 
             class="input routine-input" 
             data-type="${type}"
-            placeholder="${type === 'morning' ? '예: 아침 명상 10분' : '예: 감사 일기'}" 
+            placeholder="${placeholderFor(type)}"
             value="${value}"
             maxlength="50"
             style="flex: 1; border: 2px solid #d8b4fe; background: white;"
@@ -1043,7 +1152,7 @@ export async function renderGoals() {
             } else if (!currentValue) {
               // 빈 값이면 아무것도 하지 않음
             } else if (container.children.length >= 10) {
-              alert(`${type === 'morning' ? '모닝' : '나이트'}루틴은 최대 10개까지 가능합니다.`);
+              alert(`${labelFor(type)}은 최대 10개까지 가능합니다.`);
             }
           }
         });
@@ -1212,24 +1321,22 @@ export async function renderGoals() {
       // 저장
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       async function saveRoutines() {
-        const morningInputs = document.querySelectorAll('#morning-routines-list .routine-input');
-        const daytimeInputs = document.querySelectorAll('#daytime-routines-list .routine-input');
-        const nightInputs = document.querySelectorAll('#night-routines-list .routine-input');
-
-        const newMorningRoutines = Array.from(morningInputs)
+        const collectList = (id) => Array.from(document.querySelectorAll(`#${id} .routine-input`))
           .map(input => input.value.trim())
           .filter(v => v.length > 0);
 
-        const newDaytimeRoutines = Array.from(daytimeInputs)
-          .map(input => input.value.trim())
-          .filter(v => v.length > 0);
+        const newMorningRoutines = collectList('morning-routines-list');
+        const newDaytimeRoutines = collectList('daytime-routines-list');
+        const newNightRoutines = collectList('night-routines-list');
 
-        const newNightRoutines = Array.from(nightInputs)
-          .map(input => input.value.trim())
-          .filter(v => v.length > 0);
+        const weekendOn = isWeekendModeOn();
+        const newWeekendMorning = weekendOn ? collectList('weekend-morning-routines-list') : [];
+        const newWeekendDaytime = weekendOn ? collectList('weekend-daytime-routines-list') : [];
+        const newWeekendNight = weekendOn ? collectList('weekend-night-routines-list') : [];
 
-        // 유효성 검사
-        if (newMorningRoutines.length === 0 && newDaytimeRoutines.length === 0 && newNightRoutines.length === 0) {
+        const anyWeekday = newMorningRoutines.length + newDaytimeRoutines.length + newNightRoutines.length > 0;
+        const anyWeekend = newWeekendMorning.length + newWeekendDaytime.length + newWeekendNight.length > 0;
+        if (!anyWeekday && !anyWeekend) {
           alert('최소 1개의 루틴을 입력해주세요.');
           return;
         }
@@ -1237,7 +1344,10 @@ export async function renderGoals() {
         const dailyRoutines = {
           morning: newMorningRoutines,
           daytime: newDaytimeRoutines,
-          night: newNightRoutines
+          night: newNightRoutines,
+          weekend_morning: newWeekendMorning,
+          weekend_daytime: newWeekendDaytime,
+          weekend_night: newWeekendNight
         };
 
         try {
@@ -1293,6 +1403,9 @@ export async function renderGoals() {
           morningRoutines = newMorningRoutines;
           daytimeRoutines = newDaytimeRoutines;
           nightRoutines = newNightRoutines;
+          weekendMorningRoutines = newWeekendMorning;
+          weekendDaytimeRoutines = newWeekendDaytime;
+          weekendNightRoutines = newWeekendNight;
 
           alert('저장되었습니다!');
           displayRoutines();
@@ -1307,108 +1420,63 @@ export async function renderGoals() {
       // routines 테이블 동기화
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       async function syncMonthlyRoutines(userId, monthStart, dailyRoutines, activeFromDate) {
-        const { morning = [], daytime = [], night = [] } = dailyRoutines;
-        // 주말 루틴 분리 토글 ON일 때 이 흐름이 다루는 입력은 "주중 루틴"이므로 day_type='weekday'
+        const {
+          morning = [], daytime = [], night = [],
+          weekend_morning = [], weekend_daytime = [], weekend_night = []
+        } = dailyRoutines;
         const useDayType = profile.weekend_routines_enabled === true;
-        const dayTypeTag = useDayType ? 'weekday' : null;
+        const weekdayTag = useDayType ? 'weekday' : null;
 
-        const matchesCategory = (r, category) => {
+        // dayTypeTag === 'weekend': day_type=='weekend'만 매칭
+        // dayTypeTag === 'weekday': day_type=='weekday'만 매칭
+        // dayTypeTag === null      : day_type이 'weekend'가 아닌 모든 것 (legacy + migrated weekday 포함)
+        const matchesScope = (r, category, dayTypeTag) => {
           if (!r.schedule || r.schedule.category !== category) return false;
-          if (useDayType) return r.schedule.day_type === 'weekday';
-          // OFF 모드: weekend가 아닌 것은 모두 매칭 (legacy all_days, 과거에 migrated된 weekday 포함)
+          if (dayTypeTag === 'weekend') return r.schedule.day_type === 'weekend';
+          if (dayTypeTag === 'weekday') return r.schedule.day_type === 'weekday';
           return r.schedule.day_type !== 'weekend';
         };
 
         try {
-          // A. 기존 월간 루틴 비활성화 (Soft Delete - 과거 기록 보존)
-          // 해당 월의 모든 활성 월간 루틴을 비활성화하여 오늘부터 새 루틴이 적용되도록 함
-          console.log('[Sync] 🔍 Deactivating existing monthly routines for', monthStart);
-
-          // 주말 토글 ON 시 weekday 루틴만 deactivate (weekend 루틴은 보존)
-          let existingQuery = supabase
-            .from('routines')
-            .select('id, schedule')
-            .eq('user_id', userId)
-            .eq('schedule->>type', 'monthly')
-            .eq('schedule->>month', monthStart)
-            .eq('is_active', true)
-            .is('deleted_at', null);
-          if (useDayType) {
-            existingQuery = existingQuery.eq('schedule->>day_type', 'weekday');
-          }
-          const { data: existingRoutines, error: fetchError } = await existingQuery;
-
-          if (fetchError) {
-            console.error('[Sync Error] Failed to fetch existing routines:', fetchError);
-            throw new Error('기존 루틴 조회 실패: ' + fetchError.message);
-          }
-
-          // OFF 모드일 때는 weekend 루틴만 보존, 나머지(legacy + migrated weekday)는 deactivate 대상
-          const filteredExisting = useDayType
-            ? existingRoutines
-            : (existingRoutines || []).filter(r => r.schedule?.day_type !== 'weekend');
-
-          if (filteredExisting && filteredExisting.length > 0) {
-            // 해당 월의 모든 활성 월간 루틴 비활성화
-            const idsToDeactivate = filteredExisting.map(r => r.id);
-
-            console.log(`[Sync] 🗑️ Found ${idsToDeactivate.length} active routines to deactivate`);
-            
-            const { error: updateError } = await supabase
-              .from('routines')
-              .update({ 
-                is_active: false, 
-                deleted_at: new Date().toISOString() 
-              })
-              .in('id', idsToDeactivate);
-            
-            if (updateError) {
-              console.error('[Sync Error] Failed to deactivate old routines:', updateError);
-              throw new Error('기존 루틴 비활성화 실패: ' + updateError.message);
-            }
-            
-            console.log(`[Sync] ✅ Successfully deactivated ${idsToDeactivate.length} old routines (past records preserved)`);
-          } else {
-            console.log('[Sync] ℹ️ No existing active routines to deactivate');
-          }
-
-          // B. 새 루틴 생성 또는 재활성화 (오늘부터 적용되도록 active_from_date 설정)
-          // 중복 방지: 기존에 동일한 제목의 루틴이 있으면 재활성화, 없으면 새로 생성
-          
-          // 먼저 기존 비활성 루틴 중 동일 제목이 있는지 확인
-          const { data: allRoutines, error: allRoutinesError } = await supabase
+          // 해당 월의 모든 루틴 일괄 조회
+          const { data: allMonthRoutinesRaw, error: fetchErr } = await supabase
             .from('routines')
             .select('id, title, schedule, is_active, deleted_at')
             .eq('user_id', userId)
             .eq('schedule->>type', 'monthly')
             .eq('schedule->>month', monthStart);
-          
-          if (allRoutinesError) {
-            console.error('[Sync Error] Failed to fetch all routines:', allRoutinesError);
-            throw new Error('기존 루틴 조회 실패: ' + allRoutinesError.message);
+          if (fetchErr) throw new Error('기존 루틴 조회 실패: ' + fetchErr.message);
+          const allMonthRoutines = allMonthRoutinesRaw || [];
+
+          async function deactivateForScope(dayTypeTag) {
+            const candidates = allMonthRoutines.filter(r =>
+              r.is_active && matchesScope(r, r.schedule?.category, dayTypeTag)
+            );
+            if (candidates.length === 0) return;
+            const ids = candidates.map(r => r.id);
+            const { error } = await supabase
+              .from('routines')
+              .update({ is_active: false, deleted_at: new Date().toISOString() })
+              .in('id', ids);
+            if (error) throw new Error('기존 루틴 비활성화 실패: ' + error.message);
+            candidates.forEach(r => { r.is_active = false; });
           }
-          
+
           const routinesToInsert = [];
           const routinesToReactivate = [];
-          
-          const processCategory = (list, category) => {
-            list.forEach((title, index) => {
-              const trimmedTitle = title.trim();
-              const existingRoutine = allRoutines?.find(r =>
-                r.title === trimmedTitle && matchesCategory(r, category)
-              );
 
-              if (existingRoutine && !existingRoutine.is_active) {
+          function planScope(list, category, dayTypeTag) {
+            list.forEach((title, idx) => {
+              const trimmedTitle = title.trim();
+              const existing = allMonthRoutines.find(r =>
+                r.title === trimmedTitle && matchesScope(r, category, dayTypeTag)
+              );
+              if (existing && !existing.is_active) {
                 routinesToReactivate.push({
-                  id: existingRoutine.id,
-                  schedule: {
-                    ...existingRoutine.schedule,
-                    order: index
-                  }
+                  id: existing.id,
+                  schedule: { ...existing.schedule, order: idx }
                 });
-              } else if (existingRoutine && existingRoutine.is_active) {
-                console.log(`[Sync] ℹ️ Routine already active: ${trimmedTitle}`);
-              } else {
+              } else if (!existing) {
                 routinesToInsert.push({
                   user_id: userId,
                   title: trimmedTitle,
@@ -1417,7 +1485,7 @@ export async function renderGoals() {
                     month: monthStart,
                     source: 'monthly_goal',
                     category,
-                    order: index,
+                    order: idx,
                     active_from_date: activeFromDate,
                     ...(dayTypeTag ? { day_type: dayTypeTag } : {})
                   },
@@ -1425,49 +1493,38 @@ export async function renderGoals() {
                 });
               }
             });
-          };
+          }
 
-          processCategory(morning, 'morning');
-          processCategory(night, 'night');
-          processCategory(daytime, 'daytime');
-          
-          // 재활성화할 루틴이 있으면 업데이트
+          // Phase A: weekday (or OFF mode)
+          await deactivateForScope(weekdayTag);
+          planScope(morning, 'morning', weekdayTag);
+          planScope(daytime, 'daytime', weekdayTag);
+          planScope(night, 'night', weekdayTag);
+
+          // Phase B: weekend (토글 ON 시에만)
+          if (useDayType) {
+            await deactivateForScope('weekend');
+            planScope(weekend_morning, 'morning', 'weekend');
+            planScope(weekend_daytime, 'daytime', 'weekend');
+            planScope(weekend_night, 'night', 'weekend');
+          }
+
           if (routinesToReactivate.length > 0) {
-            console.log(`[Sync] 🔄 Reactivating ${routinesToReactivate.length} existing routines`);
-            
             for (const routine of routinesToReactivate) {
-              const { error: updateError } = await supabase
+              const { error } = await supabase
                 .from('routines')
-                .update({
-                  is_active: true,
-                  deleted_at: null,
-                  schedule: routine.schedule
-                })
+                .update({ is_active: true, deleted_at: null, schedule: routine.schedule })
                 .eq('id', routine.id);
-              
-              if (updateError) {
-                console.error('[Sync Error] Failed to reactivate routine:', updateError);
-                throw new Error('루틴 재활성화 실패: ' + updateError.message);
-              }
+              if (error) throw new Error('루틴 재활성화 실패: ' + error.message);
             }
-            
-            console.log(`[Sync] ✅ Successfully reactivated ${routinesToReactivate.length} routines`);
           }
-          
-          // 새로 생성할 루틴이 있으면 INSERT
+
           if (routinesToInsert.length > 0) {
-            const { error: insertError } = await supabase
-              .from('routines')
-              .insert(routinesToInsert);
-
-            if (insertError) {
-              console.error('[Insert Error]', insertError);
-              throw new Error('루틴 동기화 실패: ' + insertError.message);
-            }
-
-            console.log(`[Synced] ${routinesToInsert.length} routines`);
+            const { error } = await supabase.from('routines').insert(routinesToInsert);
+            if (error) throw new Error('루틴 동기화 실패: ' + error.message);
           }
 
+          console.log(`[Sync] reactivated=${routinesToReactivate.length} inserted=${routinesToInsert.length}`);
         } catch (error) {
           console.error('[Sync Error]', error);
           throw error;
@@ -1546,7 +1603,10 @@ export async function renderGoals() {
             return routines && (
               (routines.morning && routines.morning.length > 0) ||
               (routines.daytime && routines.daytime.length > 0) ||
-              (routines.night && routines.night.length > 0)
+              (routines.night && routines.night.length > 0) ||
+              (routines.weekend_morning && routines.weekend_morning.length > 0) ||
+              (routines.weekend_daytime && routines.weekend_daytime.length > 0) ||
+              (routines.weekend_night && routines.weekend_night.length > 0)
             );
           });
           
@@ -1581,10 +1641,13 @@ export async function renderGoals() {
             const month = date.getMonth() + 1;
             
             const routines = plan.daily_routines;
-            const totalCount = 
-              (routines.morning?.length || 0) + 
-              (routines.daytime?.length || 0) + 
-              (routines.night?.length || 0);
+            const totalCount =
+              (routines.morning?.length || 0) +
+              (routines.daytime?.length || 0) +
+              (routines.night?.length || 0) +
+              (routines.weekend_morning?.length || 0) +
+              (routines.weekend_daytime?.length || 0) +
+              (routines.weekend_night?.length || 0);
             
             const card = document.createElement('div');
             card.className = 'past-month-card';
@@ -1708,17 +1771,22 @@ export async function renderGoals() {
           }
           
           const routines = selected.routines;
-          const totalRoutines = 
-            (routines.morning?.length || 0) + 
-            (routines.daytime?.length || 0) + 
-            (routines.night?.length || 0);
+          const totalRoutines =
+            (routines.morning?.length || 0) +
+            (routines.daytime?.length || 0) +
+            (routines.night?.length || 0) +
+            (routines.weekend_morning?.length || 0) +
+            (routines.weekend_daytime?.length || 0) +
+            (routines.weekend_night?.length || 0);
           
           // 모달 닫기
           document.getElementById('past-routines-modal').style.display = 'none';
           
           // 현재 월 루틴이 있는지 확인
-          if (morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0) {
-            const totalCurrent = morningRoutines.length + daytimeRoutines.length + nightRoutines.length;
+          const currentTotal = morningRoutines.length + daytimeRoutines.length + nightRoutines.length
+            + weekendMorningRoutines.length + weekendDaytimeRoutines.length + weekendNightRoutines.length;
+          if (currentTotal > 0) {
+            const totalCurrent = currentTotal;
             
             const confirmed = confirm(
               `⚠️ 이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
@@ -1791,7 +1859,10 @@ export async function renderGoals() {
           morningRoutines = routines.morning || [];
           daytimeRoutines = routines.daytime || [];
           nightRoutines = routines.night || [];
-          
+          weekendMorningRoutines = routines.weekend_morning || [];
+          weekendDaytimeRoutines = routines.weekend_daytime || [];
+          weekendNightRoutines = routines.weekend_night || [];
+
           alert(`✅ ${selected.year}년 ${selected.month}월 루틴이 복사되었습니다!`);
           
           displayRoutines();
@@ -1829,9 +1900,6 @@ export async function renderGoals() {
         displayRoutines();
       };
       const handleSaveRoutines = () => saveRoutines();
-      const handleAddMorningRoutine = () => addRoutineInput('morning');
-      const handleAddDaytimeRoutine = () => addRoutineInput('daytime');
-      const handleAddNightRoutine = () => addRoutineInput('night');
       const handleCopyPrevMonthRoutines = () => copyPreviousMonthRoutines();
       
       const editBtn = document.getElementById('edit-routines-btn');
@@ -1839,9 +1907,6 @@ export async function renderGoals() {
       const copyEditBtn = document.getElementById('copy-prev-month-routines-edit-btn');
       const cancelBtn = document.getElementById('cancel-edit-btn');
       const saveBtn = document.getElementById('save-routines-btn');
-      const addMorningBtn = document.getElementById('add-morning-routine-btn');
-      const addDaytimeBtn = document.getElementById('add-daytime-routine-btn');
-      const addNightBtn = document.getElementById('add-night-routine-btn');
       
       if (editBtn) {
         editBtn.removeEventListener('click', handleEditRoutines);
@@ -1867,71 +1932,36 @@ export async function renderGoals() {
         saveBtn.removeEventListener('click', handleSaveRoutines);
         saveBtn.addEventListener('click', handleSaveRoutines);
       }
-      
-      if (addMorningBtn) {
-        addMorningBtn.removeEventListener('click', handleAddMorningRoutine);
-        addMorningBtn.addEventListener('click', handleAddMorningRoutine);
-      }
-      
-      if (addDaytimeBtn) {
-        addDaytimeBtn.removeEventListener('click', handleAddDaytimeRoutine);
-        addDaytimeBtn.addEventListener('click', handleAddDaytimeRoutine);
-      }
-      
-      if (addNightBtn) {
-        addNightBtn.removeEventListener('click', handleAddNightRoutine);
-        addNightBtn.addEventListener('click', handleAddNightRoutine);
-      }
 
-      // 삭제 버튼 및 순서 조정 버튼 (이벤트 위임)
-      document.getElementById('morning-routines-list')?.addEventListener('click', (e) => {
-        const removeBtn = e.target.closest('.remove-routine-btn');
-        const moveUpBtn = e.target.closest('.move-routine-up');
-        const moveDownBtn = e.target.closest('.move-routine-down');
-        
-        if (removeBtn && removeBtn.dataset.type === 'morning') {
-          const index = parseInt(removeBtn.dataset.index);
-          removeRoutineInput('morning', index);
-        } else if (moveUpBtn && moveUpBtn.dataset.type === 'morning') {
-          const index = parseInt(moveUpBtn.dataset.index);
-          moveRoutineUp('morning', index);
-        } else if (moveDownBtn && moveDownBtn.dataset.type === 'morning') {
-          const index = parseInt(moveDownBtn.dataset.index);
-          moveRoutineDown('morning', index);
+      const ROUTINE_TYPES = ['morning', 'daytime', 'night', 'weekend-morning', 'weekend-daytime', 'weekend-night'];
+
+      // "+ 추가" 버튼 + 리스트 이벤트 위임 (주중/주말 모두 처리, 중복 등록 방지)
+      ROUTINE_TYPES.forEach(type => {
+        const addBtn = document.getElementById(`add-${type}-routine-btn`);
+        if (addBtn) {
+          if (addBtn._weekendAddHandler) {
+            addBtn.removeEventListener('click', addBtn._weekendAddHandler);
+          }
+          const handler = () => addRoutineInput(type);
+          addBtn._weekendAddHandler = handler;
+          addBtn.addEventListener('click', handler);
         }
-      });
 
-      document.getElementById('night-routines-list')?.addEventListener('click', (e) => {
-        const removeBtn = e.target.closest('.remove-routine-btn');
-        const moveUpBtn = e.target.closest('.move-routine-up');
-        const moveDownBtn = e.target.closest('.move-routine-down');
-        
-        if (removeBtn && removeBtn.dataset.type === 'night') {
-          const index = parseInt(removeBtn.dataset.index);
-          removeRoutineInput('night', index);
-        } else if (moveUpBtn && moveUpBtn.dataset.type === 'night') {
-          const index = parseInt(moveUpBtn.dataset.index);
-          moveRoutineUp('night', index);
-        } else if (moveDownBtn && moveDownBtn.dataset.type === 'night') {
-          const index = parseInt(moveDownBtn.dataset.index);
-          moveRoutineDown('night', index);
-        }
-      });
-
-      document.getElementById('daytime-routines-list')?.addEventListener('click', (e) => {
-        const removeBtn = e.target.closest('.remove-routine-btn');
-        const moveUpBtn = e.target.closest('.move-routine-up');
-        const moveDownBtn = e.target.closest('.move-routine-down');
-        
-        if (removeBtn && removeBtn.dataset.type === 'daytime') {
-          const index = parseInt(removeBtn.dataset.index);
-          removeRoutineInput('daytime', index);
-        } else if (moveUpBtn && moveUpBtn.dataset.type === 'daytime') {
-          const index = parseInt(moveUpBtn.dataset.index);
-          moveRoutineUp('daytime', index);
-        } else if (moveDownBtn && moveDownBtn.dataset.type === 'daytime') {
-          const index = parseInt(moveDownBtn.dataset.index);
-          moveRoutineDown('daytime', index);
+        const listEl = document.getElementById(`${type}-routines-list`);
+        if (listEl && !listEl._weekendDelegationAttached) {
+          listEl._weekendDelegationAttached = true;
+          listEl.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.remove-routine-btn');
+            const moveUpBtn = e.target.closest('.move-routine-up');
+            const moveDownBtn = e.target.closest('.move-routine-down');
+            if (removeBtn && removeBtn.dataset.type === type) {
+              removeRoutineInput(type, parseInt(removeBtn.dataset.index));
+            } else if (moveUpBtn && moveUpBtn.dataset.type === type) {
+              moveRoutineUp(type, parseInt(moveUpBtn.dataset.index));
+            } else if (moveDownBtn && moveDownBtn.dataset.type === type) {
+              moveRoutineDown(type, parseInt(moveDownBtn.dataset.index));
+            }
+          });
         }
       });
 
