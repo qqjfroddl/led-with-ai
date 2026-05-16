@@ -283,21 +283,21 @@ export async function renderToday() {
             <i data-lucide="x" style="width: 24px; height: 24px;"></i>
           </button>
         </div>
-        <p style="color: #6b7280; margin-bottom: 1.5rem; line-height: 1.6;">
+        <p style="color: #6b7280; margin-bottom: 1rem; line-height: 1.6;">
           지난 날짜에 미완료된 할일이 있습니다. 오늘로 이어가거나 포기할 수 있습니다.
         </p>
+        <div style="display: flex; margin-bottom: 1.5rem;">
+          <button id="carryover-carry-all-btn" style="width: 100%; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+            모두 이어가기
+          </button>
+        </div>
         <div id="carryover-todos-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
           <!-- 동적으로 채워짐 -->
         </div>
-        <div style="display: flex; gap: 0.75rem; justify-content: space-between; align-items: center;">
-          <button id="carryover-carry-all-btn" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-            모두 이어가기
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center;">
+          <button id="carryover-later-btn" style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #1f2937; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+            나중에
           </button>
-          <div style="display: flex; gap: 0.75rem;">
-            <button id="carryover-later-btn" style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #1f2937; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
-              나중에
-            </button>
-          </div>
         </div>
       </div>
     </div>
