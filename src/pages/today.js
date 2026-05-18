@@ -661,6 +661,7 @@ async function loadTodos(date, profile, timezone = 'Asia/Seoul') {
       .order('category', { ascending: true })
       .order('is_done', { ascending: true })
       .order('display_order', { ascending: true, nullsFirst: false })
+      .order('is_carried_over', { ascending: true })
       .order('pinned', { ascending: false })
       .order('due_date', { ascending: true, nullsFirst: false })
       .order('priority', { ascending: false, nullsFirst: false })
@@ -2003,7 +2004,7 @@ async function saveTodoEdit(todoId, newTitle, date, profile, timezone = 'Asia/Se
 }
 
 // 공통 정렬 함수 (loadTodos와 동일한 정렬 로직)
-// loadTodos의 정렬 순서: display_order → pinned → due_date → priority → created_at
+// loadTodos의 정렬 순서: display_order → is_carried_over → pinned → due_date → priority → created_at
 function sortTodosForDisplay(todos) {
   return [...todos].sort((a, b) => {
     // 1. display_order (NULL은 마지막, nullsFirst: false)
@@ -2016,13 +2017,20 @@ function sortTodosForDisplay(todos) {
       if (b.display_order !== null) return 1;
       // 둘 다 NULL이면 다음 기준으로
     }
-    
-    // 2. pinned (내림차순: true가 먼저)
+
+    // 2. is_carried_over (false가 먼저: 비이관 항목이 위, 이관 항목이 아래)
+    const aCarried = a.is_carried_over === true;
+    const bCarried = b.is_carried_over === true;
+    if (aCarried !== bCarried) {
+      return aCarried ? 1 : -1;
+    }
+
+    // 3. pinned (내림차순: true가 먼저)
     if (a.pinned !== b.pinned) {
       return b.pinned ? 1 : -1;
     }
     
-    // 3. due_date (NULL은 마지막, nullsFirst: false)
+    // 4. due_date (NULL은 마지막, nullsFirst: false)
     if (a.due_date !== null && b.due_date !== null) {
       if (a.due_date !== b.due_date) {
         return a.due_date.localeCompare(b.due_date);
@@ -2031,8 +2039,8 @@ function sortTodosForDisplay(todos) {
       if (a.due_date !== null) return -1;
       if (b.due_date !== null) return 1;
     }
-    
-    // 4. priority (내림차순, NULL은 마지막, nullsFirst: false)
+
+    // 5. priority (내림차순, NULL은 마지막, nullsFirst: false)
     if (a.priority !== null && b.priority !== null) {
       if (a.priority !== b.priority) {
         return b.priority - a.priority;
@@ -2041,8 +2049,8 @@ function sortTodosForDisplay(todos) {
       if (a.priority !== null) return -1;
       if (b.priority !== null) return 1;
     }
-    
-    // 5. created_at (오름차순)
+
+    // 6. created_at (오름차순)
     return new Date(a.created_at) - new Date(b.created_at);
   });
 }
@@ -2515,6 +2523,7 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
         is_done: false,
         done_at: null,
         display_order: null,
+        is_carried_over: true,  // 이관된 항목은 같은 우선순위 내에서 아래로 정렬됨
         project_task_id: originalTodo.project_task_id || null,  // 프로젝트 할일인 경우 동기화 유지
         recurring_task_id: originalTodo.recurring_task_id || null  // 반복업무 할일인 경우 동기화 유지
       })
