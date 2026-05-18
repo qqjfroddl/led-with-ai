@@ -321,13 +321,47 @@ export async function renderGoals() {
                 <!-- 동적 생성 -->
               </ul>
             </div>
+
+            <!-- 주말 루틴 헤더 -->
+            <div id="detail-weekend-header" style="display: none; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #d1d5db;">
+              <div style="font-weight: 700; color: #7c3aed; font-size: 1rem; margin-bottom: 0.75rem;">주말 루틴 (토~일)</div>
+            </div>
+            <div id="detail-weekend-morning-section" style="display: none; margin-bottom: 1.5rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: #f59e0b; margin-bottom: 0.75rem;">
+                <i data-lucide="sunrise" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
+                주말 모닝
+              </h5>
+              <ul id="detail-weekend-morning-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+            </div>
+            <div id="detail-weekend-daytime-section" style="display: none; margin-bottom: 1.5rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: #22d3ee; margin-bottom: 0.75rem;">
+                <i data-lucide="sun" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
+                주말 데이타임
+              </h5>
+              <ul id="detail-weekend-daytime-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+            </div>
+            <div id="detail-weekend-night-section" style="display: none; margin-bottom: 1.5rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: #6366f1; margin-bottom: 0.75rem;">
+                <i data-lucide="moon" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
+                주말 나이트
+              </h5>
+              <ul id="detail-weekend-night-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+            </div>
           </div>
-          
-          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap;">
             <button id="cancel-copy-routines" class="btn btn-secondary">취소</button>
+            <button id="confirm-copy-weekday-routines" class="btn btn-secondary" style="display: none;">
+              <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+              주중만 복사
+            </button>
+            <button id="confirm-copy-weekend-routines" class="btn btn-secondary" style="display: none;">
+              <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+              주말만 복사
+            </button>
             <button id="confirm-copy-routines" class="btn btn-primary">
               <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
-              이 루틴 복사하기
+              <span id="confirm-copy-routines-label">이 루틴 복사하기</span>
             </button>
           </div>
         </div>
@@ -1732,7 +1766,69 @@ export async function renderGoals() {
         } else {
           document.getElementById('detail-night-section').style.display = 'none';
         }
-        
+
+        // 주말 루틴 섹션
+        const renderDetailList = (listId, sectionId, items) => {
+          const ul = document.getElementById(listId);
+          const section = document.getElementById(sectionId);
+          if (!ul || !section) return false;
+          ul.innerHTML = '';
+          if (items && items.length > 0) {
+            items.forEach((r, i) => {
+              const li = document.createElement('li');
+              li.textContent = `${i + 1}. ${r}`;
+              ul.appendChild(li);
+            });
+            section.style.display = 'block';
+            return true;
+          } else {
+            section.style.display = 'none';
+            return false;
+          }
+        };
+        const hasWeekendM = renderDetailList('detail-weekend-morning-list', 'detail-weekend-morning-section', routines.weekend_morning);
+        const hasWeekendD = renderDetailList('detail-weekend-daytime-list', 'detail-weekend-daytime-section', routines.weekend_daytime);
+        const hasWeekendN = renderDetailList('detail-weekend-night-list', 'detail-weekend-night-section', routines.weekend_night);
+        const hasWeekend = hasWeekendM || hasWeekendD || hasWeekendN;
+        const hasWeekday = (routines.morning?.length || 0) + (routines.daytime?.length || 0) + (routines.night?.length || 0) > 0;
+        const weekendHeader = document.getElementById('detail-weekend-header');
+        if (weekendHeader) weekendHeader.style.display = hasWeekend ? 'block' : 'none';
+
+        // 복사 버튼 노출 제어
+        // - 토글 OFF: 단일 "이 루틴 복사하기" 버튼 (기존 동작)
+        // - 토글 ON: source에 있는 scope만 버튼 노출 (현재 데이터 덮어쓰기 사고 방지)
+        //   · source에 weekday + weekend 둘 다 있으면: 주중만/주말만/모두 (3개)
+        //   · source에 weekday만 있으면: 주중만 (1개) — "모두 복사"는 현재 주말을 날리므로 숨김
+        //   · source에 weekend만 있으면: 주말만 (1개) — 동일 이유
+        const toggleOn = isWeekendModeOn();
+        const splitWeekdayBtn = document.getElementById('confirm-copy-weekday-routines');
+        const splitWeekendBtn = document.getElementById('confirm-copy-weekend-routines');
+        const allBtn = document.getElementById('confirm-copy-routines');
+        const allLabel = document.getElementById('confirm-copy-routines-label');
+        if (!toggleOn) {
+          if (splitWeekdayBtn) splitWeekdayBtn.style.display = 'none';
+          if (splitWeekendBtn) splitWeekendBtn.style.display = 'none';
+          if (allBtn) allBtn.style.display = 'inline-flex';
+          if (allLabel) allLabel.textContent = '이 루틴 복사하기';
+        } else if (hasWeekday && hasWeekend) {
+          if (splitWeekdayBtn) splitWeekdayBtn.style.display = 'inline-flex';
+          if (splitWeekendBtn) splitWeekendBtn.style.display = 'inline-flex';
+          if (allBtn) allBtn.style.display = 'inline-flex';
+          if (allLabel) allLabel.textContent = '모두 복사';
+        } else if (hasWeekday) {
+          if (splitWeekdayBtn) splitWeekdayBtn.style.display = 'inline-flex';
+          if (splitWeekendBtn) splitWeekendBtn.style.display = 'none';
+          if (allBtn) allBtn.style.display = 'none';
+        } else if (hasWeekend) {
+          if (splitWeekdayBtn) splitWeekdayBtn.style.display = 'none';
+          if (splitWeekendBtn) splitWeekendBtn.style.display = 'inline-flex';
+          if (allBtn) allBtn.style.display = 'none';
+        } else {
+          if (splitWeekdayBtn) splitWeekdayBtn.style.display = 'none';
+          if (splitWeekendBtn) splitWeekendBtn.style.display = 'none';
+          if (allBtn) allBtn.style.display = 'none';
+        }
+
         // 선택한 루틴 데이터 저장 (복사 시 사용)
         window._selectedRoutinesToCopy = {
           month_start: plan.month_start,
@@ -1761,55 +1857,59 @@ export async function renderGoals() {
       /**
        * 선택한 루틴 복사 실행
        */
-      async function executeCopySelectedRoutines() {
+      async function executeCopySelectedRoutines(scope = 'all') {
         try {
           const selected = window._selectedRoutinesToCopy;
-          
+
           if (!selected) {
             alert('선택한 루틴이 없습니다.');
             return;
           }
-          
-          const routines = selected.routines;
+
+          const sourceRoutines = selected.routines;
+          // 복사할 페이로드 구성: scope에 따라 주중/주말 중 어느 쪽을 source로 가져올지 결정
+          const routines = {
+            morning: scope === 'weekend' ? (morningRoutines || []) : (sourceRoutines.morning || []),
+            daytime: scope === 'weekend' ? (daytimeRoutines || []) : (sourceRoutines.daytime || []),
+            night: scope === 'weekend' ? (nightRoutines || []) : (sourceRoutines.night || []),
+            weekend_morning: scope === 'weekday' ? (weekendMorningRoutines || []) : (sourceRoutines.weekend_morning || []),
+            weekend_daytime: scope === 'weekday' ? (weekendDaytimeRoutines || []) : (sourceRoutines.weekend_daytime || []),
+            weekend_night: scope === 'weekday' ? (weekendNightRoutines || []) : (sourceRoutines.weekend_night || [])
+          };
           const totalRoutines =
-            (routines.morning?.length || 0) +
-            (routines.daytime?.length || 0) +
-            (routines.night?.length || 0) +
-            (routines.weekend_morning?.length || 0) +
-            (routines.weekend_daytime?.length || 0) +
-            (routines.weekend_night?.length || 0);
+            routines.morning.length + routines.daytime.length + routines.night.length +
+            routines.weekend_morning.length + routines.weekend_daytime.length + routines.weekend_night.length;
+          const scopeLabel = scope === 'weekday' ? '주중 루틴' : scope === 'weekend' ? '주말 루틴' : '루틴';
           
           // 모달 닫기
           document.getElementById('past-routines-modal').style.display = 'none';
           
-          // 현재 월 루틴이 있는지 확인
-          const currentTotal = morningRoutines.length + daytimeRoutines.length + nightRoutines.length
-            + weekendMorningRoutines.length + weekendDaytimeRoutines.length + weekendNightRoutines.length;
-          if (currentTotal > 0) {
-            const totalCurrent = currentTotal;
-            
-            const confirmed = confirm(
-              `⚠️ 이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
-              `기존 루틴을 삭제하고 ${selected.year}년 ${selected.month}월 루틴 ${totalRoutines}개를 복사하시겠습니까?\n\n` +
+          // 영향 받는 현재 월 루틴 개수 (scope 별)
+          const currentImpactedTotal =
+            (scope === 'weekend')
+              ? (weekendMorningRoutines.length + weekendDaytimeRoutines.length + weekendNightRoutines.length)
+              : (scope === 'weekday')
+                ? (morningRoutines.length + daytimeRoutines.length + nightRoutines.length)
+                : (morningRoutines.length + daytimeRoutines.length + nightRoutines.length
+                  + weekendMorningRoutines.length + weekendDaytimeRoutines.length + weekendNightRoutines.length);
+
+          const sourceImpactedTotal =
+            (scope === 'weekend')
+              ? (sourceRoutines.weekend_morning?.length || 0) + (sourceRoutines.weekend_daytime?.length || 0) + (sourceRoutines.weekend_night?.length || 0)
+              : (scope === 'weekday')
+                ? (sourceRoutines.morning?.length || 0) + (sourceRoutines.daytime?.length || 0) + (sourceRoutines.night?.length || 0)
+                : totalRoutines;
+
+          const confirmMsg = currentImpactedTotal > 0
+            ? `⚠️ 이미 이번 달 ${scopeLabel}이 ${currentImpactedTotal}개 있습니다.\n\n` +
+              `기존 ${scopeLabel}을 삭제하고 ${selected.year}년 ${selected.month}월 ${scopeLabel} ${sourceImpactedTotal}개를 복사하시겠습니까?\n\n` +
               `(오늘부터 적용됩니다)`
-            );
-            
-            if (!confirmed) {
-              // 모달 다시 열기
-              document.getElementById('past-routines-modal').style.display = 'flex';
-              return;
-            }
-          } else {
-            const confirmed = confirm(
-              `${selected.year}년 ${selected.month}월 루틴 ${totalRoutines}개를 현재 월에 복사하시겠습니까?\n\n` +
-              `⚠️ 오늘부터 적용됩니다.`
-            );
-            
-            if (!confirmed) {
-              // 모달 다시 열기
-              document.getElementById('past-routines-modal').style.display = 'flex';
-              return;
-            }
+            : `${selected.year}년 ${selected.month}월 ${scopeLabel} ${sourceImpactedTotal}개를 현재 월에 복사하시겠습니까?\n\n` +
+              `⚠️ 오늘부터 적용됩니다.`;
+          const confirmed = confirm(confirmMsg);
+          if (!confirmed) {
+            document.getElementById('past-routines-modal').style.display = 'flex';
+            return;
           }
           
           // monthly_plans에 저장
@@ -1863,7 +1963,7 @@ export async function renderGoals() {
           weekendDaytimeRoutines = routines.weekend_daytime || [];
           weekendNightRoutines = routines.weekend_night || [];
 
-          alert(`✅ ${selected.year}년 ${selected.month}월 루틴이 복사되었습니다!`);
+          alert(`✅ ${selected.year}년 ${selected.month}월 ${scopeLabel}이 복사되었습니다!`);
           
           displayRoutines();
           
@@ -1986,9 +2086,22 @@ export async function renderGoals() {
         cancelCopyBtn.addEventListener('click', closePastRoutinesModal);
       }
 
+      const handleCopyAll = () => executeCopySelectedRoutines('all');
+      const handleCopyWeekday = () => executeCopySelectedRoutines('weekday');
+      const handleCopyWeekend = () => executeCopySelectedRoutines('weekend');
       if (confirmCopyBtn) {
-        confirmCopyBtn.removeEventListener('click', executeCopySelectedRoutines);
-        confirmCopyBtn.addEventListener('click', executeCopySelectedRoutines);
+        confirmCopyBtn.removeEventListener('click', handleCopyAll);
+        confirmCopyBtn.addEventListener('click', handleCopyAll);
+      }
+      const confirmWeekdayBtn = document.getElementById('confirm-copy-weekday-routines');
+      const confirmWeekendBtn = document.getElementById('confirm-copy-weekend-routines');
+      if (confirmWeekdayBtn) {
+        confirmWeekdayBtn.removeEventListener('click', handleCopyWeekday);
+        confirmWeekdayBtn.addEventListener('click', handleCopyWeekday);
+      }
+      if (confirmWeekendBtn) {
+        confirmWeekendBtn.removeEventListener('click', handleCopyWeekend);
+        confirmWeekendBtn.addEventListener('click', handleCopyWeekend);
       }
 
       // 모달 배경 클릭 시 닫기
