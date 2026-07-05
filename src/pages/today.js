@@ -1380,6 +1380,186 @@ function bindTodoEvents(date, profile, timezone) {
 }
 
 // 드래그 앤 드롭 설정 함수 (mousedown/mousemove/mouseup 기반 커스텀 구현)
+const TODO_CATEGORIES = ['work', 'job', 'self_dev', 'personal'];
+
+function isLinkedTodo(todo) {
+  return Boolean(todo?.project_task_id || todo?.recurring_task_id);
+}
+
+function getTodoListElement(category) {
+  return document.getElementById(`todos-${category}-list`);
+}
+
+function getCategorySectionElement(category) {
+  return document.getElementById(`category-${category}-section`);
+}
+
+function getCategoryFromDropElement(element) {
+  if (!element) return null;
+
+  const todoItem = element.closest('.todo-item');
+  if (todoItem?.dataset?.category) return todoItem.dataset.category;
+
+  const list = element.closest('[id^="todos-"][id$="-list"]');
+  if (list?.id) return list.id.replace(/^todos-/, '').replace(/-list$/, '');
+
+  const section = element.closest('.category-section');
+  if (section?.id) return section.id.replace(/^category-/, '').replace(/-section$/, '');
+
+  return null;
+}
+
+function rememberDragStyle(state, element, property) {
+  if (!element) return;
+  state.revealedDropZones.push({
+    element,
+    property,
+    value: element.style[property]
+  });
+}
+
+function restoreCategoryDropZones(state) {
+  if (!state?.revealedDropZones?.length) return;
+  state.revealedDropZones.forEach(({ element, property, value }) => {
+    if (element) element.style[property] = value;
+  });
+  state.revealedDropZones = [];
+}
+
+function revealCategoryDropZones(state) {
+  if (state.draggedIsLinked) return;
+  restoreCategoryDropZones(state);
+
+  TODO_CATEGORIES.forEach(category => {
+    const section = getCategorySectionElement(category);
+    const list = getTodoListElement(category);
+    const empty = document.getElementById(`todos-${category}-empty`);
+
+    rememberDragStyle(state, section, 'display');
+    rememberDragStyle(state, list, 'display');
+    rememberDragStyle(state, list, 'minHeight');
+    rememberDragStyle(state, list, 'border');
+    rememberDragStyle(state, list, 'borderRadius');
+    rememberDragStyle(state, list, 'padding');
+    rememberDragStyle(state, empty, 'display');
+
+    if (section) section.style.display = 'block';
+    if (list && list.querySelectorAll('.todo-item').length === 0) {
+      list.style.display = 'flex';
+      list.style.minHeight = '36px';
+      list.style.border = '2px dashed rgba(99, 102, 241, 0.35)';
+      list.style.borderRadius = '8px';
+      list.style.padding = '0.25rem';
+    }
+    if (empty && list && list.querySelectorAll('.todo-item').length === 0) {
+      empty.style.display = 'block';
+    }
+  });
+}
+
+function getDropTarget(elementBelow, state, clientY) {
+  if (!elementBelow) return null;
+
+  const targetCategory = getCategoryFromDropElement(elementBelow);
+  if (!targetCategory || !TODO_CATEGORIES.includes(targetCategory)) return null;
+  if (state.draggedIsLinked && targetCategory !== state.draggedCategory) {
+    return { blocked: true, targetCategory };
+  }
+
+  const listContainer = getTodoListElement(targetCategory);
+  if (!listContainer) return null;
+
+  let todoItem = elementBelow.closest('.todo-item');
+  if (todoItem && todoItem.dataset.category !== targetCategory) {
+    todoItem = null;
+  }
+
+  if (!todoItem) {
+    const items = [...listContainer.querySelectorAll('.todo-item')]
+      .filter(item => item.dataset.todoId !== state.draggedTodoId);
+
+    if (items.length === 0) {
+      return {
+        targetCategory,
+        targetTodoId: null,
+        insertBefore: false,
+        listContainer,
+        todoItem: null
+      };
+    }
+
+    todoItem = items.find(item => {
+      const rect = item.getBoundingClientRect();
+      return clientY < rect.top + rect.height / 2;
+    });
+
+    if (!todoItem) {
+      return {
+        targetCategory,
+        targetTodoId: null,
+        insertBefore: false,
+        listContainer,
+        todoItem: null
+      };
+    }
+  }
+
+  const targetTodoId = todoItem.dataset.todoId;
+  if (targetCategory === state.draggedCategory && targetTodoId === state.draggedTodoId) {
+    return { self: true, targetCategory };
+  }
+
+  const rect = todoItem.getBoundingClientRect();
+  const isFirstItem = !todoItem.previousElementSibling ||
+    !todoItem.previousElementSibling.classList.contains('todo-item');
+  const insertBefore = isFirstItem
+    ? clientY < rect.top + rect.height * 0.4
+    : clientY < rect.top + rect.height / 2;
+
+  return {
+    targetCategory,
+    targetTodoId,
+    insertBefore,
+    listContainer,
+    todoItem
+  };
+}
+
+function renderDragInsertionLine(target) {
+  document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+  if (!target || target.blocked || target.self) return;
+
+  const listContainer = target.listContainer || getTodoListElement(target.targetCategory);
+  if (!listContainer) return;
+
+  const containerRect = listContainer.getBoundingClientRect();
+  const insertionLine = document.createElement('div');
+  insertionLine.className = 'drag-insertion-line';
+  insertionLine.style.cssText = `
+    position: fixed;
+    left: ${containerRect.left + 8}px;
+    width: ${Math.max(containerRect.width - 16, 24)}px;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    z-index: 1000;
+    pointer-events: none;
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+  `;
+
+  if (target.todoItem) {
+    const rect = target.todoItem.getBoundingClientRect();
+    insertionLine.style.top = target.insertBefore
+      ? `${rect.top - 1}px`
+      : `${rect.bottom - 2}px`;
+  } else {
+    const y = containerRect.top + Math.min(Math.max(containerRect.height / 2, 12), 28);
+    insertionLine.style.top = `${y}px`;
+  }
+
+  document.body.appendChild(insertionLine);
+}
+
 function setupDragAndDrop(date, profile, timezone) {
   const todosContent = document.getElementById('todos-content');
   if (!todosContent) {
@@ -1404,6 +1584,7 @@ function setupDragAndDrop(date, profile, timezone) {
     }
     // 기존 상태도 초기화
     if (window._dragDropState) {
+      restoreCategoryDropZones(window._dragDropState);
       window._dragDropState.isDragging = false;
       window._dragDropState.draggedElement = null;
       window._dragDropState.draggedTodoId = null;
@@ -1425,7 +1606,10 @@ function setupDragAndDrop(date, profile, timezone) {
       profile: null,
       timezone: null,
       lastTargetTodoId: null,
-      lastInsertBefore: null
+      lastTargetCategory: null,
+      lastInsertBefore: null,
+      draggedIsLinked: false,
+      revealedDropZones: []
     };
   }
   
@@ -1433,6 +1617,9 @@ function setupDragAndDrop(date, profile, timezone) {
   window._dragDropState.date = date;
   window._dragDropState.profile = profile;
   window._dragDropState.timezone = timezone;
+  window._dragDropState.draggedIsLinked = false;
+  window._dragDropState.lastTargetCategory = null;
+  window._dragDropState.revealedDropZones = window._dragDropState.revealedDropZones || [];
   
   const state = window._dragDropState;
   
@@ -1465,11 +1652,16 @@ function setupDragAndDrop(date, profile, timezone) {
     state.draggedElement = todoItem;
     state.draggedTodoId = todoId;
     state.draggedCategory = todoItem.dataset.category;
+    state.draggedIsLinked = isLinkedTodo(todo);
+    state.lastTargetTodoId = null;
+    state.lastTargetCategory = null;
+    state.lastInsertBefore = null;
     
     const rect = todoItem.getBoundingClientRect();
     state.dragStartY = e.clientY;
     state.dragStartX = e.clientX;
     state.dragOffsetY = e.clientY - rect.top;
+    revealCategoryDropZones(state);
     
     // 시각적 피드백
     todoItem.classList.add('dragging');
@@ -1512,6 +1704,30 @@ function setupDragAndDrop(date, profile, timezone) {
     }
     
     // todo-item 찾기
+    document.querySelectorAll('.todo-item').forEach(el => {
+      if (el.dataset.todoId !== state.draggedTodoId) {
+        el.style.opacity = '';
+        el.style.boxShadow = '';
+      }
+    });
+
+    const dragTarget = getDropTarget(elementBelow, state, e.clientY);
+    if (!dragTarget || dragTarget.blocked || dragTarget.self) {
+      document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
+      return;
+    }
+
+    if (dragTarget.todoItem) {
+      dragTarget.todoItem.style.opacity = '1';
+      dragTarget.todoItem.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+    }
+
+    state.lastTargetTodoId = dragTarget.targetTodoId;
+    state.lastTargetCategory = dragTarget.targetCategory;
+    state.lastInsertBefore = dragTarget.insertBefore;
+    renderDragInsertionLine(dragTarget);
+    return;
+
     let todoItem = elementBelow.closest('.todo-item');
     if (!todoItem) {
       const dragHandle = elementBelow.closest('.todo-drag-handle');
@@ -1673,6 +1889,44 @@ function setupDragAndDrop(date, profile, timezone) {
     }
     
     // todo-item 찾기
+    let dropTarget = getDropTarget(elementBelow, state, e.clientY);
+    if (!dropTarget && state.lastTargetCategory !== null) {
+      dropTarget = {
+        targetTodoId: state.lastTargetTodoId,
+        targetCategory: state.lastTargetCategory,
+        insertBefore: state.lastInsertBefore
+      };
+    }
+
+    if (!dropTarget || dropTarget.blocked || dropTarget.self || !dropTarget.targetCategory) {
+      state.isDragging = false;
+      cleanup();
+      return;
+    }
+
+    state.isDragging = false;
+
+    currentDraggedElement.classList.remove('dragging');
+    currentDraggedElement.style.opacity = '';
+    currentDraggedElement.style.transform = '';
+    currentDraggedElement.style.cursor = '';
+    currentDraggedElement.style.position = '';
+    currentDraggedElement.style.zIndex = '';
+    restoreCategoryDropZones(state);
+
+    await handleDragDrop(
+      currentDraggedTodoId,
+      dropTarget.targetTodoId,
+      dropTarget.insertBefore,
+      dropTarget.targetCategory,
+      state.date,
+      state.profile,
+      state.timezone
+    );
+
+    cleanup();
+    return;
+
     let todoItem = elementBelow.closest('.todo-item');
     if (!todoItem) {
       const dragHandle = elementBelow.closest('.todo-drag-handle');
@@ -1751,11 +2005,18 @@ function setupDragAndDrop(date, profile, timezone) {
     document.querySelectorAll('.drag-insertion-line').forEach(el => el.remove());
     document.querySelectorAll('.todo-item').forEach(el => {
       delete el.dataset.insertBefore;
-      if (el.dataset.todoId !== state.draggedTodoId) {
-        el.style.opacity = '';
-        el.style.boxShadow = '';
-      }
+      el.style.opacity = '';
+      el.style.boxShadow = '';
     });
+    if (state.draggedElement) {
+      state.draggedElement.classList.remove('dragging');
+      state.draggedElement.style.opacity = '';
+      state.draggedElement.style.transform = '';
+      state.draggedElement.style.cursor = '';
+      state.draggedElement.style.position = '';
+      state.draggedElement.style.zIndex = '';
+    }
+    restoreCategoryDropZones(state);
     
     // 상태 완전 초기화
     state.isDragging = false;
@@ -1763,10 +2024,12 @@ function setupDragAndDrop(date, profile, timezone) {
     state.draggedElement = null;
     state.draggedTodoId = null;
     state.draggedCategory = null;
+    state.draggedIsLinked = false;
     state.dragStartY = 0;
     state.dragStartX = 0;
     state.dragOffsetY = 0;
     state.lastTargetTodoId = null;
+    state.lastTargetCategory = null;
     state.lastInsertBefore = null;
   }
 
@@ -1787,7 +2050,7 @@ function setupDragAndDrop(date, profile, timezone) {
 }
 
 // 드롭 처리 함수
-async function handleDragDrop(draggedTodoId, targetTodoId, insertBefore, date, profile, timezone) {
+async function handleDragDropLegacy(draggedTodoId, targetTodoId, insertBefore, date, profile, timezone) {
   try {
     const draggedTodo = todos.find(t => t.id === draggedTodoId);
     if (!draggedTodo || draggedTodo.is_done) return;
@@ -1876,6 +2139,100 @@ async function handleDragDrop(draggedTodoId, targetTodoId, insertBefore, date, p
   } catch (error) {
     console.error('Error handling drag drop:', error);
     alert('순서 변경 중 오류가 발생했습니다.');
+  }
+}
+
+async function handleDragDrop(draggedTodoId, targetTodoId, insertBefore, targetCategory, date, profile, timezone) {
+  try {
+    const draggedTodo = todos.find(t => t.id === draggedTodoId);
+    if (!draggedTodo || draggedTodo.is_done) return;
+
+    const sourceCategory = draggedTodo.category;
+    const destinationCategory = targetCategory || sourceCategory;
+    if (!TODO_CATEGORIES.includes(destinationCategory)) return;
+    if (isLinkedTodo(draggedTodo) && destinationCategory !== sourceCategory) return;
+
+    const reorderUpdates = [];
+
+    if (destinationCategory === sourceCategory) {
+      const sortedTodos = sortTodosForDisplay(todos.filter(
+        t => t.category === sourceCategory && !t.is_done && t.date === date
+      ));
+
+      const draggedIndex = sortedTodos.findIndex(t => t.id === draggedTodoId);
+      const targetIndex = sortedTodos.findIndex(t => t.id === targetTodoId);
+      if (draggedIndex < 0 || targetIndex < 0) return;
+
+      let newIndex = insertBefore
+        ? (draggedIndex < targetIndex ? targetIndex - 1 : targetIndex)
+        : (draggedIndex < targetIndex ? targetIndex : targetIndex + 1);
+
+      if (newIndex < 0) newIndex = 0;
+      if (newIndex >= sortedTodos.length) newIndex = sortedTodos.length - 1;
+      if (newIndex === draggedIndex) return;
+
+      const newSortedTodos = [...sortedTodos];
+      const [draggedTodoItem] = newSortedTodos.splice(draggedIndex, 1);
+      newSortedTodos.splice(newIndex, 0, draggedTodoItem);
+
+      newSortedTodos.forEach((todo, index) => {
+        reorderUpdates.push(
+          supabase
+            .from('todos')
+            .update({ display_order: (index + 1) * 10 })
+            .eq('id', todo.id)
+        );
+      });
+    } else {
+      const sourceTodos = sortTodosForDisplay(todos.filter(
+        t => t.category === sourceCategory && !t.is_done && t.date === date && t.id !== draggedTodoId
+      ));
+      const destinationTodos = sortTodosForDisplay(todos.filter(
+        t => t.category === destinationCategory && !t.is_done && t.date === date && t.id !== draggedTodoId
+      ));
+
+      let destinationIndex = destinationTodos.length;
+      if (targetTodoId) {
+        const targetIndex = destinationTodos.findIndex(t => t.id === targetTodoId);
+        if (targetIndex < 0) return;
+        destinationIndex = insertBefore ? targetIndex : targetIndex + 1;
+      }
+
+      if (destinationIndex < 0) destinationIndex = 0;
+      if (destinationIndex > destinationTodos.length) destinationIndex = destinationTodos.length;
+
+      destinationTodos.splice(destinationIndex, 0, {
+        ...draggedTodo,
+        category: destinationCategory
+      });
+
+      sourceTodos.forEach((todo, index) => {
+        reorderUpdates.push(
+          supabase
+            .from('todos')
+            .update({ display_order: (index + 1) * 10 })
+            .eq('id', todo.id)
+        );
+      });
+
+      destinationTodos.forEach((todo, index) => {
+        const updateData = { display_order: (index + 1) * 10 };
+        if (todo.id === draggedTodoId) updateData.category = destinationCategory;
+
+        reorderUpdates.push(
+          supabase
+            .from('todos')
+            .update(updateData)
+            .eq('id', todo.id)
+        );
+      });
+    }
+
+    await Promise.all(reorderUpdates);
+    await loadTodos(date, profile, timezone);
+  } catch (error) {
+    console.error('Error handling drag drop:', error);
+    alert('?쒖꽌 蹂寃?以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
   }
 }
 
