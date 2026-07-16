@@ -42,3 +42,6 @@ out/
 # Test coverage
 coverage/
 .nyc_output/
+
+# Backup copies of env/secret files (2026-07-16: .env.local.bak이 gitignore를 우회해 커밋됐던 사례 방지)
+*.bak
