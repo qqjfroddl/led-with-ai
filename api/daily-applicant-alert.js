@@ -162,14 +162,20 @@ export default async function handler(request, response) {
     return sendJson(response, 405, { ok: false, error: 'method_not_allowed' });
   }
 
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('[daily-applicant-alert] Missing configuration: CRON_SECRET');
+    return sendJson(response, 500, { ok: false, error: 'configuration_missing' });
+  }
+
+  if (getHeader(request, 'authorization') !== `Bearer ${cronSecret}`) {
+    return sendJson(response, 401, { ok: false, error: 'unauthorized' });
+  }
+
   const config = requireConfig(process.env);
   if (config.missing.length > 0) {
     console.error('[daily-applicant-alert] Missing configuration:', config.missing.join(', '));
     return sendJson(response, 500, { ok: false, error: 'configuration_missing' });
-  }
-
-  if (getHeader(request, 'authorization') !== `Bearer ${config.cronSecret}`) {
-    return sendJson(response, 401, { ok: false, error: 'unauthorized' });
   }
 
   try {
