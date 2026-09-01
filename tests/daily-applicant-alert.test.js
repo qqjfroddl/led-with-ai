@@ -7,7 +7,6 @@ const CONFIG = {
   SUPABASE_URL: 'https://example.supabase.co',
   SUPABASE_SECRET_KEY: 'secret-test-key',
   RESEND_API_KEY: 're_test',
-  APPLICANT_ALERT_FROM: '인생관리AI앱 <alerts@example.com>',
   CRON_SECRET: 'cron-test-secret'
 };
 

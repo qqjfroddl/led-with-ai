@@ -8,10 +8,10 @@ Vercel Hobby 플랜에서는 실행 시각이 최대 59분 늦어질 수 있습�
 
 ## Vercel 환경변수
 
-- `SUPABASE_URL`: 앱의 Supabase 프로젝트 URL
+- `SUPABASE_URL`: 선택. 없으면 기존 `VITE_SUPABASE_URL` 사용
 - `SUPABASE_SECRET_KEY`: 서버 전용 secret key. 레거시 프로젝트는 `SUPABASE_SERVICE_ROLE_KEY`도 지원
 - `RESEND_API_KEY`: Resend 서버 API 키
-- `APPLICANT_ALERT_FROM`: Resend에서 발송 가능한 주소. 예: `인생관리AI앱 <notice@확인된도메인>`
+- `APPLICANT_ALERT_FROM`: 선택. 없으면 `인생관리AI앱 <onboarding@resend.dev>` 사용
 - `CRON_SECRET`: 16자 이상의 무작위 값. Vercel이 Cron 요청의 Authorization 헤더에 자동으로 넣음
 
 비밀값은 Vercel 프로젝트 Settings > Environment Variables에서 직접 입력합니다.

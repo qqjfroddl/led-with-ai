@@ -1,4 +1,5 @@
 const ALERT_RECIPIENT = 'matt@deeptactlearning.com';
+const DEFAULT_ALERT_FROM = '인생관리AI앱 <onboarding@resend.dev>';
 const ADMIN_URL = 'https://led-with-ai.vercel.app/admin.html';
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
@@ -45,18 +46,17 @@ function formatKstDateTime(value) {
 }
 
 function requireConfig(environment) {
-  const supabaseUrl = environment.SUPABASE_URL;
+  const supabaseUrl = environment.SUPABASE_URL || environment.VITE_SUPABASE_URL;
   const supabaseSecretKey =
     environment.SUPABASE_SECRET_KEY || environment.SUPABASE_SERVICE_ROLE_KEY;
   const resendApiKey = environment.RESEND_API_KEY;
-  const from = environment.APPLICANT_ALERT_FROM;
+  const from = environment.APPLICANT_ALERT_FROM || DEFAULT_ALERT_FROM;
   const cronSecret = environment.CRON_SECRET;
 
   const missing = [];
   if (!supabaseUrl) missing.push('SUPABASE_URL');
   if (!supabaseSecretKey) missing.push('SUPABASE_SECRET_KEY');
   if (!resendApiKey) missing.push('RESEND_API_KEY');
-  if (!from) missing.push('APPLICANT_ALERT_FROM');
   if (!cronSecret) missing.push('CRON_SECRET');
 
   return {
@@ -195,6 +195,7 @@ export default async function handler(request, response) {
 
 export {
   ALERT_RECIPIENT,
+  DEFAULT_ALERT_FROM,
   buildEmail,
   fetchPendingApplicants,
   getKstDate,
