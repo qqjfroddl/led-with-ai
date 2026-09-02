@@ -29,8 +29,16 @@ async function initSupabase() {
   let createClient;
   let supabaseUrl, supabaseAnonKey;
 
+  // CDN 방식은 config.js가 있을 때만 의미가 있다.
+  // config.js는 .gitignore 대상이라 배포본에는 없다(요청이 503으로 떨어진다).
+  // 그런데도 CDN 경로를 먼저 타면, 열쇠도 없는 문 앞에서 UMD 스크립트가
+  // 뜨기를 최대 2초까지 기다린 뒤에야 번들 경로로 넘어간다.
+  // 그 대기가 로그인 화면이 뜨기까지의 시간에 그대로 얹혔다. (2026-09-02 실측)
+  const hasCdnConfig = typeof window !== 'undefined'
+    && !!(window.SUPABASE_CONFIG?.url && window.SUPABASE_CONFIG?.anonKey);
+
   // CDN 방식 시도
-  if (typeof window !== 'undefined') {
+  if (hasCdnConfig) {
     try {
       await waitForSupabaseCDN();
       // Supabase UMD는 다양한 이름으로 export될 수 있음

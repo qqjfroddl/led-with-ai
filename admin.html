@@ -14,12 +14,11 @@
     <div id="loading">로딩 중...</div>
   </div>
   
-  <!-- CDN 방식: Supabase와 Luxon 로드 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+  <!-- Luxon만 CDN으로 받는다. 화면 코드가 window.luxon을 직접 쓴다.
+       Supabase UMD와 config.js는 걷어냈다 — 배포본에 config.js가 없어
+       그 경로는 한 번도 쓰이지 않으면서, 98KB짜리 UMD가 파싱을 막고
+       없는 config.js를 받으러 갔다 503을 맞는 데 0.25초가 들었다. -->
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-  
-  <!-- 설정 파일 -->
-  <script src="/config.js"></script>
   
   <!-- Lucide 아이콘 라이브러리 -->
   <script src="https://unpkg.com/lucide@latest" defer></script>

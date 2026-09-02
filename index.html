@@ -50,18 +50,17 @@
     <div id="loading">로딩 중...</div>
   </div>
   
-  <!-- 설정 파일 -->
-  <script src="/config.js"></script>
-  
   <!-- CDN 스크립트 (defer로 병렬 로드) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js" defer onload="window.SUPABASE_LOADED=true"></script>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js" defer onload="window.LUXON_LOADED=true"></script>
   
   <!-- 메인 스크립트 -->
   <script type="module">
-    // CDN 로드 대기 후 실행
+    // luxon만 기다린다. 화면 코드가 window.luxon을 직접 쓰기 때문이다.
+    // 예전에는 Supabase UMD도 함께 기다렸는데, 배포본에는 config.js가 없어
+    // 그 UMD는 받아만 놓고 한 번도 쓰이지 않았다. 쓰지도 않을 98KB가 뜨기를
+    // 기다리느라 앱 시작이 그만큼 밀렸다. (2026-09-02 실측)
     function checkLibs() {
-      if ((window.Supabase || window.supabase) && window.luxon) {
+      if (window.luxon) {
         import('/src/main.js');
       } else {
         // 아직 로드 안 됐으면 50ms마다 확인 (매우 빠른 재확인)
