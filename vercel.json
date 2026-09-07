@@ -11,11 +11,7 @@
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
     }
   ],
-  "routes": [
-    { "src": "/admin.html", "dest": "/admin.html" },
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/config.js", "dest": "/config.js" },
-    { "src": "/(logo.webp|og.jpg)", "dest": "/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/((?!assets/|admin\.html|config\.js|logo\.webp|og\.jpg).*)", "destination": "/index.html" }
   ]
 }
