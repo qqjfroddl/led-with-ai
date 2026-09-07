@@ -13,22 +13,11 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "flatpickr": "^4.6.13",
+    "lucide": "^1.42.0",
     "luxon": "^3.4.4"
   },
   "devDependencies": {
     "vite": "^5.0.11"
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

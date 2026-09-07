@@ -6,24 +6,10 @@ AI-powered daily planning app for seamless planning across devices.
 
 ## 설정 방법
 
-### 방법 1: CDN 방식 (Live Server 등 정적 서버 사용 시)
+> ⚠️ 정적 서버(Live Server 등)로는 더 이상 실행되지 않는다. 외부 라이브러리(luxon·flatpickr·lucide)를
+> 2026-09-07부터 CDN이 아니라 번들에 포함하므로(`src/vendor.js`) 반드시 Vite로 실행·빌드한다.
 
-1. `config.js` 파일을 열고 Supabase 정보 입력:
-```javascript
-window.SUPABASE_CONFIG = {
-  url: 'your_supabase_url',
-  anonKey: 'your_supabase_anon_key'
-};
-```
-
-2. Live Server나 다른 정적 서버로 실행
-   - VS Code: Live Server 확장 프로그램 사용
-   - 또는 Python: `python -m http.server 5500`
-   - 또는 Node.js: `npx serve`
-
-3. 브라우저에서 `http://localhost:5500/index.html` 접속
-
-### 방법 2: Vite 개발 서버 사용 (권장)
+### Vite 개발 서버 사용
 
 1. 의존성 설치
 ```bash
@@ -192,3 +178,10 @@ supabase secrets set GEMINI_API_KEY=your_gemini_api_key
 ## Live Demo
 
 🔗 [led-with-ai.vercel.app](https://led-with-ai.vercel.app)
+
+## 외부 라이브러리와 아이콘 (2026-09-07)
+
+- luxon·flatpickr(한국어 로케일·CSS 포함)·lucide는 `src/vendor.js`에서 번들에 넣고 `window.luxon` / `window.flatpickr` / `window.lucide` 전역으로 건다. 화면 코드는 전역을 그대로 쓴다.
+- CDN(unpkg `lucide@latest`, jsdelivr)을 쓰지 않는 이유: `@latest`는 매번 리다이렉트를 타고 캐시가 짧아 외부 도메인 5개 왕복이 첫 화면을 붙잡았다. 번들은 파일명에 해시가 붙어 1년 캐시(`vercel.json` headers).
+- lucide는 **쓰는 아이콘만** 이름으로 가져온다(`icons` 전체를 가져오면 3,600개가 다 들어가 850KB). 화면에 새 `data-lucide="이름"`을 넣으면 `src/vendor.js`의 import와 `icons` 객체에 같이 추가한다. 빠지면 콘솔에 `icon name was not found` 경고가 뜨고 그 자리가 빈다.
+- 로고: `public/logo.webp`(1200px, 30KB)를 로그인 화면에, `public/og.jpg`(60KB)를 공유 카드에 쓴다. 원본 4.2MB PNG(`logo.png`)는 배포하지 않는다.

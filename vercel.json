@@ -1,26 +1,21 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "routes": [
+  "headers": [
     {
-      "src": "/admin.html",
-      "dest": "/admin.html"
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/config.js",
-      "dest": "/config.js"
-    },
-    {
-      "src": "/logo.png",
-      "dest": "/logo.png"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(logo.webp|og.jpg)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
     }
+  ],
+  "routes": [
+    { "src": "/admin.html", "dest": "/admin.html" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/config.js", "dest": "/config.js" },
+    { "src": "/(logo.webp|og.jpg)", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

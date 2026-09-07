@@ -1,3 +1,4 @@
+import './vendor.js'; // 외부 라이브러리 전역(window.luxon 등)을 가장 먼저 세운다
 import { getSupabase } from './config/supabase.js';
 import { getCurrentProfile, signInWithGoogle, signOut } from './utils/auth.js';
 import { router } from './router.js';
