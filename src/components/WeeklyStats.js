@@ -23,17 +23,17 @@ export function renderWeeklyStats(stats) {
   const { todos, routines, reflections, comparison } = stats;
   
   const html = `
-    <div class="card" style="background: var(--t-accent-soft); border: 2px solid var(--t-accent); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-            <i data-lucide="bar-chart-3" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+    <div class="card bg-accent-soft bd-2px-solid-accent sh-0-8px-24px-rgba42_38_34_0_07 mb-1_5rem">
+      <div class="card-header bdb-2px-solid-accent-line pb-1rem mb-1_25rem">
+        <div class="d-flex ai-center gap-0_75rem">
+          <div class="w-40px h-40px bg-accent br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+            <i class="w-24px h-24px c-white sw-2_5" data-lucide="bar-chart-3"></i>
           </div>
-          <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">주간 지표</div>
+          <div class="card-title c-accent fz-1_5rem m-0">주간 지표</div>
         </div>
       </div>
       
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div class="d-grid gtc-repeatauto-fit_minmax280px_1fr gap-1_5rem">
         <!-- 루틴 실천율 -->
         ${renderRoutinePracticeCard(routines, comparison)}
         
@@ -61,22 +61,22 @@ function renderTodoCompletionCard(todos, comparison) {
     : '';
   
   return `
-    <div style="background: var(--t-surface); border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: var(--t-success); stroke-width: 2.5;"></i>
-          <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin: 0;">할일 완료율</h3>
+    <div class="bg-surface br-12px p-1_25rem sh-0-2px-8px-rgba42_38_34_0_08">
+      <div class="d-flex ai-center jc-space-between mb-1rem">
+        <div class="d-flex ai-center gap-0_5rem">
+          <i class="w-20px h-20px c-success sw-2_5" data-lucide="check-circle-2"></i>
+          <h3 class="fz-1rem fwt-600 c-text m-0">할일 완료율</h3>
         </div>
         ${changeIndicator}
       </div>
-      <div style="font-size: 2rem; font-weight: 700; color: var(--t-success); margin-bottom: 0.5rem;">
+      <div class="fz-2rem fwt-700 c-success mb-0_5rem">
         ${Number(todos.completionRate || 0).toFixed(1)}%
       </div>
-      <div style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
+      <div class="fz-0_875rem c-muted mb-1rem">
         ${todos.completed} / ${todos.total} 완료
       </div>
       ${renderProgressBar(todos.completionRate, 'var(--t-success)')}
-      <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--t-muted2);">
+      <div class="mt-0_75rem fz-0_75rem c-muted2">
         평균 일일 할일: ${todos.avgDailyTodos}개
       </div>
     </div>
@@ -92,22 +92,22 @@ function renderRoutinePracticeCard(routines, comparison) {
     : '';
   
   return `
-    <div style="background: var(--t-surface); border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="target" style="width: 20px; height: 20px; color: var(--t-accent); stroke-width: 2.5;"></i>
-          <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin: 0;">루틴 실천율</h3>
+    <div class="bg-surface br-12px p-1_25rem sh-0-2px-8px-rgba42_38_34_0_08">
+      <div class="d-flex ai-center jc-space-between mb-1rem">
+        <div class="d-flex ai-center gap-0_5rem">
+          <i class="w-20px h-20px c-accent sw-2_5" data-lucide="target"></i>
+          <h3 class="fz-1rem fwt-600 c-text m-0">루틴 실천율</h3>
         </div>
         ${changeIndicator}
       </div>
-      <div style="font-size: 2rem; font-weight: 700; color: var(--t-accent); margin-bottom: 0.5rem;">
+      <div class="fz-2rem fwt-700 c-accent mb-0_5rem">
         ${Number(routines.practiceRate || 0).toFixed(1)}%
       </div>
-      <div style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
+      <div class="fz-0_875rem c-muted mb-1rem">
         ${routines.totalChecks} / ${routines.totalPossibleChecks} 체크
       </div>
       ${renderProgressBar(routines.practiceRate, 'var(--t-accent)')}
-      <div style="margin-top: 0.75rem; display: flex; gap: 1rem; font-size: 0.75rem; color: var(--t-muted2);">
+      <div class="mt-0_75rem d-flex gap-1rem fz-0_75rem c-muted2">
         <span>☀ 모닝: ${Number(routines.morningRate || 0).toFixed(1)}%</span>
         <span>🌙 나이트: ${Number(routines.nightRate || 0).toFixed(1)}%</span>
       </div>
@@ -124,22 +124,22 @@ function renderReflectionCard(reflections, comparison) {
     : '';
   
   return `
-    <div style="background: var(--t-surface); border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="pen-square" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
-          <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin: 0;">성찰 작성일</h3>
+    <div class="bg-surface br-12px p-1_25rem sh-0-2px-8px-rgba42_38_34_0_08">
+      <div class="d-flex ai-center jc-space-between mb-1rem">
+        <div class="d-flex ai-center gap-0_5rem">
+          <i class="w-20px h-20px c-insight sw-2_5" data-lucide="pen-square"></i>
+          <h3 class="fz-1rem fwt-600 c-text m-0">성찰 작성일</h3>
         </div>
         ${changeIndicator}
       </div>
-      <div style="font-size: 2rem; font-weight: 700; color: var(--t-insight); margin-bottom: 0.5rem;">
+      <div class="fz-2rem fwt-700 c-insight mb-0_5rem">
         ${reflections.writtenDays}일
       </div>
-      <div style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
+      <div class="fz-0_875rem c-muted mb-1rem">
         ${Number(reflections.writingRate || 0).toFixed(1)}% 작성률
       </div>
       ${renderProgressBar(reflections.writingRate, 'var(--t-insight)')}
-      <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--t-muted2);">
+      <div class="mt-0_75rem fz-0_75rem c-muted2">
         7일 중 ${reflections.writtenDays}일 기록
       </div>
     </div>
@@ -153,12 +153,12 @@ function renderCategoryBreakdown(todos) {
   const categories = Object.entries(todos.byCategory);
   
   return `
-    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--t-accent-line);">
-      <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--t-accent); stroke-width: 2.5;"></i>
+    <div class="mt-1_5rem pt-1_5rem bdt-2px-solid-accent-line">
+      <h3 class="fz-1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
+        <i class="w-18px h-18px c-accent sw-2_5" data-lucide="layers"></i>
         카테고리별 완료율
       </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="d-grid gtc-repeatauto-fit_minmax200px_1fr gap-1rem">
         ${categories.map(([category, stats]) => renderCategoryCard(category, stats)).join('')}
       </div>
     </div>
@@ -173,13 +173,13 @@ function renderCategoryCard(category, stats) {
   const label = CATEGORY_LABELS[category] || category;
   
   return `
-    <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; border-radius: 12px; padding: 1rem;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-        <span style="font-weight: 600; color: var(--t-text); font-size: 0.95rem;">${label}</span>
-        <span style="font-weight: 700; color: var(--t-text); font-size: 1.1rem;">${Number(stats.completionRate || 0).toFixed(1)}%</span>
+    <div class="br-12px p-1rem" style="background: ${colors.bg}; border: 2px solid ${colors.border};">
+      <div class="d-flex ai-center jc-space-between mb-0_75rem">
+        <span class="fwt-600 c-text fz-0_95rem">${label}</span>
+        <span class="fwt-700 c-text fz-1_1rem">${Number(stats.completionRate || 0).toFixed(1)}%</span>
       </div>
       ${renderProgressBar(stats.completionRate, colors.border, 4)}
-      <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--t-muted);">
+      <div class="mt-0_5rem fz-0_75rem c-muted">
         ${stats.completed} / ${stats.total} 완료
       </div>
     </div>
@@ -193,8 +193,8 @@ function renderProgressBar(percentage, color, height = 8) {
   const clampedPercentage = Math.min(100, Math.max(0, percentage));
   
   return `
-    <div style="width: 100%; height: ${height}px; background: var(--t-line); border-radius: 999px; overflow: hidden; position: relative;">
-      <div style="width: ${clampedPercentage}%; height: 100%; background: ${color}; border-radius: 999px; transition: width 0.3s ease;"></div>
+    <div class="w-100pct bg-line br-999px ov-hidden pos-relative" style="height: ${height}px;">
+      <div class="h-100pct br-999px tr-width-0_3s-ease" style="width: ${clampedPercentage}%; background: ${color};"></div>
     </div>
   `;
 }
@@ -210,8 +210,8 @@ function renderChangeIndicator(change, unit = '') {
   const sign = change > 0 ? '+' : '';
   
   return `
-    <div style="display: flex; align-items: center; gap: 0.25rem; color: ${color}; font-size: 0.875rem; font-weight: 600;">
-      <i data-lucide="${icon}" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
+    <div class="d-flex ai-center gap-0_25rem fz-0_875rem fwt-600" style="color: ${color};">
+      <i class="w-16px h-16px sw-2_5" data-lucide="${icon}"></i>
       <span>${sign}${change.toFixed(1)}${unit}</span>
     </div>
   `;

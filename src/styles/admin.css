@@ -1,3 +1,4 @@
+@layer base {
 /* 관리자 전용 스타일 */
 .admin-container {
   max-width: 1400px;
@@ -33,24 +34,24 @@
   text-align: center;
   border: none;
   border-radius: 8px;
-  background: #e5e7eb;
-  color: #1f2937;
+  background: var(--t-line);
+  color: var(--t-text);
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--t-line2);
 }
 
 .tab:hover {
-  background: #d1d5db;
-  border-color: #9ca3af;
+  background: var(--t-line2);
+  border-color: var(--t-muted2);
   transform: translateY(-1px);
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--t-accent);
   color: white;
   border: transparent;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(42,38,34, 0.15);
 }
 
 .tab-content {
@@ -96,23 +97,23 @@
 }
 
 .status-pending {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: var(--t-warn-soft);
+  color: var(--t-warn);
 }
 
 .status-approved {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: var(--t-success-soft);
+  color: var(--t-success);
 }
 
 .status-rejected {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--t-danger-soft);
+  color: var(--t-danger);
 }
 
 .status-blocked {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: var(--t-line);
+  color: var(--t-text2);
 }
 
 .role-badge {
@@ -136,3 +137,5 @@
 
 
 
+
+} /* @layer base */

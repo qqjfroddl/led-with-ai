@@ -145,16 +145,16 @@ export async function renderNavigation(currentRoute, profile) {
         </button>
       </div>
       <div class="date-bar-footer">
-        <button id="date-today" class="date-today-btn" style="display: none;">
+        <button id="date-today" class="date-today-btn d-none">
           <i data-lucide="sun"></i>
           오늘로 이동
         </button>
-        <button id="scroll-to-todos" class="quick-nav-btn" data-target="today-todos-section" style="background: var(--t-accent-soft); border: 1px solid var(--t-accent-line); color: var(--t-text); padding: 0.375rem 0.875rem; font-size: 0.875rem; cursor: pointer; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;">
-          <i data-lucide="list-checks" style="width: 16px; height: 16px;"></i>
+        <button id="scroll-to-todos" class="quick-nav-btn bg-accent-soft bd-1px-solid-accent-line c-text p-0_375rem-0_875rem fz-0_875rem cur-pointer br-999px d-inline-flex ai-center gap-0_25rem tr-all-0_3s-cubic-bezier0_4_0_0_2_1 ws-nowrap" data-target="today-todos-section">
+          <i class="w-16px h-16px" data-lucide="list-checks"></i>
           <span>오늘 할일</span>
         </button>
-        <button id="scroll-to-reflection" class="quick-nav-btn" data-target="today-reflection-section" style="background: var(--t-accent2-soft); border: 1px solid var(--t-accent2-line); color: var(--t-text); padding: 0.375rem 0.875rem; font-size: 0.875rem; cursor: pointer; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;">
-          <i data-lucide="pen-square" style="width: 16px; height: 16px;"></i>
+        <button id="scroll-to-reflection" class="quick-nav-btn bg-accent2-soft bd-1px-solid-accent2-line c-text p-0_375rem-0_875rem fz-0_875rem cur-pointer br-999px d-inline-flex ai-center gap-0_25rem tr-all-0_3s-cubic-bezier0_4_0_0_2_1 ws-nowrap" data-target="today-reflection-section">
+          <i class="w-16px h-16px" data-lucide="pen-square"></i>
           <span>하루 성찰</span>
         </button>
       </div>

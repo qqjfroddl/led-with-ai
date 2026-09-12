@@ -14,14 +14,14 @@ export async function renderWeeklyAIReflection(weekStart, timezone = 'Asia/Seoul
   const reflection = await getWeeklyAIReflection(weekStart);
   
   const html = `
-    <div class="card" style="background: var(--t-accent2-soft); border: 2px solid var(--t-accent2); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid var(--t-accent2-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 40px; height: 40px; background: var(--t-accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-              <i data-lucide="sparkles" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+    <div class="card bg-accent2-soft bd-2px-solid-accent2 sh-0-8px-24px-rgba42_38_34_0_07 mb-1_5rem">
+      <div class="card-header bdb-2px-solid-accent2-line pb-1rem mb-1_25rem">
+        <div class="d-flex ai-center jc-space-between">
+          <div class="d-flex ai-center gap-0_75rem">
+            <div class="w-40px h-40px bg-accent2 br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+              <i class="w-24px h-24px c-white sw-2_5" data-lucide="sparkles"></i>
             </div>
-            <div class="card-title" style="color: var(--t-accent2); font-size: 1.5rem; margin: 0;">AI 주간 성찰</div>
+            <div class="card-title c-accent2 fz-1_5rem m-0">AI 주간 성찰</div>
           </div>
         </div>
       </div>
@@ -110,7 +110,7 @@ function renderExistingReflection(reflection, timezone = 'Asia/Seoul') {
     console.error('Error converting markdown to HTML:', error);
     console.error('Error stack:', error.stack);
     // 에러 발생 시 원본 텍스트를 이스케이프하여 표시
-    contentHtml = `<p style="margin-bottom: 1rem; line-height: 1.8;">${escapeHtml(reflection.content_md || '')}</p>`;
+    contentHtml = `<p class="mb-1rem lh-1_8">${escapeHtml(reflection.content_md || '')}</p>`;
   }
   
   // 재생성 여부 확인: updated_at이 created_at보다 최신이면 재생성된 것
@@ -121,24 +121,18 @@ function renderExistingReflection(reflection, timezone = 'Asia/Seoul') {
   
   return `
     <div id="ai-reflection-content">
-      <div style="background: var(--t-surface); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08); max-height: 600px; overflow-y: scroll; overflow-x: hidden; position: relative; display: flex; flex-direction: column;">
-        <div id="reflection-markdown" style="color: var(--t-text); line-height: 1.8; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;">
+      <div class="bg-surface br-12px p-1_5rem mb-1rem sh-0-2px-8px-rgba42_38_34_0_08 maxh-600px ovy-scroll ovx-hidden pos-relative d-flex fd-column">
+        <div class="c-text lh-1_8 word-wrap-break-word ow-break-word ws-pre-wrap" id="reflection-markdown">
           ${contentHtml}
         </div>
       </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: var(--t-surface); border-radius: 8px; font-size: 0.875rem; color: var(--t-muted);">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="clock" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
+      <div class="d-flex ai-center jc-space-between p-0_75rem bg-surface br-8px fz-0_875rem c-muted">
+        <div class="d-flex ai-center gap-0_5rem">
+          <i class="w-16px h-16px sw-2_5" data-lucide="clock"></i>
           <span>생성일: ${formatDate(displayDate, timezone)}</span>
         </div>
-        <button 
-          id="regenerate-ai-reflection-btn"
-          class="btn-regenerate"
-          style="background: var(--t-accent2); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 0.25rem;"
-          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)';"
-          onmouseout="this.style.transform='none'; this.style.boxShadow='none';"
-        >
-          <i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
+        <button id="regenerate-ai-reflection-btn" class="btn-regenerate bg-accent2 c-white bd-none p-0_5rem-1rem br-8px cur-pointer fz-0_875rem fwt-500 tr-all-0_2s ws-nowrap d-flex ai-center gap-0_25rem hov-tf-translatey-1px hov-sh-0-4px-12px-rgba42_38_34_0_15">
+          <i class="w-16px h-16px sw-2_5" data-lucide="refresh-cw"></i>
           다시 생성
         </button>
       </div>
@@ -151,24 +145,18 @@ function renderExistingReflection(reflection, timezone = 'Asia/Seoul') {
  */
 function renderEmptyState(weekStart) {
   return `
-    <div id="ai-reflection-empty" style="text-align: center; padding: 2rem;">
-      <div style="margin-bottom: 1rem;">
-        <i data-lucide="sparkles" style="width: 48px; height: 48px; color: var(--t-accent2); stroke-width: 2.5; margin: 0 auto;"></i>
+    <div class="ta-center p-2rem" id="ai-reflection-empty">
+      <div class="mb-1rem">
+        <i class="w-48px h-48px c-accent2 sw-2_5 m-0-auto" data-lucide="sparkles"></i>
       </div>
-      <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 0.5rem;">
+      <h3 class="fz-1_1rem fwt-600 c-text mb-0_5rem">
         AI 주간 성찰이 아직 없습니다
       </h3>
-      <p style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1.5rem;">
+      <p class="fz-0_875rem c-muted mb-1_5rem">
         이번 주의 활동을 분석하여 맞춤형 피드백을 제공합니다.
       </p>
-      <button 
-        id="generate-ai-reflection-btn"
-        class="btn-generate"
-        style="background: var(--t-accent2); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; margin: 0 auto;"
-        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)';"
-        onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)';"
-      >
-        <i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i>
+      <button id="generate-ai-reflection-btn" class="btn-generate bg-accent2 c-white bd-none p-0_75rem-1_5rem br-8px cur-pointer fz-1rem fwt-600 tr-all-0_2s sh-0-4px-12px-rgba42_38_34_0_15 ws-nowrap d-flex ai-center gap-0_5rem m-0-auto hov-tf-translatey-2px hov-sh-0-6px-16px-rgba42_38_34_0_18">
+        <i class="w-18px h-18px sw-2_5" data-lucide="sparkles"></i>
         AI 성찰 생성하기
       </button>
     </div>
@@ -204,17 +192,17 @@ function convertMarkdownToHtml(markdown) {
       if (line == null) {
       // null이나 undefined인 경우 빈 줄로 처리
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       processedLines++;
@@ -233,19 +221,19 @@ function convertMarkdownToHtml(markdown) {
     if (!trimmed) {
       // 순서 리스트가 진행 중이면 리스트 종료
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       // 비순서 리스트가 진행 중이면 리스트 종료
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       // 문단이 진행 중이면 문단 종료
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       processedLines++;
@@ -255,20 +243,20 @@ function convertMarkdownToHtml(markdown) {
     // 구분선 처리
     if (trimmed === '---' || trimmed === '***') {
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
-      result.push('<hr style="border: none; border-top: 2px solid var(--t-line); margin: 1.5rem 0;">');
+      result.push('<hr class="bd-none bdt-2px-solid-line m-1_5rem-0">');
       processedLines++;
       continue;
     }
@@ -276,81 +264,81 @@ function convertMarkdownToHtml(markdown) {
     // 헤더 처리
     if (trimmed.startsWith('#### ')) {
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       const text = trimmed.substring(5).trim();
-      result.push(`<h4 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin-top: 1.25rem; margin-bottom: 0.5rem;">${escapeHtml(text)}</h4>`);
+      result.push(`<h4 class="fz-1rem fwt-600 c-text mt-1_25rem mb-0_5rem">${escapeHtml(text)}</h4>`);
       processedLines++;
       continue;
     }
     if (trimmed.startsWith('### ')) {
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       const text = trimmed.substring(4).trim();
-      result.push(`<h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-top: 1.5rem; margin-bottom: 0.75rem;">${escapeHtml(text)}</h3>`);
+      result.push(`<h3 class="fz-1_1rem fwt-600 c-text mt-1_5rem mb-0_75rem">${escapeHtml(text)}</h3>`);
       processedLines++;
       continue;
     }
     if (trimmed.startsWith('## ')) {
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       const text = trimmed.substring(3).trim();
-      result.push(`<h2 style="font-size: 1.25rem; font-weight: 600; color: var(--t-text); margin-top: 1.5rem; margin-bottom: 0.75rem;">${escapeHtml(text)}</h2>`);
+      result.push(`<h2 class="fz-1_25rem fwt-600 c-text mt-1_5rem mb-0_75rem">${escapeHtml(text)}</h2>`);
       processedLines++;
       continue;
     }
     if (trimmed.startsWith('# ')) {
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       const text = trimmed.substring(2).trim();
-      result.push(`<h1 style="font-size: 1.5rem; font-weight: 700; color: var(--t-text); margin-top: 2rem; margin-bottom: 1rem;">${escapeHtml(text)}</h1>`);
+      result.push(`<h1 class="fz-1_5rem fwt-700 c-text mt-2rem mb-1rem">${escapeHtml(text)}</h1>`);
       processedLines++;
       continue;
     }
@@ -360,18 +348,18 @@ function convertMarkdownToHtml(markdown) {
     if (orderedListMatch) {
       // 기존 비순서 리스트가 있으면 먼저 종료
       if (inList && listItems.length > 0) {
-        result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+        result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
         listItems = [];
         inList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       // 순서 리스트 시작
       inOrderedList = true;
       const text = processInlineMarkdown(orderedListMatch[2]);
-      orderedListItems.push(`<li style="margin-bottom: 0.5rem;">${text}</li>`);
+      orderedListItems.push(`<li class="mb-0_5rem">${text}</li>`);
       processedLines++;
       continue;
     }
@@ -381,29 +369,29 @@ function convertMarkdownToHtml(markdown) {
     if (listMatch) {
       // 기존 순서 리스트가 있으면 먼저 종료
       if (inOrderedList && orderedListItems.length > 0) {
-        result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+        result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
         orderedListItems = [];
         inOrderedList = false;
       }
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       inList = true;
       const text = processInlineMarkdown(listMatch[1]);
-      listItems.push(`<li style="margin-bottom: 0.5rem;">${text}</li>`);
+      listItems.push(`<li class="mb-0_5rem">${text}</li>`);
       processedLines++;
       continue;
     }
     
     // 일반 텍스트 (리스트가 진행 중이면 리스트 종료)
     if (inOrderedList && orderedListItems.length > 0) {
-      result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+      result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
       orderedListItems = [];
       inOrderedList = false;
     }
     if (inList && listItems.length > 0) {
-      result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+      result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
       listItems = [];
       inList = false;
     }
@@ -423,7 +411,7 @@ function convertMarkdownToHtml(markdown) {
       console.error(`Error processing line ${i}:`, error);
       console.error(`Line content:`, lines[i]);
       if (currentPara.length > 0) {
-        result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+        result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
         currentPara = [];
       }
       // 에러가 난 줄을 이스케이프하여 추가
@@ -439,17 +427,17 @@ function convertMarkdownToHtml(markdown) {
   
   // 마지막 순서 리스트 처리
   if (inOrderedList && orderedListItems.length > 0) {
-    result.push(`<ol style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: decimal;">${orderedListItems.join('')}</ol>`);
+    result.push(`<ol class="m-0_75rem-0 pl-1_5rem list-style-type-decimal">${orderedListItems.join('')}</ol>`);
   }
   
   // 마지막 비순서 리스트 처리
   if (inList && listItems.length > 0) {
-    result.push(`<ul style="margin: 0.75rem 0; padding-left: 1.5rem; list-style-type: disc;">${listItems.join('')}</ul>`);
+    result.push(`<ul class="m-0_75rem-0 pl-1_5rem list-style-type-disc">${listItems.join('')}</ul>`);
   }
   
   // 마지막 문단 처리
   if (currentPara.length > 0) {
-    result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
+    result.push(`<p class="mb-1rem lh-1_8">${currentPara.join(' ')}</p>`);
   }
   
   const finalHtml = result.join('');
@@ -469,11 +457,11 @@ function processInlineMarkdown(text) {
   let html = escapeHtml(text);
   
   // 볼드 처리 (순서 중요: ** 먼저)
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 600;">$1</strong>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="fwt-600">$1</strong>');
   
   // 이탤릭 처리 (볼드 처리 후 남은 * 처리)
   // 단독 *만 처리 (앞뒤에 *가 없는 경우)
-  html = html.replace(/\*([^*]+?)\*/g, '<em style="font-style: italic;">$1</em>');
+  html = html.replace(/\*([^*]+?)\*/g, '<em class="fst-italic">$1</em>');
   
   return html;
 }
@@ -575,7 +563,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
       }
       
       generateBtn.disabled = true;
-      generateBtn.innerHTML = '<i data-lucide="loader-2" style="width: 18px; height: 18px; stroke-width: 2.5; margin-right: 0.5rem; animation: spin 1s linear infinite;"></i> 생성 중...';
+      generateBtn.innerHTML = '<i class="w-18px h-18px sw-2_5 mr-0_5rem an-spin-1s-linear-infinite" data-lucide="loader-2"></i> 생성 중...';
       
       if (window.lucide) {
         window.lucide.createIcons();
@@ -587,7 +575,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
         console.error('Error generating AI reflection:', error);
         toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         generateBtn.disabled = false;
-        generateBtn.innerHTML = '<i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i> AI 성찰 생성하기';
+        generateBtn.innerHTML = '<i class="w-18px h-18px sw-2_5" data-lucide="sparkles"></i> AI 성찰 생성하기';
         
         // Lucide 아이콘 다시 렌더링
         if (window.lucide) {
@@ -607,7 +595,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
       }
       
       regenerateBtn.disabled = true;
-      regenerateBtn.innerHTML = '<i data-lucide="loader-2" style="width: 16px; height: 16px; stroke-width: 2.5; animation: spin 1s linear infinite;"></i> 생성 중...';
+      regenerateBtn.innerHTML = '<i class="w-16px h-16px sw-2_5 an-spin-1s-linear-infinite" data-lucide="loader-2"></i> 생성 중...';
       
       if (window.lucide) {
         window.lucide.createIcons();
@@ -619,7 +607,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
         console.error('Error regenerating AI reflection:', error);
         toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         regenerateBtn.disabled = false;
-        regenerateBtn.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i> 다시 생성';
+        regenerateBtn.innerHTML = '<i class="w-16px h-16px sw-2_5" data-lucide="refresh-cw"></i> 다시 생성';
         
         // Lucide 아이콘 다시 렌더링
         if (window.lucide) {

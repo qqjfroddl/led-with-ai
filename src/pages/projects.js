@@ -30,74 +30,74 @@ export async function renderProjects() {
   }
 
   const html = `
-    <div class="card" style="background: var(--t-accent-soft); border: 2px solid var(--t-accent); box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
-      <div class="card-header" style="border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-            <i data-lucide="folder-kanban" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+    <div class="card bg-accent-soft bd-2px-solid-accent sh-0-8px-24px-rgba42_38_34_0_07">
+      <div class="card-header bdb-2px-solid-accent-line pb-1rem mb-1_25rem">
+        <div class="d-flex ai-center gap-0_75rem">
+          <div class="w-40px h-40px bg-accent br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+            <i class="w-24px h-24px c-white sw-2_5" data-lucide="folder-kanban"></i>
           </div>
-          <div style="flex: 1;">
-            <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">프로젝트</div>
-            <p style="color: var(--t-muted); font-size: 1rem; margin: 0.25rem 0 0 0;">프로젝트를 관리하고 할일을 등록하세요</p>
+          <div class="fx-1">
+            <div class="card-title c-accent fz-1_5rem m-0">프로젝트</div>
+            <p class="c-muted fz-1rem m-0_25rem-0-0-0">프로젝트를 관리하고 할일을 등록하세요</p>
           </div>
-          <button id="add-project-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+          <button id="add-project-btn" class="btn btn-primary p-0_5rem-1rem fz-0_9rem">
+            <i class="w-16px h-16px" data-lucide="plus"></i>
             추가
           </button>
         </div>
       </div>
 
-      <div id="projects-content" style="display: block;">
+      <div class="d-block" id="projects-content">
         <!-- 탭 영역 -->
-        <div id="projects-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
-          <button id="tab-in-progress" class="project-tab active" data-tab="in_progress" style="flex: 1; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; background: var(--t-accent); color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-            <i data-lucide="loader" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+        <div class="d-flex gap-0_5rem mb-1_25rem" id="projects-tabs">
+          <button id="tab-in-progress" class="project-tab active fx-1 p-0_75rem bd-2px-solid-accent br-8px bg-accent c-white fwt-600 cur-pointer tr-all-0_2s" data-tab="in_progress">
+            <i class="w-16px h-16px mr-0_5rem" data-lucide="loader"></i>
             진행중 (<span id="in-progress-count">0</span>)
           </button>
-          <button id="tab-completed" class="project-tab" data-tab="completed" style="flex: 1; padding: 0.75rem; border: 2px solid var(--t-line2); border-radius: 8px; background: var(--t-bg2); color: var(--t-muted); font-weight: 600; cursor: pointer; transition: all 0.2s;">
-            <i data-lucide="check-circle" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
+          <button id="tab-completed" class="project-tab fx-1 p-0_75rem bd-2px-solid-line2 br-8px bg-bg2 c-muted fwt-600 cur-pointer tr-all-0_2s" data-tab="completed">
+            <i class="w-16px h-16px mr-0_5rem" data-lucide="check-circle"></i>
             완료 (<span id="completed-count">0</span>)
           </button>
         </div>
 
         <!-- 카드 그리드 -->
-        <div id="projects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;"></div>
+        <div class="d-grid gtc-repeatauto-fill_minmax280px_1fr gap-1rem mb-1rem" id="projects-grid"></div>
         
         <!-- 빈 상태 -->
-        <div id="projects-empty" style="text-align: center; padding: 3rem 1rem; color: var(--t-muted2); display: none;">
-          <i data-lucide="folder-x" style="width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.5;"></i>
-          <p id="projects-empty-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">진행중인 프로젝트가 없습니다</p>
-          <p id="projects-empty-desc" style="font-size: 0.9rem;">새 프로젝트를 추가하여 시작하세요</p>
+        <div class="ta-center p-3rem-1rem c-muted2 d-none" id="projects-empty">
+          <i class="w-48px h-48px m-0-auto-1rem op-0_5" data-lucide="folder-x"></i>
+          <p class="fz-1_1rem mb-0_5rem" id="projects-empty-title">진행중인 프로젝트가 없습니다</p>
+          <p class="fz-0_9rem" id="projects-empty-desc">새 프로젝트를 추가하여 시작하세요</p>
         </div>
 
         <!-- 펼쳐진 프로젝트 상세 영역 -->
-        <div id="project-detail" style="display: none; margin-top: 1rem;"></div>
+        <div class="d-none mt-1rem" id="project-detail"></div>
       </div>
     </div>
 
     <!-- 프로젝트 추가/수정 모달 (심플 버전) -->
-    <div id="project-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); z-index: 1000; display: none; align-items: center; justify-content: center;">
-      <div style="background: var(--t-surface); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 520px; box-shadow: 0 20px 60px rgba(42,38,34, 0.3);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
-          <h3 id="project-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--t-text);">프로젝트 추가</h3>
-          <button id="project-modal-close" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer; color: var(--t-muted2); transition: color 0.2s;">
-            <i data-lucide="x" style="width: 24px; height: 24px;"></i>
+    <div class="pos-fixed t-0 l-0 r-0 b-0 bg-rgba42_38_34_0_5 z-1000 d-none ai-center jc-center" id="project-modal">
+      <div class="bg-surface br-16px p-1_5rem w-90pct maxw-520px sh-0-20px-60px-rgba42_38_34_0_3">
+        <div class="d-flex ai-center jc-space-between mb-1_25rem">
+          <h3 class="m-0 fz-1_25rem fwt-700 c-text" id="project-modal-title">프로젝트 추가</h3>
+          <button class="bg-transparent bd-none p-0_25rem cur-pointer c-muted2 tr-color-0_2s" id="project-modal-close">
+            <i class="w-24px h-24px" data-lucide="x"></i>
           </button>
         </div>
         
-        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="project-name-input" placeholder="프로젝트 이름" style="flex: 1; min-width: 180px; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
-          <select id="project-category-input" style="padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 0.95rem; background: var(--t-surface); cursor: pointer; min-width: 120px;">
+        <div class="d-flex gap-0_75rem ai-center fwrap-wrap">
+          <input class="fx-1 minw-180px p-0_75rem-1rem bd-2px-solid-line br-10px fz-1rem tr-border-color-0_2s ol-none" type="text" id="project-name-input" placeholder="프로젝트 이름" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
+          <select class="p-0_75rem-1rem bd-2px-solid-line br-10px fz-0_95rem bg-surface cur-pointer minw-120px" id="project-category-input">
             <option value="self_dev">자기계발</option>
             <option value="relationship">가족/관계</option>
             <option value="work_finance">업무/재정</option>
           </select>
-          <button id="project-modal-save" style="padding: 0.75rem 1.5rem; background: var(--t-accent); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)'">
-            <i data-lucide="check" style="width: 18px; height: 18px; margin-right: 0.25rem; vertical-align: -3px;"></i>
+          <button class="p-0_75rem-1_5rem bg-accent c-white bd-none br-10px fz-1rem fwt-600 cur-pointer ws-nowrap sh-0-4px-12px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s" id="project-modal-save" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)'">
+            <i class="w-18px h-18px mr-0_25rem va--3px" data-lucide="check"></i>
             저장
           </button>
         </div>
-        <button id="project-modal-cancel" style="display: none;"></button>
+        <button class="d-none" id="project-modal-cancel"></button>
       </div>
     </div>
 
@@ -265,29 +265,28 @@ function renderProjectCardCompact(project) {
   const isExpanded = expandedProjectId === project.id;
 
   return `
-    <div class="project-card-compact ${isExpanded ? 'expanded' : ''}" data-project-id="${project.id}" 
-         style="background: ${project.isCompleted ? 'var(--t-bg2)' : colors.bg}; border: 2px solid ${project.isCompleted ? 'var(--t-line2)' : colors.border}; border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.2s; box-shadow: ${isExpanded ? `0 8px 24px ${colors.shadow}` : '0 2px 8px rgba(42,38,34, 0.08)'}; ${isExpanded ? `transform: scale(1.02);` : ''}
+    <div class="project-card-compact ${isExpanded ? 'expanded' : ''} br-12px p-1rem cur-pointer tr-all-0_2s" data-project-id="${project.id}" style="background: ${project.isCompleted ? 'var(--t-bg2)' : colors.bg}; border: 2px solid ${project.isCompleted ? 'var(--t-line2)' : colors.border}; box-shadow: ${isExpanded ? `0 8px 24px ${colors.shadow}` : '0 2px 8px rgba(42,38,34, 0.08)'}; ${isExpanded ? `transform: scale(1.02);` : ''}
                 ${project.isCompleted ? 'opacity: 0.8;' : ''}">
-      <div style="display: flex; align-items: start; gap: 0.75rem;">
-        <div style="width: 36px; height: 36px; background: ${project.isCompleted ? 'var(--t-muted2)' : colors.gradient}; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-          <i data-lucide="${project.isCompleted ? 'check-circle' : icon}" style="width: 20px; height: 20px; color: white;"></i>
+      <div class="d-flex ai-start gap-0_75rem">
+        <div class="w-36px h-36px br-10px d-flex ai-center jc-center fs-0" style="background: ${project.isCompleted ? 'var(--t-muted2)' : colors.gradient};">
+          <i class="w-20px h-20px c-white" data-lucide="${project.isCompleted ? 'check-circle' : icon}"></i>
         </div>
-        <div style="flex: 1; min-width: 0;">
-          <h4 style="color: ${project.isCompleted ? 'var(--t-muted)' : 'var(--t-text)'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.3;">${project.name}</h4>
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${project.isCompleted ? 'var(--t-line)' : colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[project.category]}</span>
+        <div class="fx-1 minw-0">
+          <h4 class="fz-1rem fwt-600 m-0-0-0_25rem-0 wb-break-word ow-break-word lh-1_3" style="color: ${project.isCompleted ? 'var(--t-muted)' : 'var(--t-text)'};">${project.name}</h4>
+          <div class="d-flex ai-center gap-0_5rem fwrap-wrap">
+            <span class="fz-0_75rem p-0_125rem-0_5rem c-white br-999px fwt-500" style="background: ${project.isCompleted ? 'var(--t-line)' : colors.gradient};">${categoryLabels[project.category]}</span>
           </div>
         </div>
-        <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" style="width: 18px; height: 18px; color: var(--t-muted2); flex-shrink: 0;"></i>
+        <i class="w-18px h-18px c-muted2 fs-0" data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}"></i>
       </div>
       
-      <div style="margin-top: 0.75rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <span style="font-size: 0.75rem; color: var(--t-muted);">${project.completedCount} / ${project.totalCount}</span>
-          <span style="font-size: 0.75rem; font-weight: 600; color: ${project.isCompleted ? 'var(--t-success)' : 'var(--t-text)'};">${progress}%</span>
+      <div class="mt-0_75rem">
+        <div class="d-flex jc-space-between ai-center mb-0_25rem">
+          <span class="fz-0_75rem c-muted">${project.completedCount} / ${project.totalCount}</span>
+          <span class="fz-0_75rem fwt-600" style="color: ${project.isCompleted ? 'var(--t-success)' : 'var(--t-text)'};">${progress}%</span>
         </div>
-        <div style="width: 100%; height: 6px; background: var(--t-line); border-radius: 999px; overflow: hidden;">
-          <div style="width: ${progress}%; height: 100%; background: ${project.isCompleted ? 'var(--t-success)' : colors.gradient}; transition: width 0.3s;"></div>
+        <div class="w-100pct h-6px bg-line br-999px ov-hidden">
+          <div class="h-100pct tr-width-0_3s" style="width: ${progress}%; background: ${project.isCompleted ? 'var(--t-success)' : colors.gradient};"></div>
         </div>
       </div>
     </div>
@@ -326,48 +325,48 @@ async function renderProjectDetail(project, profile) {
   const tasksList = tasks || [];
 
   projectDetail.innerHTML = `
-    <div style="background: ${project.isCompleted ? 'var(--t-bg)' : colors.bg}; border: 2px solid ${project.isCompleted ? 'var(--t-line)' : colors.border}; border-radius: 12px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(42,38,34, 0.1);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px dashed ${project.isCompleted ? 'var(--t-line2)' : colors.border};">
-        <h3 style="color: var(--t-text); font-size: 1.1rem; font-weight: 700; margin: 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.4;">
-          <i data-lucide="list-checks" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: -3px;"></i>
+    <div class="br-12px p-1_25rem sh-0-4px-12px-rgba42_38_34_0_1" style="background: ${project.isCompleted ? 'var(--t-bg)' : colors.bg}; border: 2px solid ${project.isCompleted ? 'var(--t-line)' : colors.border};">
+      <div class="d-flex jc-space-between ai-center mb-1rem pb-0_75rem" style="border-bottom: 1px dashed ${project.isCompleted ? 'var(--t-line2)' : colors.border};">
+        <h3 class="c-text fz-1_1rem fwt-700 m-0 wb-break-word ow-break-word lh-1_4">
+          <i class="w-18px h-18px mr-0_5rem va--3px" data-lucide="list-checks"></i>
           ${project.name} 할일 목록
         </h3>
-        <div style="display: flex; gap: 0.5rem;">
+        <div class="d-flex gap-0_5rem">
           ${project.isCompleted ? `
-            <button class="reopen-project-btn" data-project-id="${project.id}" style="padding: 0.375rem 0.75rem; background: var(--t-success); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
-              <i data-lucide="rotate-ccw" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
+            <button class="reopen-project-btn p-0_375rem-0_75rem bg-success c-white bd-none br-6px fz-0_8rem fwt-600 cur-pointer" data-project-id="${project.id}">
+              <i class="w-14px h-14px mr-0_25rem" data-lucide="rotate-ccw"></i>
               다시 진행
             </button>
           ` : ''}
-          <button class="edit-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: var(--t-muted); cursor: pointer; padding: 0.25rem;">
-            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          <button class="edit-project-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-project-id="${project.id}">
+            <i class="w-16px h-16px" data-lucide="pencil"></i>
           </button>
-          <button class="delete-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem;">
-            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+          <button class="delete-project-btn bg-transparent bd-none c-danger cur-pointer p-0_25rem" data-project-id="${project.id}">
+            <i class="w-16px h-16px" data-lucide="trash-2"></i>
           </button>
         </div>
       </div>
 
-      <div id="project-tasks-${project.id}" style="margin-bottom: 1rem; max-height: 400px; overflow-y: auto;">
+      <div class="mb-1rem maxh-400px ovy-auto" id="project-tasks-${project.id}">
         ${tasksList.map(task => renderProjectTask(task, project.category)).join('')}
         ${tasksList.length === 0 ? `
-          <div style="text-align: center; padding: 2rem 1rem; color: var(--t-muted2);">
-            <i data-lucide="clipboard-list" style="width: 32px; height: 32px; margin: 0 auto 0.5rem; opacity: 0.5;"></i>
-            <p style="font-size: 0.9rem; margin: 0;">등록된 할일이 없습니다</p>
+          <div class="ta-center p-2rem-1rem c-muted2">
+            <i class="w-32px h-32px m-0-auto-0_5rem op-0_5" data-lucide="clipboard-list"></i>
+            <p class="fz-0_9rem m-0">등록된 할일이 없습니다</p>
           </div>
         ` : ''}
       </div>
 
       ${!project.isCompleted ? `
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-          <input type="text" id="project-task-input-${project.id}" placeholder="할일을 입력하세요... (Enter로 추가)" style="flex: 1; padding: 0.625rem; border: 2px solid ${colors.border}; border-radius: 8px; font-size: 0.95rem; background: var(--t-surface);">
-          <button class="add-project-task-btn" data-project-id="${project.id}" style="padding: 0.625rem 1rem; background: ${colors.gradient}; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+        <div class="d-flex gap-0_5rem mb-1rem">
+          <input class="fx-1 p-0_625rem br-8px fz-0_95rem bg-surface" type="text" id="project-task-input-${project.id}" placeholder="할일을 입력하세요... (Enter로 추가)" style="border: 2px solid ${colors.border};">
+          <button class="add-project-task-btn p-0_625rem-1rem c-white bd-none br-8px fwt-600 cur-pointer" data-project-id="${project.id}" style="background: ${colors.gradient};">
+            <i class="w-16px h-16px" data-lucide="plus"></i>
           </button>
         </div>
 
-        <button class="register-todos-btn" data-project-id="${project.id}" style="width: 100%; padding: 0.75rem; background: var(--t-accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(42,38,34, 0.15);">
-          <i data-lucide="calendar-check" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
+        <button class="register-todos-btn w-100pct p-0_75rem bg-accent c-white bd-none br-8px fwt-600 cur-pointer sh-0-2px-8px-rgba42_38_34_0_15" data-project-id="${project.id}">
+          <i class="w-18px h-18px mr-0_5rem" data-lucide="calendar-check"></i>
           오늘 할일 등록하기
         </button>
       ` : ''}
@@ -430,50 +429,50 @@ function renderProjectTask(task, projectCategory) {
   let dateDisplay = '';
   let dateText = ''; // PC용 텍스트만 추출
   if (task.start_date && task.end_date) {
-    dateDisplay = `<span style="font-size: 0.75rem; color: var(--t-muted);">📅 ${task.start_date} ~ ${task.end_date}</span>`;
+    dateDisplay = `<span class="fz-0_75rem c-muted">📅 ${task.start_date} ~ ${task.end_date}</span>`;
     dateText = `📅 ${task.start_date} ~ ${task.end_date}`;
   } else if (task.start_date) {
-    dateDisplay = `<span style="font-size: 0.75rem; color: var(--t-muted);">📅 ${task.start_date}</span>`;
+    dateDisplay = `<span class="fz-0_75rem c-muted">📅 ${task.start_date}</span>`;
     dateText = `📅 ${task.start_date}`;
   } else if (task.due_date) {
-    dateDisplay = `<span style="font-size: 0.75rem; color: var(--t-muted2);">📅 ${task.due_date} (구)</span>`;
+    dateDisplay = `<span class="fz-0_75rem c-muted2">📅 ${task.due_date} (구)</span>`;
     dateText = `📅 ${task.due_date} (구)`;
   }
   
   return `
-    <div class="project-task-item" data-task-id="${task.id}" style="background: var(--t-surface); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
+    <div class="project-task-item bg-surface br-8px p-0_75rem mb-0_5rem sh-0-2px-4px-rgba42_38_34_0_05" data-task-id="${task.id}">
       <!-- 첫 번째 줄: 체크박스 + 제목 + 날짜(PC용) + 버튼들 -->
-      <div class="project-task-row" style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
-        <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;" ${isEditing ? 'disabled' : ''}>
+      <div class="project-task-row d-flex ai-center gap-0_75rem minw-0">
+        <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox w-20px h-20px cur-pointer fs-0" data-task-id="${task.id}"  ${isEditing ? 'disabled' : ''}>
         ${isEditing ? `
-          <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid var(--t-accent); border-radius: 4px; font-size: 1rem;">
+          <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}">
         ` : `
-          <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: var(--t-muted2);' : 'color: var(--t-text); cursor: pointer;'}">${task.title}</span>
-          ${dateText ? `<span class="project-task-date-pc" style="font-size: 0.75rem; color: var(--t-muted); white-space: nowrap; flex-shrink: 0; margin-left: 0.5rem;">${dateText}</span>` : ''}
+          <span class="project-task-title fx-1 minw-0 wb-break-word ow-break-word ${task.is_done ? 'td-line-through c-muted2' : 'c-text cur-pointer'}" data-task-id="${task.id}">${task.title}</span>
+          ${dateText ? `<span class="project-task-date-pc fz-0_75rem c-muted ws-nowrap fs-0 ml-0_5rem">${dateText}</span>` : ''}
         `}
         ${!isEditing ? `
-          <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-accent); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="시작일/종료일 설정">
-            <i data-lucide="calendar-range" style="width: 18px; height: 18px;"></i>
+          <button class="project-task-dates-btn bg-transparent bd-none c-accent cur-pointer p-0_25rem fs-0" data-task-id="${task.id}" title="시작일/종료일 설정">
+            <i class="w-18px h-18px" data-lucide="calendar-range"></i>
           </button>
-          <button class="project-task-edit-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-success); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="수정">
-            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          <button class="project-task-edit-btn bg-transparent bd-none c-success cur-pointer p-0_25rem fs-0" data-task-id="${task.id}" title="수정">
+            <i class="w-16px h-16px" data-lucide="pencil"></i>
           </button>
         ` : `
-          <button class="project-task-save-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-success); cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
-            <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+          <button class="project-task-save-btn bg-transparent bd-none c-success cur-pointer p-0_25rem fs-0" data-task-id="${task.id}">
+            <i class="w-18px h-18px" data-lucide="check"></i>
           </button>
-          <button class="project-task-cancel-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
-            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          <button class="project-task-cancel-btn bg-transparent bd-none c-danger cur-pointer p-0_25rem fs-0" data-task-id="${task.id}">
+            <i class="w-18px h-18px" data-lucide="x"></i>
           </button>
         `}
-        <button class="project-task-delete-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제" ${isEditing ? 'disabled' : ''}>
-          <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+        <button class="project-task-delete-btn bg-transparent bd-none c-danger cur-pointer p-0_25rem fs-0" data-task-id="${task.id}" title="삭제" ${isEditing ? 'disabled' : ''}>
+          <i class="w-16px h-16px" data-lucide="trash-2"></i>
         </button>
       </div>
       
       <!-- 두 번째 줄: 날짜 표시 (모바일용) -->
       ${dateDisplay ? `
-        <div class="project-task-date-mobile" style="margin-top: 0.5rem; padding-left: 2.45rem;">
+        <div class="project-task-date-mobile mt-0_5rem pl-2_45rem">
           ${dateDisplay}
         </div>
       ` : ''}
@@ -975,28 +974,28 @@ function openProjectTaskDateRangePicker(taskId, profile) {
   // 모달 HTML 생성 (처음 호출 시만)
   if (!document.getElementById('project-task-daterange-overlay')) {
     const modalHTML = `
-      <div id="project-task-daterange-overlay" class="hidden" style="display: none; position: fixed; inset: 0; background: rgba(42,38,34, 0.5); z-index: 999; align-items: center; justify-content: center;">
-        <div style="background: var(--t-surface); border-radius: 12px; padding: 1.5rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(42,38,34, 0.1), 0 20px 48px rgba(42,38,34, 0.15);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--t-line);">
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--t-text); margin: 0;">시작일/종료일 설정</h3>
-            <button id="project-task-daterange-close" style="background: transparent; border: none; cursor: pointer; padding: 0.25rem;" title="닫기">
-              <i data-lucide="x" style="width: 24px; height: 24px; color: var(--t-muted);"></i>
+      <div id="project-task-daterange-overlay" class="hidden d-none pos-fixed ins-0 bg-rgba42_38_34_0_5 z-999 ai-center jc-center">
+        <div class="bg-surface br-12px p-1_5rem maxw-500px w-90pct maxh-80vh ovy-auto sh-0-8px-16px-rgba42_38_34_0_1_0-20px-48-ee337">
+          <div class="d-flex ai-center jc-space-between mb-1rem pb-0_75rem bdb-2px-solid-line">
+            <h3 class="fz-1_25rem fwt-700 c-text m-0">시작일/종료일 설정</h3>
+            <button class="bg-transparent bd-none cur-pointer p-0_25rem" id="project-task-daterange-close" title="닫기">
+              <i class="w-24px h-24px c-muted" data-lucide="x"></i>
             </button>
           </div>
           
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 600; color: var(--t-text2); margin-bottom: 0.5rem;">시작일</label>
-            <input type="text" id="project-task-startdate-input" readonly placeholder="시작일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--t-line2); border-radius: 8px; font-size: 1rem; cursor: pointer;">
+          <div class="mb-1rem">
+            <label class="d-block fwt-600 c-text2 mb-0_5rem">시작일</label>
+            <input class="w-100pct p-0_75rem bd-2px-solid-line2 br-8px fz-1rem cur-pointer" type="text" id="project-task-startdate-input" readonly placeholder="시작일 선택...">
           </div>
           
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 600; color: var(--t-text2); margin-bottom: 0.5rem;">종료일</label>
-            <input type="text" id="project-task-enddate-input" readonly placeholder="종료일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--t-line2); border-radius: 8px; font-size: 1rem; cursor: pointer;">
+          <div class="mb-1rem">
+            <label class="d-block fwt-600 c-text2 mb-0_5rem">종료일</label>
+            <input class="w-100pct p-0_75rem bd-2px-solid-line2 br-8px fz-1rem cur-pointer" type="text" id="project-task-enddate-input" readonly placeholder="종료일 선택...">
           </div>
           
-          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
-            <button id="project-task-daterange-save" class="btn btn-primary" style="flex: 1; padding: 0.75rem; border-radius: 8px; font-size: 1rem; font-weight: 600;">저장</button>
-            <button id="project-task-daterange-clear" class="btn btn-secondary" style="flex: 1; padding: 0.75rem; border-radius: 8px; font-size: 1rem; font-weight: 600;">날짜 지우기</button>
+          <div class="d-flex gap-0_75rem mt-1_5rem">
+            <button id="project-task-daterange-save" class="btn btn-primary fx-1 p-0_75rem br-8px fz-1rem fwt-600">저장</button>
+            <button id="project-task-daterange-clear" class="btn btn-secondary fx-1 p-0_75rem br-8px fz-1rem fwt-600">날짜 지우기</button>
           </div>
         </div>
       </div>

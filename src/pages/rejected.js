@@ -47,16 +47,16 @@ export async function renderRejected(profile) {
     <div class="auth-container">
       <h1>이용 불가</h1>
       <p>계정 상태: <strong>${statusText}</strong></p>
-      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem;">
+      <p class="c-var--text-secondary fz-0_9rem mt-1rem">
         서비스 이용이 제한되었습니다.<br>
         문의사항이 있으시면 관리자에게 연락해주세요.
       </p>
       ${profile.status === 'rejected' ? `
-        <button onclick="window.handleReapply()" class="btn btn-primary" style="margin-top: 1.5rem;">
+        <button onclick="window.handleReapply()" class="btn btn-primary mt-1_5rem">
           다시 승인 요청
         </button>
       ` : ''}
-      <button onclick="window.handleRejectedLogout()" class="btn btn-secondary" style="margin-top: 2rem;">
+      <button onclick="window.handleRejectedLogout()" class="btn btn-secondary mt-2rem">
         로그아웃
       </button>
     </div>

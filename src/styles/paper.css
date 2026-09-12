@@ -2,10 +2,11 @@
    종이 저널 테마 (1안, 2026-09-12 소장님 확정 — 장준식)
    시안 정본: AI-Team/_preview/인생관리AI_디자인방향_5안_2026-09-12/ (1안)
    팔레트: 바탕 #F8F4EC · 종이 #FFFDF9 · 잉크 #2A2622 · 포인트(남색) #23506B
-   원칙: 기능·마크업 무변경. JS 인라인 style은 !important로 덮는다 —
-         P2(인라인 1,364곳 → 클래스)에서 인라인이 사라지면 !important도 걷어낸다.
+   원칙: 기능·마크업 무변경. JS 인라인 style은로 덮는다 —
+         P2(인라인 1,364곳 → 클래스)에서 인라인이 사라지면도 걷어낸다.
    폰트·keep-all·토스트는 main.css(기본 레이어)에 있다. admin.html도 그쪽을 쓴다.
    ============================================================ */
+@layer theme {
 /* ─────────────────────────── 토큰 ─────────────────────────── */
 :root {
   --t-bg: #F8F4EC; --t-bg2: #F0EAE0; --t-surface: #FFFDF9;
@@ -45,8 +46,8 @@
 :root .brand-mark { color: var(--t-accent); }
 :root .brand-text { color: var(--t-text); font-size: 1.25rem; }
 :root .app-header-top { border-bottom: 0; }
-:root .app-header-container { background: var(--t-bg) !important; box-shadow: none !important; border: 0 !important; border-bottom: 1px solid var(--t-line) !important; border-radius: 0 !important; }
-:root .date-bar-container { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+:root .app-header-container { background: var(--t-bg); box-shadow: none; border: 0; border-bottom: 1px solid var(--t-line); border-radius: 0; }
+:root .date-bar-container { background: transparent; border: 0; box-shadow: none; }
 :root .btn-secondary { background: var(--t-surface); color: var(--t-text2); border: 1px solid var(--t-line2); box-shadow: none; }
 :root .btn-secondary:hover { background: var(--t-bg2); transform: none; box-shadow: none; }
 
@@ -74,67 +75,67 @@
 
 /* 날짜 바(헤더 3줄) */
 :root .date-display-btn,
-:root #todo-date-display { background: var(--t-accent-soft) !important; color: var(--t-accent) !important; box-shadow: none !important; }
-:root .date-nav-btn { background: transparent !important; border: 0 !important; color: var(--t-muted) !important; box-shadow: none !important; }
+:root #todo-date-display { background: var(--t-accent-soft); color: var(--t-accent); box-shadow: none; }
+:root .date-nav-btn { background: transparent; border: 0; color: var(--t-muted); box-shadow: none; }
 :root .quick-nav-btn,
 :root .date-today-btn,
-:root .date-today-icon-btn { background: var(--t-surface) !important; border: 1px solid var(--t-line2) !important; color: var(--t-text2) !important; }
+:root .date-today-icon-btn { background: var(--t-surface); border: 1px solid var(--t-line2); color: var(--t-text2); }
 
 /* 카드 3장(루틴·할일·성찰): 그라디언트·색 테두리 제거 */
 :root .card,
 :root #today-routines-section,
 :root #today-todos-section,
 :root #today-reflection-section {
-  background: var(--t-surface) !important; border: 1px solid var(--t-line) !important;
-  border-radius: 14px !important; box-shadow: var(--t-shadow) !important; padding: 1.25rem !important;
+  background: var(--t-surface); border: 1px solid var(--t-line);
+  border-radius: 14px; box-shadow: var(--t-shadow); padding: 1.25rem;
 }
-:root .card:hover { box-shadow: var(--t-shadow) !important; }
-:root .card-header { border-bottom-color: var(--t-line) !important; padding-bottom: 0.75rem !important; margin-bottom: 1rem !important; }
-:root .card-title { color: var(--t-text) !important; font-size: 1.2rem !important; }
+:root .card:hover { box-shadow: var(--t-shadow); }
+:root .card-header { border-bottom-color: var(--t-line); padding-bottom: 0.75rem; margin-bottom: 1rem; }
+:root .card-title { color: var(--t-text); font-size: 1.2rem; }
 /* 제목 앞 40px 그라디언트 아이콘 박스 → 작은 잉크색 아이콘 */
-:root .card-header > div > div:first-child[style*="width: 40px"] {
-  width: 28px !important; height: 28px !important; background: var(--t-accent-soft) !important; box-shadow: none !important; border-radius: 8px !important;
+:root .card-header > div > div:first-child.w-40px {
+  width: 28px; height: 28px; background: var(--t-accent-soft); box-shadow: none; border-radius: 8px;
 }
-:root .card-header > div > div:first-child[style*="width: 40px"] :is(i, svg) { color: var(--t-accent) !important; width: 16px !important; height: 16px !important; }
-:root .card-header .btn-icon :is(i, svg) { color: var(--t-muted) !important; }
+:root .card-header > div > div:first-child.w-40px :is(i, svg) { color: var(--t-accent); width: 16px; height: 16px; }
+:root .card-header .btn-icon :is(i, svg) { color: var(--t-muted); }
 :root #today-routines-section h4,
 :root #today-todos-section h4,
-:root .category-section h4 { color: var(--t-muted) !important; font-size: 0.8rem !important; font-weight: 600 !important; letter-spacing: 0.02em; }
-:root #today-routines-section h4 + span { color: var(--t-muted2) !important; }
+:root .category-section h4 { color: var(--t-muted); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em; }
+:root #today-routines-section h4 + span { color: var(--t-muted2); }
 :root #morning-routines > div:first-child :is(i, svg),
 :root #daytime-routines > div:first-child :is(i, svg),
-:root #night-routines > div:first-child :is(i, svg) { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
-:root .category-section > div:first-child :is(i, svg) { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
+:root #night-routines > div:first-child :is(i, svg) { color: var(--t-muted); width: 16px; height: 16px; }
+:root .category-section > div:first-child :is(i, svg) { color: var(--t-muted); width: 16px; height: 16px; }
 /* 루틴 3열 사이 세로 그라디언트 구분선 */
-:root #routines-content [style*="linear-gradient(180deg"] { background: var(--t-line) !important; width: 1px !important; }
+:root #routines-content .w-2px.bg-line { background: var(--t-line); width: 1px; }
 
 
 /* 항목 행: 흰 카드 → 괘선 */
 :root .routine-item,
 :root .todo-item {
-  background: transparent !important; box-shadow: none !important; border-radius: 0 !important;
-  border-bottom: 1px solid var(--t-line); padding: 0.6rem 0.25rem !important; min-height: 48px;
+  background: transparent; box-shadow: none; border-radius: 0;
+  border-bottom: 1px solid var(--t-line); padding: 0.6rem 0.25rem; min-height: 48px;
 }
-:root .todo-item:hover { box-shadow: none !important; background: var(--t-bg2) !important; }
+:root .todo-item:hover { box-shadow: none; background: var(--t-bg2); }
 :root [id$="-routines-list"],
-:root [id^="todos-"][id$="-list"] { gap: 0 !important; }
+:root [id^="todos-"][id$="-list"] { gap: 0; }
 :root .routine-item:last-child,
 :root .todo-item:last-child { border-bottom: 0; }
-:root input[type="checkbox"] { accent-color: var(--t-accent); width: 20px !important; height: 20px !important; border-radius: 6px; }
+:root input[type="checkbox"] { accent-color: var(--t-accent); width: 20px; height: 20px; border-radius: 6px; }
 :root .todo-title { color: var(--t-text); }
 :root .todo-drag-handle,
-:root .move-todo-btn { color: var(--t-muted2) !important; }
+:root .move-todo-btn { color: var(--t-muted2); }
 :root .todo-item button[data-move-todo-date],
 :root .todo-item button[data-duplicate-todo],
-:root .todo-item button[data-delete-todo] { color: var(--t-muted2) !important; }
-:root .todo-item button:hover { color: var(--t-accent) !important; }
+:root .todo-item button[data-delete-todo] { color: var(--t-muted2); }
+:root .todo-item button:hover { color: var(--t-accent); }
 
 /* 카테고리 섹션 4장: 색 배경·색 테두리 제거, 한 장의 종이 위 소제목으로 */
 :root .category-section {
-  background: transparent !important; border: 0 !important; box-shadow: none !important;
-  padding: 0.25rem 0 0 !important; margin-bottom: 0.75rem !important; border-radius: 0 !important;
+  background: transparent; border: 0; box-shadow: none;
+  padding: 0.25rem 0 0; margin-bottom: 0.75rem; border-radius: 0;
 }
-:root .category-section > div:first-child { margin-bottom: 0.25rem !important; }
+:root .category-section > div:first-child { margin-bottom: 0.25rem; }
 
 /* 카테고리 탭 */
 :root .category-tab {
@@ -142,36 +143,38 @@
 }
 :root .category-tab:hover { background: transparent; transform: none; color: var(--t-text); }
 :root .category-tab.active {
-  background: transparent !important; color: var(--t-text) !important; font-weight: 700; border-bottom-color: var(--t-text); box-shadow: none !important;
+  background: transparent; color: var(--t-text); font-weight: 700; border-bottom-color: var(--t-text); box-shadow: none;
 }
 
 /* 입력·버튼 */
-:root #todo-input { border: 1px solid var(--t-line2) !important; background: var(--t-surface) !important; color: var(--t-text); border-radius: 10px !important; min-height: 44px; }
-:root #todo-input:focus { outline: 2px solid var(--t-accent-line); border-color: var(--t-accent) !important; }
+:root #todo-input { border: 1px solid var(--t-line2); background: var(--t-surface); color: var(--t-text); border-radius: 10px; min-height: 44px; }
+:root #todo-input:focus { outline: 2px solid var(--t-accent-line); border-color: var(--t-accent); }
 :root #add-todo-btn,
 :root #open-reflection-form,
 :root .btn-primary {
-  background: var(--t-accent) !important; color: #fff !important; box-shadow: none !important; border-radius: 10px !important; min-height: 44px;
+  background: var(--t-accent); color: #fff; box-shadow: none; border-radius: 10px; min-height: 44px;
 }
-:root .btn-primary:hover { transform: none; box-shadow: none !important; filter: brightness(1.06); }
+:root .btn-primary:hover { transform: none; box-shadow: none; filter: brightness(1.06); }
 :root .btn::before { display: none; }
 
 /* 성찰 폼 */
-:root #reflection-content label { color: var(--t-text2) !important; }
-:root #reflection-content label :is(i, svg) { color: var(--t-muted) !important; }
-:root #reflection-content textarea { border: 1px solid var(--t-line2) !important; background: var(--t-surface) !important; color: var(--t-text); border-radius: 10px !important; font-family: inherit; }
+:root #reflection-content label { color: var(--t-text2); }
+:root #reflection-content label :is(i, svg) { color: var(--t-muted); }
+:root #reflection-content textarea { border: 1px solid var(--t-line2); background: var(--t-surface); color: var(--t-text); border-radius: 10px; font-family: inherit; }
 
 /* 태그(P1~3·프로젝트·반복업무): 정보색만 */
-:root .todo-item span[style*="background: #e0e7ff"] { background: var(--t-accent-soft) !important; color: var(--t-accent) !important; }
-:root .todo-item span[style*="background: #f3e8ff"] { background: var(--t-bg2) !important; color: var(--t-muted) !important; }
+:root .todo-item span.bg-accent-soft { background: var(--t-accent-soft); color: var(--t-accent); }
+:root .todo-item span.bg-accent2-soft { background: var(--t-bg2); color: var(--t-muted); }
 
 /* 다른 페이지 공통: 본문 텍스트·링크 */
 :root a { color: var(--t-accent); }
 :root .nav-item-new { text-decoration: none; }
 
 :root .top-navigation-grouped .nav-group { border-radius: 10px; }
-:root #today-reflection-section { border-style: dashed !important; }
+:root #today-reflection-section { border-style: dashed; }
 
 
 /* 로그인 화면 로고: 이미지 자체가 흰 바탕이라 종이 위에 각진 흰 판으로 떴다 → 종이 카드로 감싼다 */
 :root .auth-logo { border-radius: 14px; border: 1px solid var(--t-line); box-shadow: var(--t-shadow); background: #fff; }
+
+} /* @layer theme */

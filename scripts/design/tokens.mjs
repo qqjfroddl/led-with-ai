@@ -16,7 +16,7 @@ export const HEX = {
   // 괘선·바탕
   '#d1d5db': 'line2', '#dddddd': 'line2', '#cbd5e1': 'line2',
   '#e5e7eb': 'line', '#e2e8f0': 'line',
-  '#f3f4f6': 'bg2', '#f5f5f5': 'bg2',
+  '#f3f4f6': 'bg2', '#f5f5f5': 'bg2', '#f4f4f5': 'bg2', '#fafafa': 'bg',
   '#f9fafb': 'bg', '#f8fafc': 'bg',
   '#ffffff': 'surface',
   // accent(남색): 인디고·블루·틸
@@ -24,16 +24,17 @@ export const HEX = {
   '#3b82f6': 'accent', '#2563eb': 'accent', '#1e40af': 'accent', '#003399': 'accent',
   '#14b8a6': 'accent', '#0f766e': 'accent',
   '#e0e7ff': 'accent-soft', '#eef2ff': 'accent-soft', '#dbeafe': 'accent-soft', '#e0f2fe': 'accent-soft', '#e8ebfa': 'accent-soft',
-  '#c7d2fe': 'accent-line', '#a5b4fc': 'accent-line',
+  '#c7d2fe': 'accent-line', '#a5b4fc': 'accent-line', '#7dd3fc': 'accent-line', '#4a4eb0': 'accent', '#d4d9f5': 'accent-soft',
   // accent2(자두색): 퍼플 — 성찰·성장
   '#a78bfa': 'accent2', '#8b5cf6': 'accent2', '#7c3aed': 'accent2', '#c084fc': 'accent2',
   '#9b8cd9': 'accent2', '#8678c7': 'accent2', '#6b21a8': 'accent2', '#9284be': 'accent2',
   '#f5f3ff': 'accent2-soft', '#f3e8ff': 'accent2-soft', '#f0e7ff': 'accent2-soft', '#f4e9ff': 'accent2-soft', '#ede9fe': 'accent2-soft',
+  '#e9d5ff': 'accent2-soft',
   '#d8c7ff': 'accent2-line', '#c4b5fd': 'accent2-line', '#d8b4fe': 'accent2-line',
   // success(에메랄드)
   '#10b981': 'success', '#059669': 'success', '#16a34a': 'success', '#166534': 'success', '#22c55e': 'success',
   '#d1fae5': 'success-soft', '#f0fdf4': 'success-soft', '#e0f7f4': 'success-soft',
-  '#86efac': 'success-line',
+  '#86efac': 'success-line', '#6ee7b7': 'success-line', '#065f46': 'success',
   // danger(레드)
   '#ef4444': 'danger', '#dc2626': 'danger', '#991b1b': 'danger', '#b91c1c': 'danger',
   '#fee2e2': 'danger-soft', '#fef2f2': 'danger-soft',
@@ -43,7 +44,7 @@ export const HEX = {
   // warn(앰버)
   '#f59e0b': 'warn', '#ffc107': 'warn', '#92400e': 'warn', '#856404': 'warn', '#d97706': 'warn',
   '#fef3c7': 'warn-soft', '#fff3cd': 'warn-soft',
-  '#fde68a': 'warn-line',
+  '#fde68a': 'warn-line', '#fcd34d': 'warn-line',
   // 카테고리 4색
   '#fb923c': 'cat-work', '#f59e42': 'cat-work', '#e8922e': 'cat-work',
   '#fff7e6': 'cat-work-soft', '#f5d38f': 'cat-work-line',

@@ -21,118 +21,118 @@ export async function renderToday() {
 
   const html = `
     <!-- 오늘 루틴 -->
-    <div id="today-routines-section" class="card" style="background: var(--t-success-soft); border: 2px solid var(--t-accent); border-radius: 12px; box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
-      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-            <i data-lucide="target" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+    <div id="today-routines-section" class="card bg-success-soft bd-2px-solid-accent br-12px sh-0-8px-24px-rgba42_38_34_0_07 mb-1_5rem">
+      <div class="card-header d-flex jc-space-between ai-center bdb-2px-solid-accent-line pb-1rem mb-1_25rem">
+        <div class="d-flex ai-center gap-0_75rem">
+          <div class="w-40px h-40px bg-accent br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+            <i class="w-24px h-24px c-white sw-2_5" data-lucide="target"></i>
           </div>
           <div>
-            <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">오늘 루틴</div>
+            <div class="card-title c-accent fz-1_5rem m-0">오늘 루틴</div>
           </div>
-          <button id="toggle-routines" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-            <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
+          <button id="toggle-routines" class="btn-icon bg-transparent bd-none p-0_25rem cur-pointer">
+            <i class="w-20px h-20px c-accent" data-lucide="chevron-down"></i>
           </button>
         </div>
       </div>
-      <div id="routines-content" style="display: block;">
-        <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 1rem; align-items: start;">
+      <div class="d-block" id="routines-content">
+        <div class="d-grid gtc-1fr-auto-1fr-auto-1fr gap-1rem ai-start">
           <!-- 모닝루틴 -->
           <div id="morning-routines">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-              <i data-lucide="sunrise" style="width: 20px; height: 20px; color: var(--t-warn);"></i>
-              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0;">모닝루틴</h4>
+            <div class="d-flex ai-center gap-0_5rem mb-1rem">
+              <i class="w-20px h-20px c-warn" data-lucide="sunrise"></i>
+              <h4 class="c-accent fwt-600 m-0">모닝루틴</h4>
             </div>
-            <div id="morning-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-            <div id="morning-empty" style="color: var(--t-muted2); font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
+            <div class="d-flex fd-column gap-0_5rem" id="morning-routines-list"></div>
+            <div class="c-muted2 fz-0_9rem p-1rem-0 ta-center d-none" id="morning-empty">
               오늘 수행할 모닝루틴이 없습니다
             </div>
           </div>
           
           <!-- 구분선 -->
-          <div style="width: 2px; height: 100%; background: var(--t-line); min-height: 100px;"></div>
+          <div class="w-2px h-100pct bg-line minh-100px"></div>
           
           <!-- 데이타임 루틴 -->
           <div id="daytime-routines">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-              <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: var(--t-cat-job);"></i>
-              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0;">데이타임 루틴</h4>
+            <div class="d-flex ai-center gap-0_5rem mb-1rem">
+              <i class="w-20px h-20px c-cat-job" data-lucide="cloud-sun"></i>
+              <h4 class="c-accent fwt-600 m-0">데이타임 루틴</h4>
             </div>
-            <div id="daytime-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-            <div id="daytime-empty" style="color: var(--t-muted2); font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
+            <div class="d-flex fd-column gap-0_5rem" id="daytime-routines-list"></div>
+            <div class="c-muted2 fz-0_9rem p-1rem-0 ta-center d-none" id="daytime-empty">
               오늘 수행할 데이타임 루틴이 없습니다
             </div>
           </div>
           
           <!-- 구분선 -->
-          <div style="width: 2px; height: 100%; background: var(--t-line); min-height: 100px;"></div>
+          <div class="w-2px h-100pct bg-line minh-100px"></div>
           
           <!-- 나이트루틴 -->
           <div id="night-routines">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-              <i data-lucide="moon" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
-              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0;">나이트루틴</h4>
+            <div class="d-flex ai-center gap-0_5rem mb-1rem">
+              <i class="w-20px h-20px c-accent" data-lucide="moon"></i>
+              <h4 class="c-accent fwt-600 m-0">나이트루틴</h4>
             </div>
-            <div id="night-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-            <div id="night-empty" style="color: var(--t-muted2); font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
+            <div class="d-flex fd-column gap-0_5rem" id="night-routines-list"></div>
+            <div class="c-muted2 fz-0_9rem p-1rem-0 ta-center d-none" id="night-empty">
               오늘 수행할 나이트루틴이 없습니다
             </div>
           </div>
         </div>
-        <div id="routines-no-data" style="text-align: center; padding: 2rem; color: var(--t-muted2); display: none;">
+        <div class="ta-center p-2rem c-muted2 d-none" id="routines-no-data">
           <p>오늘 수행할 루틴이 없습니다.</p>
-          <a href="#/goals" style="color: var(--t-accent); text-decoration: underline;">목표 탭에서 루틴을 등록하세요</a>
+          <a class="c-accent td-underline" href="#/goals">목표 탭에서 루틴을 등록하세요</a>
         </div>
       </div>
     </div>
 
     <!-- 오늘 할일 -->
-    <div id="today-todos-section" class="card" style="background: var(--t-accent-soft); border: 2px solid var(--t-accent); border-radius: 12px; box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
-      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div id="today-todos-section" class="card bg-accent-soft bd-2px-solid-accent br-12px sh-0-8px-24px-rgba42_38_34_0_07">
+      <div class="card-header d-flex jc-space-between ai-center bdb-2px-solid-accent-line pb-1rem mb-1_25rem">
         <!-- 왼쪽: 오늘 할일 -->
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
-          <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-            <i data-lucide="list-checks" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+        <div class="d-flex ai-center gap-0_75rem fs-0">
+          <div class="w-40px h-40px bg-accent br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+            <i class="w-24px h-24px c-white sw-2_5" data-lucide="list-checks"></i>
           </div>
           <div>
-            <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">오늘 할일</div>
+            <div class="card-title c-accent fz-1_5rem m-0">오늘 할일</div>
           </div>
-          <button id="toggle-todos" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-            <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
+          <button id="toggle-todos" class="btn-icon bg-transparent bd-none p-0_25rem cur-pointer">
+            <i class="w-20px h-20px c-accent" data-lucide="chevron-down"></i>
           </button>
         </div>
         
         <!-- 가운데: 날짜 이동 바 -->
-        <div id="todo-date-nav-section" style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center; margin: 0 1rem; min-width: 0;">
-          <button id="todo-date-prev" class="date-nav-btn" title="이전 날짜" style="background: var(--t-surface); border: 1px solid var(--t-line); border-radius: 8px; padding: 0.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); color: var(--t-muted); width: 32px; height: 32px; flex-shrink: 0;">
-            <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
+        <div class="d-flex ai-center gap-0_5rem fx-1 jc-center m-0-1rem minw-0" id="todo-date-nav-section">
+          <button id="todo-date-prev" class="date-nav-btn bg-surface bd-1px-solid-line br-8px p-0_4rem cur-pointer d-flex ai-center jc-center tr-all-0_25s-cubic-bezier0_4_0_0_2_1 c-muted w-32px h-32px fs-0" title="이전 날짜">
+            <i class="w-18px h-18px" data-lucide="chevron-left"></i>
           </button>
-          <button id="todo-date-display" class="date-display-btn" style="display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.875rem; background: var(--primary-blue, var(--t-accent)); color: white; border: none; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; flex-shrink: 0;">
-            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+          <button id="todo-date-display" class="date-display-btn d-flex ai-center gap-0_4rem p-0_4rem-0_875rem bg-var--primary-blue_accent c-white bd-none br-999px cur-pointer fwt-600 fz-0_9rem tr-all-0_25s-cubic-bezier0_4_0_0_2_1 ws-nowrap fs-0">
+            <i class="w-16px h-16px" data-lucide="calendar"></i>
             <span id="todo-date-display-text">${formatSelectedDate(timezone)}</span>
           </button>
-          <button id="todo-date-next" class="date-nav-btn" title="다음 날짜" style="background: var(--t-surface); border: 1px solid var(--t-line); border-radius: 8px; padding: 0.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); color: var(--t-muted); width: 32px; height: 32px; flex-shrink: 0;">
-            <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+          <button id="todo-date-next" class="date-nav-btn bg-surface bd-1px-solid-line br-8px p-0_4rem cur-pointer d-flex ai-center jc-center tr-all-0_25s-cubic-bezier0_4_0_0_2_1 c-muted w-32px h-32px fs-0" title="다음 날짜">
+            <i class="w-18px h-18px" data-lucide="chevron-right"></i>
           </button>
           <!-- 오늘로 이동 버튼 (PC만 표시) -->
-          <button id="todo-date-today" class="date-today-btn date-today-btn-pc" style="display: ${selectedDate === today ? 'none' : 'inline-flex'}; align-items: center; gap: 0.375rem; padding: 0.375rem 0.875rem; font-size: 0.875rem; background: var(--t-accent-soft); color: var(--t-text); border: 1px solid var(--t-accent-line); border-radius: 999px; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <i data-lucide="sun" style="width: 16px; height: 16px;"></i>
+          <button id="todo-date-today" class="date-today-btn date-today-btn-pc ai-center gap-0_375rem p-0_375rem-0_875rem fz-0_875rem bg-accent-soft c-text bd-1px-solid-accent-line br-999px cur-pointer tr-all-0_2s ws-nowrap fs-0" style="display: ${selectedDate === today ? 'none' : 'inline-flex'};">
+            <i class="w-16px h-16px" data-lucide="sun"></i>
             오늘로 이동
           </button>
           <!-- 오늘로 이동 아이콘 (모바일만 표시) -->
-          <button id="todo-date-today-mobile" class="date-today-icon-btn date-today-btn-mobile" title="오늘로 이동" style="display: ${selectedDate === today ? 'none' : 'inline-flex'}; align-items: center; justify-content: center; padding: 0.4rem; background: var(--t-accent-soft); color: var(--t-text); border: 1px solid var(--t-accent-line); border-radius: 8px; cursor: pointer; transition: all 0.2s; width: 32px; height: 32px; flex-shrink: 0;">
-            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+          <button id="todo-date-today-mobile" class="date-today-icon-btn date-today-btn-mobile ai-center jc-center p-0_4rem bg-accent-soft c-text bd-1px-solid-accent-line br-8px cur-pointer tr-all-0_2s w-32px h-32px fs-0" title="오늘로 이동" style="display: ${selectedDate === today ? 'none' : 'inline-flex'};">
+            <i class="w-18px h-18px" data-lucide="sun"></i>
           </button>
         </div>
         
         <!-- 오른쪽: 카테고리 탭 -->
-        <div style="display: flex; gap: 0.75rem; align-items: center; flex-shrink: 0;">
-          <div id="todo-filter-tabs" style="display: none;">
-            <button class="todo-filter-tab" data-filter="today" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 8px; border: 2px solid var(--t-accent); background: var(--t-accent); color: white; font-weight: 600; cursor: pointer;">오늘</button>
-            <button class="todo-filter-tab" data-filter="future" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 8px; border: 2px solid var(--t-line); background: var(--t-bg); color: var(--t-muted); font-weight: 600; cursor: pointer;">미래</button>
-            <button class="todo-filter-tab" data-filter="past" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 8px; border: 2px solid var(--t-line); background: var(--t-bg); color: var(--t-muted); font-weight: 600; cursor: pointer;">지난</button>
+        <div class="d-flex gap-0_75rem ai-center fs-0">
+          <div class="d-none" id="todo-filter-tabs">
+            <button class="todo-filter-tab p-0_5rem-1rem fz-0_9rem bd-2px-solid-accent bg-accent c-white fwt-600 cur-pointer" data-filter="today">오늘</button>
+            <button class="todo-filter-tab p-0_5rem-1rem fz-0_9rem bd-2px-solid-line bg-bg c-muted fwt-600 cur-pointer" data-filter="future">미래</button>
+            <button class="todo-filter-tab p-0_5rem-1rem fz-0_9rem bd-2px-solid-line bg-bg c-muted fwt-600 cur-pointer" data-filter="past">지난</button>
           </div>
-          <div id="category-tabs" style="display: flex; gap: 0.5rem;">
+          <div class="d-flex gap-0_5rem" id="category-tabs">
             <button class="category-tab" data-category="work">Work</button>
             <button class="category-tab" data-category="job">Job</button>
             <button class="category-tab" data-category="self_dev">Growth</button>
@@ -140,56 +140,56 @@ export async function renderToday() {
           </div>
         </div>
       </div>
-      <div id="todos-content" style="display: block;">
-        <div id="todo-input-section" style="margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: center;">
-          <input type="text" id="todo-input" placeholder="복잡하고 어려운 일을 입력하세요..." style="flex: 1; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 1rem;">
-          <button id="add-todo-btn" class="btn" style="padding: 0.75rem 1.25rem; background: var(--t-accent); color: white; border: none; white-space: nowrap; flex-shrink: 0;">+ 추가</button>
+      <div class="d-block" id="todos-content">
+        <div class="mb-1_5rem d-flex gap-0_75rem ai-center" id="todo-input-section">
+          <input class="fx-1 p-0_75rem bd-2px-solid-accent br-8px fz-1rem" type="text" id="todo-input" placeholder="복잡하고 어려운 일을 입력하세요...">
+          <button id="add-todo-btn" class="btn p-0_75rem-1_25rem bg-accent c-white bd-none ws-nowrap fs-0">+ 추가</button>
         </div>
 
         <!-- Work 카테고리 섹션 -->
-        <div id="category-work-section" class="category-section" style="margin-bottom: 1.5rem; background: var(--t-cat-work-soft); border: 2px solid var(--t-cat-work-line); border-radius: 12px; padding: 1rem; box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <i data-lucide="briefcase" style="width: 20px; height: 20px; color: var(--t-cat-work);"></i>
-            <h4 style="color: var(--t-cat-work); font-weight: 600; margin: 0; font-size: 1.1rem;">Work</h4>
+        <div id="category-work-section" class="category-section mb-1_5rem bg-cat-work-soft bd-2px-solid-cat-work-line br-12px p-1rem sh-0-8px-24px-rgba42_38_34_0_07">
+          <div class="d-flex ai-center gap-0_5rem mb-1rem">
+            <i class="w-20px h-20px c-cat-work" data-lucide="briefcase"></i>
+            <h4 class="c-cat-work fwt-600 m-0 fz-1_1rem">Work</h4>
           </div>
-          <div id="todos-work-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-          <div id="todos-work-empty" style="text-align: center; padding: 1rem; color: var(--t-muted2); font-size: 0.9rem; display: none;">
+          <div class="d-flex fd-column gap-0_75rem" id="todos-work-list"></div>
+          <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-work-empty">
             등록된 할일이 없습니다.
           </div>
         </div>
 
         <!-- Job 카테고리 섹션 -->
-        <div id="category-job-section" class="category-section" style="margin-bottom: 1.5rem; background: var(--t-cat-job-soft); border: 2px solid var(--t-cat-job-line); border-radius: 12px; padding: 1rem; box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <i data-lucide="clipboard-list" style="width: 20px; height: 20px; color: var(--t-cat-job);"></i>
-            <h4 style="color: var(--t-cat-job); font-weight: 600; margin: 0; font-size: 1.1rem;">Job</h4>
+        <div id="category-job-section" class="category-section mb-1_5rem bg-cat-job-soft bd-2px-solid-cat-job-line br-12px p-1rem sh-0-8px-24px-rgba42_38_34_0_07">
+          <div class="d-flex ai-center gap-0_5rem mb-1rem">
+            <i class="w-20px h-20px c-cat-job" data-lucide="clipboard-list"></i>
+            <h4 class="c-cat-job fwt-600 m-0 fz-1_1rem">Job</h4>
           </div>
-          <div id="todos-job-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-          <div id="todos-job-empty" style="text-align: center; padding: 1rem; color: var(--t-muted2); font-size: 0.9rem; display: none;">
+          <div class="d-flex fd-column gap-0_75rem" id="todos-job-list"></div>
+          <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-job-empty">
             등록된 할일이 없습니다.
           </div>
         </div>
 
         <!-- Growth 카테고리 섹션 -->
-        <div id="category-self_dev-section" class="category-section" style="margin-bottom: 1.5rem; background: var(--t-accent2-soft); border: 2px solid var(--t-accent2-line); border-radius: 12px; padding: 1rem; box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <i data-lucide="book-open" style="width: 20px; height: 20px; color: var(--t-accent2);"></i>
-            <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0; font-size: 1.1rem;">Growth</h4>
+        <div id="category-self_dev-section" class="category-section mb-1_5rem bg-accent2-soft bd-2px-solid-accent2-line br-12px p-1rem sh-0-8px-24px-rgba42_38_34_0_07">
+          <div class="d-flex ai-center gap-0_5rem mb-1rem">
+            <i class="w-20px h-20px c-accent2" data-lucide="book-open"></i>
+            <h4 class="c-accent2 fwt-600 m-0 fz-1_1rem">Growth</h4>
           </div>
-          <div id="todos-self_dev-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-          <div id="todos-self_dev-empty" style="text-align: center; padding: 1rem; color: var(--t-muted2); font-size: 0.9rem; display: none;">
+          <div class="d-flex fd-column gap-0_75rem" id="todos-self_dev-list"></div>
+          <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-self_dev-empty">
             등록된 할일이 없습니다.
           </div>
         </div>
 
         <!-- Personal 카테고리 섹션 -->
-        <div id="category-personal-section" class="category-section" style="margin-bottom: 1.5rem; background: var(--t-cat-personal-soft); border: 2px solid var(--t-cat-personal-line); border-radius: 12px; padding: 1rem; box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <i data-lucide="home" style="width: 20px; height: 20px; color: var(--t-cat-personal);"></i>
-            <h4 style="color: var(--t-cat-personal); font-weight: 600; margin: 0; font-size: 1.1rem;">Personal</h4>
+        <div id="category-personal-section" class="category-section mb-1_5rem bg-cat-personal-soft bd-2px-solid-cat-personal-line br-12px p-1rem sh-0-8px-24px-rgba42_38_34_0_07">
+          <div class="d-flex ai-center gap-0_5rem mb-1rem">
+            <i class="w-20px h-20px c-cat-personal" data-lucide="home"></i>
+            <h4 class="c-cat-personal fwt-600 m-0 fz-1_1rem">Personal</h4>
           </div>
-          <div id="todos-personal-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-          <div id="todos-personal-empty" style="text-align: center; padding: 1rem; color: var(--t-muted2); font-size: 0.9rem; display: none;">
+          <div class="d-flex fd-column gap-0_75rem" id="todos-personal-list"></div>
+          <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-personal-empty">
             등록된 할일이 없습니다.
           </div>
         </div>
@@ -197,66 +197,66 @@ export async function renderToday() {
     </div>
 
     <!-- 하루 성찰 -->
-    <div id="today-reflection-section" class="card" style="background: var(--t-accent2-soft); border: 2px solid var(--t-accent2); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-top: 1.5rem;">
-      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--t-accent2-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: var(--t-accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-            <i data-lucide="pen-square" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+    <div id="today-reflection-section" class="card bg-accent2-soft bd-2px-solid-accent2 sh-0-8px-24px-rgba42_38_34_0_07 mt-1_5rem">
+      <div class="card-header d-flex jc-space-between ai-center bdb-2px-solid-accent2-line pb-1rem mb-1_25rem">
+        <div class="d-flex ai-center gap-0_75rem">
+          <div class="w-40px h-40px bg-accent2 br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+            <i class="w-24px h-24px c-white sw-2_5" data-lucide="pen-square"></i>
           </div>
           <div>
-            <div class="card-title" style="color: var(--t-accent2); font-size: 1.5rem; margin: 0;">하루 성찰</div>
+            <div class="card-title c-accent2 fz-1_5rem m-0">하루 성찰</div>
           </div>
-          <button id="toggle-reflection" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-            <i data-lucide="chevron-up" style="width: 20px; height: 20px; color: var(--t-accent2);"></i>
+          <button id="toggle-reflection" class="btn-icon bg-transparent bd-none p-0_25rem cur-pointer">
+            <i class="w-20px h-20px c-accent2" data-lucide="chevron-up"></i>
           </button>
         </div>
-        <button id="open-reflection-form" class="btn" style="background: var(--t-accent2); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="pen-square" style="width: 18px; height: 18px;"></i>
+        <button id="open-reflection-form" class="btn bg-accent2 c-white bd-none p-0_5rem-1rem br-8px sh-0-4px-12px-rgba42_38_34_0_15 fz-0_95rem fwt-600 cur-pointer d-inline-flex ai-center gap-0_5rem">
+          <i class="w-18px h-18px" data-lucide="pen-square"></i>
           성찰 작성하기
         </button>
       </div>
-      <div id="reflection-content" style="display: none;">
-        <div id="reflection-form-container" style="display: none;">
-          <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <div class="d-none" id="reflection-content">
+        <div class="d-none" id="reflection-form-container">
+          <div class="d-flex fd-column gap-1_25rem">
             <!-- 감사한 일 -->
             <div>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--t-accent2); font-weight: 600; margin-bottom: 0.5rem; font-size: 1rem;">
-                <i data-lucide="heart" style="width: 18px; height: 18px; color: var(--t-accent2);"></i>
+              <label class="d-flex ai-center gap-0_5rem c-accent2 fwt-600 mb-0_5rem fz-1rem">
+                <i class="w-18px h-18px c-accent2" data-lucide="heart"></i>
                 감사한 일
               </label>
-              <textarea id="reflection-grateful" placeholder="오늘 감사했던 일을 기록해보세요..." style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid var(--t-accent2); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
+              <textarea class="w-100pct minh-100px p-0_75rem bd-2px-solid-accent2 br-8px fz-1rem ff-inherit rs-vertical bg-surface" id="reflection-grateful" placeholder="오늘 감사했던 일을 기록해보세요..."></textarea>
             </div>
             
             <!-- 잘한 일 -->
             <div>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--t-accent2); font-weight: 600; margin-bottom: 0.5rem; font-size: 1rem;">
-                <i data-lucide="star" style="width: 18px; height: 18px; color: var(--t-accent2);"></i>
+              <label class="d-flex ai-center gap-0_5rem c-accent2 fwt-600 mb-0_5rem fz-1rem">
+                <i class="w-18px h-18px c-accent2" data-lucide="star"></i>
                 잘한 일
               </label>
-              <textarea id="reflection-well-done" placeholder="오늘 잘한 일을 기록해보세요..." style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid var(--t-accent2); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
+              <textarea class="w-100pct minh-100px p-0_75rem bd-2px-solid-accent2 br-8px fz-1rem ff-inherit rs-vertical bg-surface" id="reflection-well-done" placeholder="오늘 잘한 일을 기록해보세요..."></textarea>
             </div>
             
             <!-- 아쉬운 일 -->
             <div>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--t-accent2); font-weight: 600; margin-bottom: 0.5rem; font-size: 1rem;">
-                <i data-lucide="alert-circle" style="width: 18px; height: 18px; color: var(--t-accent2);"></i>
+              <label class="d-flex ai-center gap-0_5rem c-accent2 fwt-600 mb-0_5rem fz-1rem">
+                <i class="w-18px h-18px c-accent2" data-lucide="alert-circle"></i>
                 아쉬운 일
               </label>
-              <textarea id="reflection-regret" placeholder="오늘 아쉬웠던 일을 기록해보세요..." style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid var(--t-accent2); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
+              <textarea class="w-100pct minh-100px p-0_75rem bd-2px-solid-accent2 br-8px fz-1rem ff-inherit rs-vertical bg-surface" id="reflection-regret" placeholder="오늘 아쉬웠던 일을 기록해보세요..."></textarea>
             </div>
             
             <!-- 내일의 다짐 -->
             <div>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--t-accent2); font-weight: 600; margin-bottom: 0.5rem; font-size: 1rem;">
-                <i data-lucide="target" style="width: 18px; height: 18px; color: var(--t-accent2);"></i>
+              <label class="d-flex ai-center gap-0_5rem c-accent2 fwt-600 mb-0_5rem fz-1rem">
+                <i class="w-18px h-18px c-accent2" data-lucide="target"></i>
                 내일의 다짐
               </label>
-              <textarea id="reflection-tomorrow-promise" placeholder="내일을 위한 다짐을 기록해보세요..." style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid var(--t-accent2); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
+              <textarea class="w-100pct minh-100px p-0_75rem bd-2px-solid-accent2 br-8px fz-1rem ff-inherit rs-vertical bg-surface" id="reflection-tomorrow-promise" placeholder="내일을 위한 다짐을 기록해보세요..."></textarea>
             </div>
             
             <!-- 저장 버튼 -->
-            <div style="text-align: center; margin-top: 0.5rem;">
-              <button id="save-reflection-btn" class="btn" style="background: var(--t-accent2); color: white; border: none; padding: 0.75rem 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); font-size: 1rem; font-weight: 600; cursor: pointer;">
+            <div class="ta-center mt-0_5rem">
+              <button id="save-reflection-btn" class="btn bg-accent2 c-white bd-none p-0_75rem-2rem br-12px sh-0-4px-12px-rgba42_38_34_0_15 fz-1rem fwt-600 cur-pointer">
                 성찰 저장하기
               </button>
             </div>
@@ -266,27 +266,27 @@ export async function renderToday() {
     </div>
 
     <!-- Carry-over 모달 (미완료 할일 이월) -->
-    <div id="carryover-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); z-index: 1000; align-items: center; justify-content: center; flex-direction: column;">
-      <div id="carryover-modal-content" style="background: var(--t-surface); border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(42,38,34, 0.3);" onclick="event.stopPropagation();">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <h2 style="margin: 0; color: var(--t-text); font-size: 1.5rem; font-weight: 700;">미완료 할일 이월</h2>
-          <button id="carryover-modal-close" style="background: transparent; border: none; color: var(--t-muted); cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='var(--t-bg2)'" onmouseout="this.style.background='transparent'">
-            <i data-lucide="x" style="width: 24px; height: 24px;"></i>
+    <div class="d-none pos-fixed t-0 l-0 r-0 b-0 bg-rgba42_38_34_0_5 z-1000 ai-center jc-center fd-column" id="carryover-modal">
+      <div class="bg-surface br-12px p-2rem maxw-600px w-90pct maxh-80vh ovy-auto sh-0-20px-60px-rgba42_38_34_0_3" id="carryover-modal-content" onclick="event.stopPropagation();">
+        <div class="d-flex jc-space-between ai-center mb-1_5rem">
+          <h2 class="m-0 c-text fz-1_5rem fwt-700">미완료 할일 이월</h2>
+          <button class="bg-transparent bd-none c-muted cur-pointer p-0_5rem br-8px tr-background-0_2s hov-bg-bg2" id="carryover-modal-close">
+            <i class="w-24px h-24px" data-lucide="x"></i>
           </button>
         </div>
-        <p style="color: var(--t-muted); margin-bottom: 1rem; line-height: 1.6;">
+        <p class="c-muted mb-1rem lh-1_6">
           지난 날짜에 미완료된 할일이 있습니다. 오늘로 이어가거나 포기할 수 있습니다.
         </p>
-        <div style="display: flex; margin-bottom: 1.5rem;">
-          <button id="carryover-carry-all-btn" style="width: 100%; padding: 0.75rem 1.5rem; background: var(--t-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+        <div class="d-flex mb-1_5rem">
+          <button class="w-100pct p-0_75rem-1_5rem bg-success c-white bd-none br-8px fwt-600 cur-pointer tr-transform-0_2s" id="carryover-carry-all-btn" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
             모두 이어가기
           </button>
         </div>
-        <div id="carryover-todos-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <div class="d-flex fd-column gap-0_75rem mb-1_5rem" id="carryover-todos-list">
           <!-- 동적으로 채워짐 -->
         </div>
-        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center;">
-          <button id="carryover-later-btn" style="padding: 0.75rem 1.5rem; background: var(--t-bg2); color: var(--t-text); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--t-line)'" onmouseout="this.style.background='var(--t-bg2)'">
+        <div class="d-flex gap-0_75rem jc-flex-end ai-center">
+          <button class="p-0_75rem-1_5rem bg-bg2 c-text bd-none br-8px fwt-600 cur-pointer tr-background-0_2s hov-bg-line" id="carryover-later-btn">
             나중에
           </button>
         </div>
@@ -294,67 +294,67 @@ export async function renderToday() {
     </div>
 
     <!-- 할일 날짜 이동 모달 -->
-    <div id="todo-date-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-      <div id="todo-date-modal" class="date-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(400px, 90vw); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
-        <div class="date-modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--t-line);">
-          <span style="font-weight: 700; font-size: 1.125rem; color: var(--t-text);">날짜 선택</span>
-          <button id="todo-date-close" class="date-close-btn" style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);">
-            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    <div id="todo-date-overlay" class="date-overlay hidden pos-fixed ins-0 bg-rgba42_38_34_0_35 bf-blur6px d-none ai-center jc-center z-2000 p-1rem">
+      <div id="todo-date-modal" class="date-modal bg-surface br-1rem sh-0-20px-40px-rgba42_38_34_0_18 w-min400px_90vw maxh-90vh ov-hidden d-flex fd-column">
+        <div class="date-modal-header d-flex jc-space-between ai-center p-1_25rem bdb-1px-solid-line">
+          <span class="fwt-700 fz-1_125rem c-text">날짜 선택</span>
+          <button id="todo-date-close" class="date-close-btn bg-none bd-none cur-pointer p-0_25rem br-4px d-flex ai-center jc-center tr-all-0_2s c-muted">
+            <i class="w-20px h-20px" data-lucide="x"></i>
           </button>
         </div>
-        <div class="date-modal-body" style="padding: 1.25rem; flex: 1; overflow-y: auto;">
-          <input type="text" id="todo-date-calendar-input" readonly style="width: 100%; border: 2px solid var(--t-line); border-radius: 8px; padding: 0.75rem;" />
+        <div class="date-modal-body p-1_25rem fx-1 ovy-auto">
+          <input class="w-100pct bd-2px-solid-line br-8px p-0_75rem" type="text" id="todo-date-calendar-input" readonly />
         </div>
-        <div class="date-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem; border-top: 1px solid var(--t-line);">
-          <button id="todo-date-today-modal" class="btn btn-secondary" style="padding: 0.625rem 1.25rem; background: var(--t-bg2); color: var(--t-text); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+        <div class="date-modal-footer d-flex jc-flex-end gap-0_75rem p-1_25rem bdt-1px-solid-line">
+          <button id="todo-date-today-modal" class="btn btn-secondary p-0_625rem-1_25rem bg-bg2 c-text bd-none br-8px fwt-600 cur-pointer d-inline-flex ai-center gap-0_5rem">
+            <i class="w-18px h-18px" data-lucide="sun"></i>
             오늘
           </button>
-          <button id="todo-date-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: var(--t-accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
+          <button id="todo-date-close-footer" class="btn btn-primary p-0_625rem-1_25rem bg-accent c-white bd-none br-8px fwt-600 cur-pointer">닫기</button>
         </div>
       </div>
     </div>
 
     <!-- 할일 복제 모달 -->
-    <div id="todo-duplicate-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-      <div id="todo-duplicate-modal" class="date-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(400px, 90vw); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
-        <div class="date-modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--t-line);">
-          <span style="font-weight: 700; font-size: 1.125rem; color: var(--t-text);">복제할 날짜 선택</span>
-          <button id="todo-duplicate-close" class="date-close-btn" style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);">
-            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    <div id="todo-duplicate-overlay" class="date-overlay hidden pos-fixed ins-0 bg-rgba42_38_34_0_35 bf-blur6px d-none ai-center jc-center z-2000 p-1rem">
+      <div id="todo-duplicate-modal" class="date-modal bg-surface br-1rem sh-0-20px-40px-rgba42_38_34_0_18 w-min400px_90vw maxh-90vh ov-hidden d-flex fd-column">
+        <div class="date-modal-header d-flex jc-space-between ai-center p-1_25rem bdb-1px-solid-line">
+          <span class="fwt-700 fz-1_125rem c-text">복제할 날짜 선택</span>
+          <button id="todo-duplicate-close" class="date-close-btn bg-none bd-none cur-pointer p-0_25rem br-4px d-flex ai-center jc-center tr-all-0_2s c-muted">
+            <i class="w-20px h-20px" data-lucide="x"></i>
           </button>
         </div>
-        <div class="date-modal-body" style="padding: 1.25rem; flex: 1; overflow-y: auto;">
-          <input type="text" id="todo-duplicate-calendar-input" readonly style="width: 100%; border: 2px solid var(--t-line); border-radius: 8px; padding: 0.75rem;" />
+        <div class="date-modal-body p-1_25rem fx-1 ovy-auto">
+          <input class="w-100pct bd-2px-solid-line br-8px p-0_75rem" type="text" id="todo-duplicate-calendar-input" readonly />
         </div>
-        <div class="date-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem; border-top: 1px solid var(--t-line);">
-          <button id="todo-duplicate-today-modal" class="btn btn-secondary" style="padding: 0.625rem 1.25rem; background: var(--t-bg2); color: var(--t-text); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+        <div class="date-modal-footer d-flex jc-flex-end gap-0_75rem p-1_25rem bdt-1px-solid-line">
+          <button id="todo-duplicate-today-modal" class="btn btn-secondary p-0_625rem-1_25rem bg-bg2 c-text bd-none br-8px fwt-600 cur-pointer d-inline-flex ai-center gap-0_5rem">
+            <i class="w-18px h-18px" data-lucide="sun"></i>
             오늘
           </button>
-          <button id="todo-duplicate-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: var(--t-accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
+          <button id="todo-duplicate-close-footer" class="btn btn-primary p-0_625rem-1_25rem bg-accent c-white bd-none br-8px fwt-600 cur-pointer">닫기</button>
         </div>
       </div>
     </div>
 
     <!-- 할일 입력 필드 날짜 이동 모달 -->
-    <div id="todo-input-date-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-      <div id="todo-input-date-modal" class="date-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(400px, 90vw); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
-        <div class="date-modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--t-line);">
-          <span style="font-weight: 700; font-size: 1.125rem; color: var(--t-text);">날짜 선택</span>
-          <button id="todo-input-date-close" class="date-close-btn" style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);">
-            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    <div id="todo-input-date-overlay" class="date-overlay hidden pos-fixed ins-0 bg-rgba42_38_34_0_35 bf-blur6px d-none ai-center jc-center z-2000 p-1rem">
+      <div id="todo-input-date-modal" class="date-modal bg-surface br-1rem sh-0-20px-40px-rgba42_38_34_0_18 w-min400px_90vw maxh-90vh ov-hidden d-flex fd-column">
+        <div class="date-modal-header d-flex jc-space-between ai-center p-1_25rem bdb-1px-solid-line">
+          <span class="fwt-700 fz-1_125rem c-text">날짜 선택</span>
+          <button id="todo-input-date-close" class="date-close-btn bg-none bd-none cur-pointer p-0_25rem br-4px d-flex ai-center jc-center tr-all-0_2s c-muted">
+            <i class="w-20px h-20px" data-lucide="x"></i>
           </button>
         </div>
-        <div class="date-modal-body" style="padding: 1.25rem; flex: 1; overflow-y: auto;">
-          <input type="text" id="todo-input-date-calendar-input" readonly style="width: 100%; border: 2px solid var(--t-line); border-radius: 8px; padding: 0.75rem;" />
+        <div class="date-modal-body p-1_25rem fx-1 ovy-auto">
+          <input class="w-100pct bd-2px-solid-line br-8px p-0_75rem" type="text" id="todo-input-date-calendar-input" readonly />
         </div>
-        <div class="date-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem; border-top: 1px solid var(--t-line);">
-          <button id="todo-input-date-today-modal" class="btn btn-secondary" style="padding: 0.625rem 1.25rem; background: var(--t-bg2); color: var(--t-text); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+        <div class="date-modal-footer d-flex jc-flex-end gap-0_75rem p-1_25rem bdt-1px-solid-line">
+          <button id="todo-input-date-today-modal" class="btn btn-secondary p-0_625rem-1_25rem bg-bg2 c-text bd-none br-8px fwt-600 cur-pointer d-inline-flex ai-center gap-0_5rem">
+            <i class="w-18px h-18px" data-lucide="sun"></i>
             오늘
           </button>
-          <button id="todo-input-date-close-footer" class="btn btn-primary" style="padding: 0.625rem 1.25rem; background: var(--t-accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">닫기</button>
+          <button id="todo-input-date-close-footer" class="btn btn-primary p-0_625rem-1_25rem bg-accent c-white bd-none br-8px fwt-600 cur-pointer">닫기</button>
         </div>
       </div>
     </div>
@@ -561,9 +561,9 @@ function renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checked
     morningList.innerHTML = sortedMorningRoutines.map(routine => {
       const isChecked = checkedRoutineIds.has(routine.id);
       return `
-        <div class="routine-item" data-routine-id="${routine.id}" style="background: var(--t-surface); border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
-          <input type="checkbox" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer;">
-          <span style="flex: 1; ${isChecked ? 'text-decoration: line-through; color: var(--t-muted2);' : ''}">${routine.title}</span>
+        <div class="routine-item bg-surface br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05" data-routine-id="${routine.id}">
+          <input class="w-20px h-20px cur-pointer" type="checkbox" ${isChecked ? 'checked' : ''}>
+          <span class="fx-1 ${isChecked ? 'td-line-through c-muted2' : ''}">${routine.title}</span>
         </div>
       `;
     }).join('');
@@ -579,9 +579,9 @@ function renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checked
     daytimeList.innerHTML = sortedDaytimeRoutines.map(routine => {
       const isChecked = checkedRoutineIds.has(routine.id);
       return `
-        <div class="routine-item" data-routine-id="${routine.id}" style="background: var(--t-surface); border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
-          <input type="checkbox" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer;">
-          <span style="flex: 1; ${isChecked ? 'text-decoration: line-through; color: var(--t-muted2);' : ''}">${routine.title}</span>
+        <div class="routine-item bg-surface br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05" data-routine-id="${routine.id}">
+          <input class="w-20px h-20px cur-pointer" type="checkbox" ${isChecked ? 'checked' : ''}>
+          <span class="fx-1 ${isChecked ? 'td-line-through c-muted2' : ''}">${routine.title}</span>
         </div>
       `;
     }).join('');
@@ -597,9 +597,9 @@ function renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checked
     nightList.innerHTML = sortedNightRoutines.map(routine => {
       const isChecked = checkedRoutineIds.has(routine.id);
       return `
-        <div class="routine-item" data-routine-id="${routine.id}" style="background: var(--t-surface); border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
-          <input type="checkbox" ${isChecked ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer;">
-          <span style="flex: 1; ${isChecked ? 'text-decoration: line-through; color: var(--t-muted2);' : ''}">${routine.title}</span>
+        <div class="routine-item bg-surface br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05" data-routine-id="${routine.id}">
+          <input class="w-20px h-20px cur-pointer" type="checkbox" ${isChecked ? 'checked' : ''}>
+          <span class="fx-1 ${isChecked ? 'td-line-through c-muted2' : ''}">${routine.title}</span>
         </div>
       `;
     }).join('');
@@ -750,53 +750,53 @@ function renderTodos(todosList, date, profile, timezone) {
       const canMove = !todo.is_done && !isReadOnly && !isEditing;
 
       return `
-        <div class="todo-item" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false" style="background: ${isExistingTodo ? 'var(--t-bg2)' : 'white'}; border-radius: 8px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
+        <div class="todo-item br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false" style="background: ${isExistingTodo ? 'var(--t-bg2)' : 'white'};">
           ${canMove ? `
-            <div class="todo-drag-handle" draggable="true" style="display: flex; align-items: center; padding: 0.25rem 0.5rem; cursor: grab; color: var(--t-muted2); border-radius: 4px; transition: all 0.2s ease; user-select: none;" title="드래그하여 순서 변경">
-              <i data-lucide="grip-vertical" style="width: 18px; height: 18px; pointer-events: none;"></i>
+            <div class="todo-drag-handle d-flex ai-center p-0_25rem-0_5rem cur-grab c-muted2 br-4px tr-all-0_2s-ease us-none" draggable="true" title="드래그하여 순서 변경">
+              <i class="w-18px h-18px pe-none" data-lucide="grip-vertical"></i>
             </div>
-            <div class="move-todo-buttons" style="display: flex; flex-direction: row; gap: 0; align-items: center;">
-              <button class="move-todo-btn" data-move-up="${todo.id}" style="background: transparent; border: none; color: var(--t-muted); cursor: pointer; padding: 0.25rem;" title="위로 이동">
-                <i data-lucide="chevron-up" style="width: 16px; height: 16px;"></i>
+            <div class="move-todo-buttons d-flex fd-row gap-0 ai-center">
+              <button class="move-todo-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-move-up="${todo.id}" title="위로 이동">
+                <i class="w-16px h-16px" data-lucide="chevron-up"></i>
               </button>
-              <button class="move-todo-btn" data-move-down="${todo.id}" style="background: transparent; border: none; color: var(--t-muted); cursor: pointer; padding: 0.25rem;" title="아래로 이동">
-                <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+              <button class="move-todo-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-move-down="${todo.id}" title="아래로 이동">
+                <i class="w-16px h-16px" data-lucide="chevron-down"></i>
               </button>
             </div>
-          ` : '<div style="width: 36px;"></div>'}
-          <input type="checkbox" ${todo.is_done ? 'checked' : ''} ${isReadOnly ? 'disabled' : ''} style="width: 20px; height: 20px; cursor: ${isReadOnly ? 'not-allowed' : 'pointer'}; opacity: ${isReadOnly ? 0.5 : 1};">
+          ` : '<div class="w-36px"></div>'}
+          <input class="w-20px h-20px" type="checkbox" ${todo.is_done ? 'checked' : ''} ${isReadOnly ? 'disabled' : ''} style="cursor: ${isReadOnly ? 'not-allowed' : 'pointer'}; opacity: ${isReadOnly ? 0.5 : 1};">
           ${isEditing ? `
-            <input type="text" class="todo-edit-input" value="${todo.title.replace(/"/g, '&quot;')}" style="flex: 1; padding: 0.5rem; border: 2px solid var(--t-accent); border-radius: 4px; font-size: 1rem;">
+            <input type="text" class="todo-edit-input" value="${todo.title.replace(/"/g, '&quot;')}">
           ` : `
-            <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              ${todo.pinned ? '<i data-lucide="pin" style="width: 14px; height: 14px; color: var(--t-warn); flex-shrink: 0;"></i>' : ''}
-              ${todo.priority ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; ${todo.priority === 3 ? 'background: var(--t-danger-soft); color: var(--t-danger);' : todo.priority === 2 ? 'background: var(--t-warn-soft); color: var(--t-warn);' : 'background: var(--t-accent-soft); color: var(--t-accent);'}">P${todo.priority}</span>` : ''}
-              ${todo.project_task_id ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: var(--t-accent-soft); color: var(--t-accent); display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="folder-kanban" style="width: 12px; height: 12px;"></i>프로젝트${todo.project_task?.project?.name ? `: ${todo.project_task.project.name}` : ''}</span>` : ''}
-              ${todo.recurring_task_id ? '<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; flex-shrink: 0; background: var(--t-accent2-soft); color: var(--t-accent2); display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="repeat" style="width: 12px; height: 12px;"></i>반복업무</span>' : ''}
+            <div class="fx-1 d-flex ai-center gap-0_5rem fwrap-wrap">
+              ${todo.pinned ? '<i class="w-14px h-14px c-warn fs-0" data-lucide="pin"></i>' : ''}
+              ${todo.priority ? `<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0" style="${todo.priority === 3 ? 'background: var(--t-danger-soft); color: var(--t-danger);' : todo.priority === 2 ? 'background: var(--t-warn-soft); color: var(--t-warn);' : 'background: var(--t-accent-soft); color: var(--t-accent);'}">P${todo.priority}</span>` : ''}
+              ${todo.project_task_id ? `<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0 bg-accent-soft c-accent d-inline-flex ai-center gap-0_25rem"><i class="w-12px h-12px" data-lucide="folder-kanban"></i>프로젝트${todo.project_task?.project?.name ? `: ${todo.project_task.project.name}` : ''}</span>` : ''}
+              ${todo.recurring_task_id ? '<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0 bg-accent2-soft c-accent2 d-inline-flex ai-center gap-0_25rem"><i class="w-12px h-12px" data-lucide="repeat"></i>반복업무</span>' : ''}
               <span class="todo-title" data-todo-title="${todo.id}" style="${todo.is_done ? 'text-decoration: line-through; color: var(--t-muted2);' : ''} ${!isReadOnly && !todo.is_done ? 'cursor: pointer;' : ''}">${todo.title}</span>
-              ${todo.due_date ? `<span style="font-size: 0.7rem; color: var(--t-muted); flex-shrink: 0;">📅 ${todo.due_date}</span>` : ''}
+              ${todo.due_date ? `<span class="fz-0_7rem c-muted fs-0">📅 ${todo.due_date}</span>` : ''}
             </div>
           `}
-          ${isExistingTodo ? '<span style="font-size: 0.75rem; color: var(--t-muted); padding: 0.25rem 0.5rem; background: var(--t-line); border-radius: 4px;">지난 날짜</span>' : ''}
-          ${isProcessed ? (todo.carried_over_at ? '<span style="font-size: 0.75rem; color: var(--t-success); padding: 0.25rem 0.5rem; background: var(--t-success-soft); border-radius: 4px;">→ 오늘로 이동됨</span>' : '<span style="font-size: 0.75rem; color: var(--t-danger); padding: 0.25rem 0.5rem; background: var(--t-danger-soft); border-radius: 4px;">× 포기함</span>') : ''}
+          ${isExistingTodo ? '<span class="fz-0_75rem c-muted p-0_25rem-0_5rem bg-line br-4px">지난 날짜</span>' : ''}
+          ${isProcessed ? (todo.carried_over_at ? '<span class="fz-0_75rem c-success p-0_25rem-0_5rem bg-success-soft br-4px">→ 오늘로 이동됨</span>' : '<span class="fz-0_75rem c-danger p-0_25rem-0_5rem bg-danger-soft br-4px">× 포기함</span>') : ''}
           ${!isReadOnly ? `
             ${!isEditing ? `
-              <button class="move-todo-date-btn" data-move-todo-date="${todo.id}" style="background: transparent; border: none; color: var(--t-accent); cursor: pointer; padding: 0.25rem;" title="날짜 이동">
-                <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+              <button class="move-todo-date-btn bg-transparent bd-none c-accent cur-pointer p-0_25rem" data-move-todo-date="${todo.id}" title="날짜 이동">
+                <i class="w-18px h-18px" data-lucide="calendar"></i>
               </button>
-              <button class="duplicate-todo-btn" data-duplicate-todo="${todo.id}" style="background: transparent; border: none; color: var(--t-success); cursor: pointer; padding: 0.25rem;" title="복제">
-                <i data-lucide="copy" style="width: 18px; height: 18px;"></i>
+              <button class="duplicate-todo-btn bg-transparent bd-none c-success cur-pointer p-0_25rem" data-duplicate-todo="${todo.id}" title="복제">
+                <i class="w-18px h-18px" data-lucide="copy"></i>
               </button>
             ` : `
-              <button class="save-todo-btn" data-save-todo="${todo.id}" style="background: transparent; border: none; color: var(--t-success); cursor: pointer; padding: 0.25rem;">
-                <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+              <button class="save-todo-btn bg-transparent bd-none c-success cur-pointer p-0_25rem" data-save-todo="${todo.id}">
+                <i class="w-18px h-18px" data-lucide="check"></i>
               </button>
-              <button class="cancel-todo-btn" data-cancel-todo="${todo.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem;">
-                <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+              <button class="cancel-todo-btn bg-transparent bd-none c-danger cur-pointer p-0_25rem" data-cancel-todo="${todo.id}">
+                <i class="w-18px h-18px" data-lucide="x"></i>
               </button>
             `}
-            <button class="delete-todo-btn" data-delete-todo="${todo.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem;">
-              <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+            <button class="delete-todo-btn bg-transparent bd-none c-danger cur-pointer p-0_25rem" data-delete-todo="${todo.id}">
+              <i class="w-18px h-18px" data-lucide="trash-2"></i>
             </button>
           ` : ''}
         </div>
@@ -2652,20 +2652,20 @@ async function showCarryoverModal(profile, timezone = 'Asia/Seoul') {
       const dateStr = new Date(todo.date + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
 
       return `
-        <div class="carryover-todo-item" data-todo-id="${todo.id}" style="background: var(--t-bg); border: 2px solid var(--t-line); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-              <span style="font-size: 0.75rem; color: var(--t-muted); background: var(--t-line); padding: 0.25rem 0.5rem; border-radius: 4px;">${categoryLabel}</span>
-              <span style="font-size: 0.75rem; color: var(--t-muted);">${dateStr}</span>
-              ${todo.project_task_id && todo.project_task?.project?.name ? `<span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; background: var(--t-accent-soft); color: var(--t-accent);">프로젝트: ${todo.project_task.project.name}</span>` : ''}
+        <div class="carryover-todo-item bg-bg bd-2px-solid-line br-8px p-1rem d-flex jc-space-between ai-center gap-1rem" data-todo-id="${todo.id}">
+          <div class="fx-1">
+            <div class="d-flex ai-center gap-0_5rem mb-0_5rem fwrap-wrap">
+              <span class="fz-0_75rem c-muted bg-line p-0_25rem-0_5rem br-4px">${categoryLabel}</span>
+              <span class="fz-0_75rem c-muted">${dateStr}</span>
+              ${todo.project_task_id && todo.project_task?.project?.name ? `<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 bg-accent-soft c-accent">프로젝트: ${todo.project_task.project.name}</span>` : ''}
             </div>
-            <div style="font-weight: 500; color: var(--t-text);">${todo.title}</div>
+            <div class="fwt-500 c-text">${todo.title}</div>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="carryover-carry-btn" data-carry-todo="${todo.id}" style="padding: 0.5rem 1rem; background: var(--t-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+          <div class="d-flex gap-0_5rem">
+            <button class="carryover-carry-btn p-0_5rem-1rem bg-success c-white bd-none br-8px fwt-600 cur-pointer fz-0_875rem tr-transform-0_2s" data-carry-todo="${todo.id}" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
               이어가기
             </button>
-            <button class="carryover-skip-btn" data-skip-todo="${todo.id}" style="padding: 0.5rem 1rem; background: var(--t-bg2); color: var(--t-muted); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem; transition: background 0.2s;" onmouseover="this.style.background='var(--t-line)'" onmouseout="this.style.background='var(--t-bg2)'">
+            <button class="carryover-skip-btn p-0_5rem-1rem bg-bg2 c-muted bd-none br-8px fwt-600 cur-pointer fz-0_875rem tr-background-0_2s hov-bg-line" data-skip-todo="${todo.id}">
               포기
             </button>
           </div>

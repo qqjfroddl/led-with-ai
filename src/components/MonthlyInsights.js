@@ -15,13 +15,13 @@ export function renderMonthlyInsights(stats) {
   const improvementInsights = insights.filter(i => i.type === 'improvement');
   
   const html = `
-    <div class="card" style="background: var(--t-insight-soft); border: 2px solid var(--t-insight); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid var(--t-insight-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: var(--t-insight); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
-            <i data-lucide="lightbulb" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
+    <div class="card bg-insight-soft bd-2px-solid-insight sh-0-8px-24px-rgba42_38_34_0_07 mb-1_5rem">
+      <div class="card-header bdb-2px-solid-insight-line pb-1rem mb-1_25rem">
+        <div class="d-flex ai-center gap-0_75rem">
+          <div class="w-40px h-40px bg-insight br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
+            <i class="w-24px h-24px c-white sw-2_5" data-lucide="lightbulb"></i>
           </div>
-          <div class="card-title" style="color: var(--t-insight); font-size: 1.5rem; margin: 0;">월간 분석</div>
+          <div class="card-title c-insight fz-1_5rem m-0">월간 분석</div>
         </div>
       </div>
       
@@ -44,12 +44,12 @@ export function renderMonthlyInsights(stats) {
  */
 function renderPracticeRateSection(routineInsights, todoInsights, reflectionInsights, todos, routines, reflections) {
   return `
-    <div style="margin-bottom: 2rem;">
-      <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="target" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
+    <div class="mb-2rem">
+      <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
+        <i class="w-20px h-20px c-insight sw-2_5" data-lucide="target"></i>
         실천율
       </h3>
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="d-flex fd-column gap-1rem">
         ${routineInsights.length > 0 ? renderInsightItem(routineInsights[0]) : ''}
         ${todoInsights.length > 0 ? renderInsightItem(todoInsights[0]) : ''}
         ${reflectionInsights.length > 0 ? renderInsightItem(reflectionInsights[0]) : ''}
@@ -64,12 +64,12 @@ function renderPracticeRateSection(routineInsights, todoInsights, reflectionInsi
 function renderComparisonSection(comparison, improvementInsights) {
   if (!comparison) {
     return `
-      <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
-        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="trending-up" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
+      <div class="mb-2rem pt-1_5rem bdt-2px-solid-insight-line">
+        <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
+          <i class="w-20px h-20px c-insight sw-2_5" data-lucide="trending-up"></i>
           전월 대비 변화
         </h3>
-        <div style="background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 12px; padding: 1rem; text-align: center; color: var(--t-muted); font-size: 0.95rem;">
+        <div class="bg-bg bd-1px-solid-line br-12px p-1rem ta-center c-muted fz-0_95rem">
           전월 데이터가 없어 비교할 수 없습니다.
         </div>
       </div>
@@ -116,12 +116,12 @@ function renderComparisonSection(comparison, improvementInsights) {
   
   if (changes.length === 0) {
     return `
-      <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
-        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="trending-up" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
+      <div class="mb-2rem pt-1_5rem bdt-2px-solid-insight-line">
+        <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
+          <i class="w-20px h-20px c-insight sw-2_5" data-lucide="trending-up"></i>
           전월 대비 변화
         </h3>
-        <div style="background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 12px; padding: 1rem; text-align: center; color: var(--t-muted); font-size: 0.95rem;">
+        <div class="bg-bg bd-1px-solid-line br-12px p-1rem ta-center c-muted fz-0_95rem">
           전월 대비 큰 변화가 없습니다.
         </div>
       </div>
@@ -129,12 +129,12 @@ function renderComparisonSection(comparison, improvementInsights) {
   }
   
   return `
-    <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
-      <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="trending-up" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
+    <div class="mb-2rem pt-1_5rem bdt-2px-solid-insight-line">
+      <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
+        <i class="w-20px h-20px c-insight sw-2_5" data-lucide="trending-up"></i>
         전월 대비 변화
       </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="d-grid gtc-repeatauto-fit_minmax200px_1fr gap-1rem">
         ${changes.map(change => renderComparisonCard(change)).join('')}
       </div>
     </div>
@@ -153,14 +153,14 @@ function renderComparisonCard(change) {
   const sign = change.value > 0 ? '+' : '';
   
   return `
-    <div style="background: ${bg}; border: 2px solid ${border}; border-radius: 12px; padding: 1rem;">
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <i data-lucide="${change.icon}" style="width: 18px; height: 18px; color: ${color}; stroke-width: 2.5;"></i>
-        <span style="font-size: 0.875rem; font-weight: 600; color: var(--t-text);">${change.label}</span>
+    <div class="br-12px p-1rem" style="background: ${bg}; border: 2px solid ${border};">
+      <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+        <i class="w-18px h-18px sw-2_5" data-lucide="${change.icon}" style="color: ${color};"></i>
+        <span class="fz-0_875rem fwt-600 c-text">${change.label}</span>
       </div>
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="${icon}" style="width: 20px; height: 20px; color: ${color}; stroke-width: 2.5;"></i>
-        <span style="font-size: 1.25rem; font-weight: 700; color: ${color};">
+      <div class="d-flex ai-center gap-0_5rem">
+        <i class="w-20px h-20px sw-2_5" data-lucide="${icon}" style="color: ${color};"></i>
+        <span class="fz-1_25rem fwt-700" style="color: ${color};">
           ${sign}${Math.abs(change.value).toFixed(1)}%p
         </span>
       </div>
@@ -202,11 +202,11 @@ function renderInsightItem(insight) {
   const config = typeConfig[insight.type] || typeConfig.neutral;
   
   return `
-    <div style="background: ${config.bg}; border: 2px solid ${config.border}; border-radius: 12px; padding: 1rem; display: flex; align-items: start; gap: 0.75rem;">
-      <div style="flex-shrink: 0; width: 32px; height: 32px; background: ${config.color}; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-        <i data-lucide="${config.icon}" style="width: 18px; height: 18px; color: white; stroke-width: 2.5;"></i>
+    <div class="br-12px p-1rem d-flex ai-start gap-0_75rem" style="background: ${config.bg}; border: 2px solid ${config.border};">
+      <div class="fs-0 w-32px h-32px br-8px d-flex ai-center jc-center" style="background: ${config.color};">
+        <i class="w-18px h-18px c-white sw-2_5" data-lucide="${config.icon}"></i>
       </div>
-      <div style="flex: 1; color: var(--t-text); font-size: 0.95rem; line-height: 1.6;">
+      <div class="fx-1 c-text fz-0_95rem lh-1_6">
         ${insight.message}
       </div>
     </div>
@@ -260,12 +260,12 @@ function renderPatternAnalysis(todos, routines) {
     worstRoutine.id !== bestRoutine.id ? worstRoutine : null;
   
   return `
-    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
-      <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="activity" style="width: 18px; height: 18px; color: var(--t-insight); stroke-width: 2.5;"></i>
+    <div class="mt-1_5rem pt-1_5rem bdt-2px-solid-insight-line">
+      <h3 class="fz-1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
+        <i class="w-18px h-18px c-insight sw-2_5" data-lucide="activity"></i>
         월간 패턴
       </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="d-grid gtc-repeatauto-fit_minmax200px_1fr gap-1rem">
         ${mostActiveDay ? renderPatternCard('calendar', '가장 활발한 요일', mostActiveDay.day, mostActiveDay.description) : ''}
         ${bestCategory ? renderPatternCard('layers', '가장 완료율 높은 카테고리', bestCategory.name, `${Number(bestCategory.rate || 0).toFixed(1)}% 완료`) : ''}
         ${bestRoutine ? renderPatternCard('target', '가장 꾸준히 잘 한 루틴', bestRoutine.title, `${Number(bestRoutine.rate || 0).toFixed(1)}% 실천 (${bestRoutine.totalChecks}회)`, 'var(--t-success)') : ''}
@@ -280,15 +280,15 @@ function renderPatternAnalysis(todos, routines) {
  */
 function renderPatternCard(icon, label, title, description, color = 'var(--t-insight)') {
   return `
-    <div style="background: var(--t-surface); border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <i data-lucide="${icon}" style="width: 16px; height: 16px; color: ${color}; stroke-width: 2.5;"></i>
-        <span style="font-size: 0.75rem; color: var(--t-muted); font-weight: 500;">${label}</span>
+    <div class="bg-surface br-12px p-1rem sh-0-2px-8px-rgba42_38_34_0_08">
+      <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+        <i class="w-16px h-16px sw-2_5" data-lucide="${icon}" style="color: ${color};"></i>
+        <span class="fz-0_75rem c-muted fwt-500">${label}</span>
       </div>
-      <div style="font-weight: 600; color: var(--t-text); margin-bottom: 0.25rem; font-size: 0.95rem;">
+      <div class="fwt-600 c-text mb-0_25rem fz-0_95rem">
         ${title}
       </div>
-      <div style="font-size: 0.875rem; color: var(--t-muted);">
+      <div class="fz-0_875rem c-muted">
         ${description}
       </div>
     </div>

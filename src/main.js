@@ -97,12 +97,12 @@ async function init() {
     const app = document.getElementById('app');
     if (app) {
       app.innerHTML = `
-        <div class="error" style="margin: 2rem; padding: 2rem;">
+        <div class="error m-2rem p-2rem">
           <h2>초기화 오류</h2>
           <p>${error.message}</p>
-          <details style="margin-top: 1rem;">
+          <details class="mt-1rem">
             <summary>상세 정보</summary>
-            <pre style="background: var(--t-bg2); padding: 1rem; margin-top: 0.5rem; border-radius: 0.5rem; overflow-x: auto;">${error.stack}</pre>
+            <pre class="bg-bg2 p-1rem mt-0_5rem br-0_5rem ovx-auto">${error.stack}</pre>
           </details>
         </div>
       `;

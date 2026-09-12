@@ -71,6 +71,14 @@ npm run build
 - 사용자 승인 시스템
 - Row Level Security (RLS)
 
+## 스타일 구조 (2026-09-12 P2, 종이저널 디자인)
+
+- **토큰**: 색은 전부 `src/styles/paper.css`의 `--t-*` 변수다 (accent 남색 · accent2 자두색 · success/danger/warn/insight · cat-work/job/growth/personal · text/muted/line/bg/surface). **JS나 CSS에 hex를 새로 쓰지 않는다.** 테마 교체 = paper.css 교체.
+- **레이어**: `@layer base, inline, theme` — base(main.css·admin.css) < inline(utilities.css) < theme(paper.css). 옛 인라인 style이 base를 이기던 관계를 레이어로 보존했고, 테마는 `!important` 없이 그 위에 선다.
+- **utilities.css는 생성 파일이다.** `scripts/design/extract-inline.mjs`가 JS 템플릿의 `style="…"`을 선언 하나 = 클래스 하나(`d-flex`, `gap-0_5rem`, `c-accent`)로 뽑아 만든다. 손으로 고치지 않는다. 새 화면을 만들 때는 유틸리티 클래스나 main.css의 컴포넌트 클래스를 쓰고, 상태값(진행률 width, 토글 display)만 인라인에 남긴다.
+- **스크립트** (`scripts/design/`): `tokens.mjs` 매핑표 · `apply-tokens.mjs` JS 색 치환 · `apply-tokens-css.mjs` CSS 색 치환 · `extract-inline.mjs` 인라인 추출. 셋 다 재실행 가능(멱등).
+- **남은 것**: 상태값 인라인 63곳, 조건이 붙은 `onmouseover` 19곳(그대로 동작), main.css의 `!important` 98곳(모바일 레이아웃 덮어쓰기 — 테마가 못 바꾸는 값이니 늘리지 않는다), 주간·월간·연간 컴포넌트 3벌 중복.
+
 ## 기술 스택
 
 - **프론트엔드**: HTML, CSS, JavaScript (Vite)

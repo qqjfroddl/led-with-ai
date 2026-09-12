@@ -29,10 +29,10 @@ async function init() {
     const supabaseClient = await getSupabase();
     if (!supabaseClient) {
       app.innerHTML = `
-        <div class="error" style="margin: 2rem;">
+        <div class="error m-2rem">
           <h2>Supabase 초기화 오류</h2>
           <p>Supabase 클라이언트를 초기화할 수 없습니다.</p>
-          <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">
+          <button onclick="location.reload()" class="btn btn-primary mt-1rem">
             새로고침
           </button>
         </div>
@@ -47,10 +47,10 @@ async function init() {
     
     if (!hasConfig) {
       app.innerHTML = `
-        <div class="error" style="margin: 2rem;">
+        <div class="error m-2rem">
           <h2>환경 변수 오류</h2>
           <p>config.js 파일에 Supabase URL과 Anon Key를 설정해주세요.</p>
-          <pre style="background: var(--t-bg2); padding: 1rem; margin-top: 1rem; border-radius: 0.5rem;">
+          <pre class="bg-bg2 p-1rem mt-1rem br-0_5rem">
 window.SUPABASE_CONFIG = {
   url: 'your_supabase_url',
   anonKey: 'your_supabase_anon_key'
@@ -66,10 +66,10 @@ window.SUPABASE_CONFIG = {
     if (sessionError) {
       console.error('Session error:', sessionError);
       app.innerHTML = `
-        <div class="error" style="margin: 2rem;">
+        <div class="error m-2rem">
           <h2>세션 오류</h2>
           <p>${sessionError.message}</p>
-          <button onclick="window.location.href='/index.html'" class="btn btn-primary" style="margin-top: 1rem;">
+          <button onclick="window.location.href='/index.html'" class="btn btn-primary mt-1rem">
             메인으로 돌아가기
           </button>
         </div>
@@ -79,10 +79,10 @@ window.SUPABASE_CONFIG = {
 
     if (!session) {
       app.innerHTML = `
-        <div style="text-align: center; padding: 3rem;">
+        <div class="ta-center p-3rem">
           <h2>로그인이 필요합니다</h2>
           <p>관리자 페이지에 접근하려면 로그인해주세요.</p>
-          <button onclick="window.location.href='/index.html'" class="btn btn-primary" style="margin-top: 1rem;">
+          <button onclick="window.location.href='/index.html'" class="btn btn-primary mt-1rem">
             로그인하러 가기
           </button>
         </div>
@@ -94,7 +94,7 @@ window.SUPABASE_CONFIG = {
     
     if (!currentProfile) {
       app.innerHTML = `
-        <div class="error" style="margin: 2rem;">
+        <div class="error m-2rem">
           <h2>프로필을 찾을 수 없습니다</h2>
           <p>사용자 프로필을 불러올 수 없습니다.</p>
         </div>
@@ -109,13 +109,13 @@ window.SUPABASE_CONFIG = {
     
     if (!adminCheck) {
       app.innerHTML = `
-        <div style="text-align: center; padding: 3rem;">
+        <div class="ta-center p-3rem">
           <h2>관리자 권한이 필요합니다</h2>
           <p>이 페이지는 관리자만 접근할 수 있습니다.</p>
-          <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+          <p class="c-var--text-secondary mt-0_5rem">
             현재 상태: ${currentProfile.status} / 역할: ${currentProfile.role}
           </p>
-          <button onclick="window.location.href='/index.html'" class="btn btn-primary" style="margin-top: 1rem;">
+          <button onclick="window.location.href='/index.html'" class="btn btn-primary mt-1rem">
             메인으로 돌아가기
           </button>
         </div>
@@ -129,14 +129,14 @@ window.SUPABASE_CONFIG = {
   } catch (error) {
     console.error('Init error:', error);
     app.innerHTML = `
-      <div class="error" style="margin: 2rem;">
+      <div class="error m-2rem">
         <h2>오류가 발생했습니다</h2>
         <p>${error.message}</p>
-        <details style="margin-top: 1rem;">
+        <details class="mt-1rem">
           <summary>상세 정보</summary>
-          <pre style="background: var(--t-bg2); padding: 1rem; margin-top: 0.5rem; border-radius: 0.5rem; overflow-x: auto;">${error.stack}</pre>
+          <pre class="bg-bg2 p-1rem mt-0_5rem br-0_5rem ovx-auto">${error.stack}</pre>
         </details>
-        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">
+        <button onclick="location.reload()" class="btn btn-primary mt-1rem">
           새로고침
         </button>
       </div>
@@ -258,57 +258,57 @@ function render() {
       </div>
 
       <!-- 통계 카드 -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <div class="d-grid gtc-repeatauto-fit_minmax200px_1fr gap-1rem mb-2rem">
         <div class="card">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="hourglass" style="width: 20px; height: 20px;"></i>
+          <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+            <i class="w-20px h-20px" data-lucide="hourglass"></i>
             <strong>대기 중</strong>
           </div>
-          <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">
+          <div class="fz-2rem fwt-bold c-var--warning-color">
             ${pendingUsers.length}
           </div>
         </div>
         <div class="card">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
+          <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+            <i class="w-20px h-20px" data-lucide="check-circle-2"></i>
             <strong>승인된 사용자</strong>
           </div>
-          <div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">
+          <div class="fz-2rem fwt-bold c-var--success-color">
             ${approvedUsers.length}
           </div>
         </div>
         <div class="card">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+          <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+            <i class="w-20px h-20px" data-lucide="users"></i>
             <strong>전체 사용자</strong>
           </div>
-          <div style="font-size: 2rem; font-weight: bold;">
+          <div class="fz-2rem fwt-bold">
             ${totalUsers}
           </div>
         </div>
         ${allUsers.filter(u => u.status === 'rejected').length > 0 ? `
-        <div class="card" style="border: 2px solid var(--warning-color);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="alert-circle" style="width: 20px; height: 20px; color: var(--warning-color);"></i>
-            <strong style="color: var(--warning-color);">재신청 대기</strong>
+        <div class="card bd-2px-solid-var--warning-color">
+          <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+            <i class="w-20px h-20px c-var--warning-color" data-lucide="alert-circle"></i>
+            <strong class="c-var--warning-color">재신청 대기</strong>
           </div>
-          <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">
+          <div class="fz-2rem fwt-bold c-var--warning-color">
             ${allUsers.filter(u => u.status === 'rejected').length}
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          <div class="fz-0_8rem c-var--text-secondary mt-0_5rem">
             취소 후 재신청한 사용자
           </div>
         </div>
         ` : ''}
-        <div class="card" style="border: 2px solid var(--t-danger);">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="clock" style="width: 20px; height: 20px; color: var(--t-danger);"></i>
-            <strong style="color: var(--t-danger);">기한 만료</strong>
+        <div class="card bd-2px-solid-danger">
+          <div class="d-flex ai-center gap-0_5rem mb-0_5rem">
+            <i class="w-20px h-20px c-danger" data-lucide="clock"></i>
+            <strong class="c-danger">기한 만료</strong>
           </div>
-          <div style="font-size: 2rem; font-weight: bold; color: var(--t-danger);">
+          <div class="fz-2rem fwt-bold c-danger">
             ${expiredUsers.length}
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          <div class="fz-0_8rem c-var--text-secondary mt-0_5rem">
             사용 기한이 만료된 사용자
           </div>
         </div>
@@ -325,17 +325,17 @@ function render() {
         <button class="tab ${activeTab === 'challenge' ? 'active' : ''}" onclick="showTab('challenge')">
           챌린지 참가자 (${challengeParticipants.length})
         </button>
-        <button class="tab ${activeTab === 'expired' ? 'active' : ''}" onclick="showTab('expired')" style="color: var(--t-danger);">
+        <button class="tab ${activeTab === 'expired' ? 'active' : ''} c-danger" onclick="showTab('expired')">
           기한 만료 (${expiredUsers.length})
         </button>
       </div>
 
       <!-- 승인 대기 목록 -->
       <div id="pending-section" class="tab-content" style="display: ${activeTab === 'pending' ? 'block' : 'none'};">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h2><i data-lucide="bell" style="width: 20px; height: 20px; margin-right: 6px;"></i>승인 대기 중인 사용자</h2>
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <span style="color: var(--text-secondary); font-size: 0.9rem;">
+        <div class="d-flex jc-space-between ai-center mb-1rem">
+          <h2><i class="w-20px h-20px mr-6px" data-lucide="bell"></i>승인 대기 중인 사용자</h2>
+          <div class="d-flex ai-center gap-1rem">
+            <span class="c-var--text-secondary fz-0_9rem">
               마지막 업데이트: ${lastUpdate}
             </span>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
@@ -348,20 +348,20 @@ function render() {
 
       <!-- 승인된 사용자 목록 -->
       <div id="approved-section" class="tab-content" style="display: ${activeTab === 'approved' ? 'block' : 'none'};">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="d-flex jc-space-between ai-center mb-1rem fwrap-wrap gap-1rem">
           <h2>✅ 승인된 사용자</h2>
-          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div class="d-flex ai-center gap-1rem fwrap-wrap">
             <!-- 주간 선택 -->
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--t-bg2); padding: 0.5rem; border-radius: 8px;">
-              <button onclick="changeWeek(-1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+            <div class="d-flex ai-center gap-0_5rem bg-bg2 p-0_5rem br-8px">
+              <button onclick="changeWeek(-1)" class="btn btn-sm p-0_25rem-0_5rem">
+                <i class="w-16px h-16px" data-lucide="chevron-left"></i>
               </button>
-              <span id="week-label" style="font-size: 0.875rem; font-weight: 600; min-width: 120px; text-align: center;">이번 주</span>
-              <button onclick="changeWeek(1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+              <span class="fz-0_875rem fwt-600 minw-120px ta-center" id="week-label">이번 주</span>
+              <button onclick="changeWeek(1)" class="btn btn-sm p-0_25rem-0_5rem">
+                <i class="w-16px h-16px" data-lucide="chevron-right"></i>
               </button>
-              <button onclick="resetWeek()" class="btn btn-sm" style="padding: 0.25rem 0.75rem; ${selectedWeekOffset === 0 ? 'display: none;' : ''}" id="reset-week-btn">
-                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> 이번 주
+              <button onclick="resetWeek()" class="btn btn-sm p-0_25rem-0_75rem ${selectedWeekOffset === 0 ? 'd-none' : ''}" id="reset-week-btn">
+                <i class="w-16px h-16px" data-lucide="calendar"></i> 이번 주
               </button>
             </div>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
@@ -374,20 +374,20 @@ function render() {
 
       <!-- 챌린지 참가자 목록 -->
       <div id="challenge-section" class="tab-content" style="display: ${activeTab === 'challenge' ? 'block' : 'none'};">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="d-flex jc-space-between ai-center mb-1rem fwrap-wrap gap-1rem">
           <h2>🏆 챌린지 참가자</h2>
-          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div class="d-flex ai-center gap-1rem fwrap-wrap">
             <!-- 주간 선택 -->
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--t-bg2); padding: 0.5rem; border-radius: 8px;">
-              <button onclick="changeWeek(-1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+            <div class="d-flex ai-center gap-0_5rem bg-bg2 p-0_5rem br-8px">
+              <button onclick="changeWeek(-1)" class="btn btn-sm p-0_25rem-0_5rem">
+                <i class="w-16px h-16px" data-lucide="chevron-left"></i>
               </button>
-              <span id="week-label-challenge" style="font-size: 0.875rem; font-weight: 600; min-width: 120px; text-align: center;">이번 주</span>
-              <button onclick="changeWeek(1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+              <span class="fz-0_875rem fwt-600 minw-120px ta-center" id="week-label-challenge">이번 주</span>
+              <button onclick="changeWeek(1)" class="btn btn-sm p-0_25rem-0_5rem">
+                <i class="w-16px h-16px" data-lucide="chevron-right"></i>
               </button>
-              <button onclick="resetWeek()" class="btn btn-sm" style="padding: 0.25rem 0.75rem; ${selectedWeekOffset === 0 ? 'display: none;' : ''}" id="reset-week-btn-challenge">
-                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> 이번 주
+              <button onclick="resetWeek()" class="btn btn-sm p-0_25rem-0_75rem ${selectedWeekOffset === 0 ? 'd-none' : ''}" id="reset-week-btn-challenge">
+                <i class="w-16px h-16px" data-lucide="calendar"></i> 이번 주
               </button>
             </div>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
@@ -399,15 +399,15 @@ function render() {
 
       <!-- 기한 만료 사용자 목록 -->
       <div id="expired-section" class="tab-content" style="display: ${activeTab === 'expired' ? 'block' : 'none'};">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div class="d-flex jc-space-between ai-center mb-1rem">
           <h2>⏰ 기한 만료된 사용자</h2>
-          <div style="display: flex; align-items: center; gap: 1rem;">
+          <div class="d-flex ai-center gap-1rem">
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
             <button id="bulk-extend-expired" class="btn btn-primary btn-sm" disabled>일괄 기한 연장</button>
           </div>
         </div>
-        <div style="background: var(--t-danger-soft); border: 1px solid var(--t-danger); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
-          <p style="color: var(--t-danger); margin: 0; font-size: 0.9rem;">
+        <div class="bg-danger-soft bd-1px-solid-danger br-0_5rem p-1rem mb-1rem">
+          <p class="c-danger m-0 fz-0_9rem">
             <strong>안내:</strong> 사용 기한이 만료된 사용자입니다. 기한을 연장할 수 있습니다.
           </p>
         </div>
@@ -416,13 +416,13 @@ function render() {
 
       <!-- 재신청 대기 목록 (rejected 상태) -->
       ${allUsers.filter(u => u.status === 'rejected').length > 0 ? `
-      <div id="reapplied-section" class="tab-content" style="display: block; margin-top: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h2><i data-lucide="refresh-cw" style="width: 20px; height: 20px; margin-right: 6px;"></i>재신청 대기 (${allUsers.filter(u => u.status === 'rejected').length})</h2>
+      <div id="reapplied-section" class="tab-content d-block mt-2rem">
+        <div class="d-flex jc-space-between ai-center mb-1rem">
+          <h2><i class="w-20px h-20px mr-6px" data-lucide="refresh-cw"></i>재신청 대기 (${allUsers.filter(u => u.status === 'rejected').length})</h2>
           <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
         </div>
-        <div style="background: var(--t-warn-soft); border: 1px solid var(--t-warn); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
-          <p style="color: var(--t-warn); margin: 0; font-size: 0.9rem;">
+        <div class="bg-warn-soft bd-1px-solid-warn br-0_5rem p-1rem mb-1rem">
+          <p class="c-warn m-0 fz-0_9rem">
             <strong>안내:</strong> 취소된 사용자가 다시 신청한 경우입니다. 승인하거나 다시 취소할 수 있습니다.
           </p>
         </div>
@@ -510,8 +510,8 @@ window.resetWeek = function() {
 function renderUserTable(users, type) {
   if (users.length === 0) {
     return `
-      <div class="card" style="text-align: center; padding: 3rem;">
-        <p style="color: var(--text-secondary); font-size: 1.1rem;">
+      <div class="card ta-center p-3rem">
+        <p class="c-var--text-secondary fz-1_1rem">
             ${type === 'pending' ? '승인 대기 중인 사용자가 없습니다. 🎉' 
               : type === 'challenge' ? '챌린지 참가자가 없습니다.' 
               : type === 'expired' ? '기한이 만료된 사용자가 없습니다. 🎉'
@@ -522,13 +522,13 @@ function renderUserTable(users, type) {
   }
 
   return `
-    <div class="card" style="padding: 0; overflow-x: auto;">
+    <div class="card p-0 ovx-auto">
       <table class="admin-table">
         <thead>
           <tr>
             ${type === 'pending' || type === 'approved' || type === 'challenge' || type === 'expired'
-              ? `<th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all-${type}"></th>` 
-              : '<th style="width: 40px;"></th>'}
+              ? `<th class="w-40px ta-center"><input type="checkbox" id="select-all-${type}"></th>` 
+              : '<th class="w-40px"></th>'}
             <th>프로필</th>
             <th>이름</th>
             <th>이메일</th>
@@ -541,7 +541,7 @@ function renderUserTable(users, type) {
         <tbody>
           ${users.map(user => `
             <tr>
-              <td style="text-align: center;">
+              <td class="ta-center">
                 ${type === 'pending'
                   ? `<input type="checkbox" class="pending-select" data-id="${user.id}" ${selectedPendingIds.has(user.id) ? 'checked' : ''}>`
                   : type === 'approved'
@@ -554,31 +554,30 @@ function renderUserTable(users, type) {
               </td>
               <td>
                 ${user.avatar_url 
-                  ? `<img src="${user.avatar_url}" style="width: 40px; height: 40px; border-radius: 50%;" />`
-                  : `<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">${user.name?.[0] || user.email?.[0] || '?'}</div>`
+                  ? `<img class="w-40px h-40px br-50pct" src="${user.avatar_url}" />`
+                  : `<div class="w-40px h-40px br-50pct bg-var--primary-color d-flex ai-center jc-center c-white fwt-bold">${user.name?.[0] || user.email?.[0] || '?'}</div>`
                 }
               </td>
               <td>${user.name || '-'}</td>
               <td>${user.email || '-'}</td>
               ${type === 'approved' || type === 'challenge' ? `
               <td>
-                <div class="user-stats" data-user-id="${user.id}" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
-                  <span class="stats-loading" style="color: var(--t-muted);">로딩 중...</span>
+                <div class="user-stats d-flex ai-center gap-0_5rem fz-0_875rem" data-user-id="${user.id}">
+                  <span class="stats-loading c-muted">로딩 중...</span>
                 </div>
               </td>
               ` : ''}
               <td>${new Date(user.created_at).toLocaleString('ko-KR')}</td>
               <td>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="d-flex ai-center gap-0_5rem">
                   ${user.expires_at 
                     ? `<span style="color: ${new Date(user.expires_at) < new Date() ? 'var(--t-danger)' : 'var(--t-success)'};">
                         ${new Date(user.expires_at).toLocaleDateString('ko-KR')}
                         ${new Date(user.expires_at) < new Date() ? ' (만료됨)' : ''}
                        </span>`
-                    : '<span style="color: var(--t-muted);">무제한</span>'
+                    : '<span class="c-muted">무제한</span>'
                   }
-                  <button onclick="openExpiryModal('${user.id}', '${user.expires_at || ''}')" 
-                          class="btn btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                  <button onclick="openExpiryModal('${user.id}', '${user.expires_at || ''}')" class="btn btn-sm p-0_25rem-0_5rem fz-0_875rem">
                     설정
                   </button>
                 </div>
@@ -1077,28 +1076,26 @@ window.openExpiryModal = function(userId, currentExpiry) {
   modal.className = 'modal';
   modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
   modal.innerHTML = `
-    <div class="modal-content" style="background: var(--t-surface); padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
-      <h3 style="margin-top: 0;">사용 기한 설정</h3>
-      <div style="margin: 1rem 0;">
-        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+    <div class="modal-content bg-surface p-2rem br-8px maxw-400px w-90pct">
+      <h3 class="mt-0">사용 기한 설정</h3>
+      <div class="m-1rem-0">
+        <label class="d-flex ai-center gap-0_5rem mb-0_5rem cur-pointer">
           <input type="radio" name="expiry-type-${userId}" value="unlimited" 
                  ${!currentExpiry ? 'checked' : ''} 
                  onchange="toggleExpiryDate('${userId}')">
           무제한
         </label>
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+        <label class="d-flex ai-center gap-0_5rem cur-pointer">
           <input type="radio" name="expiry-type-${userId}" value="limited" 
                  ${currentExpiry ? 'checked' : ''} 
                  onchange="toggleExpiryDate('${userId}')">
           특정 날짜까지
         </label>
       </div>
-      <div id="expiry-date-container-${userId}" style="margin: 1rem 0; ${!currentExpiry ? 'display: none;' : ''}">
-        <input type="date" id="expiry-date-${userId}" 
-               value="${currentExpiry || ''}" 
-               style="width: 100%; padding: 0.5rem; border: 1px solid var(--t-line2); border-radius: 4px;">
+      <div class="m-1rem-0 ${!currentExpiry ? 'd-none' : ''}" id="expiry-date-container-${userId}">
+        <input class="w-100pct p-0_5rem bd-1px-solid-line2 br-4px" type="date" id="expiry-date-${userId}" value="${currentExpiry || ''}">
       </div>
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+      <div class="d-flex gap-0_5rem jc-flex-end mt-1rem">
         <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">취소</button>
         <button onclick="saveExpiryDate('${userId}')" class="btn btn-primary">저장</button>
       </div>
@@ -1176,25 +1173,25 @@ window.openBulkExpiryModal = function(sourceType = 'approved') {
   modal.className = 'modal';
   modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
   modal.innerHTML = `
-    <div class="modal-content" style="background: var(--t-surface); padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
-      <h3 style="margin-top: 0;">일괄 사용 기한 설정</h3>
-      <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+    <div class="modal-content bg-surface p-2rem br-8px maxw-400px w-90pct">
+      <h3 class="mt-0">일괄 사용 기한 설정</h3>
+      <p class="c-var--text-secondary mb-1rem">
         선택된 사용자: <strong>${selectedIds.length}명</strong>
       </p>
-      <div style="margin: 1rem 0;">
-        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+      <div class="m-1rem-0">
+        <label class="d-flex ai-center gap-0_5rem mb-0_5rem cur-pointer">
           <input type="radio" name="bulk-expiry-type" value="unlimited" checked onchange="toggleBulkExpiryDate()">
           무제한
         </label>
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+        <label class="d-flex ai-center gap-0_5rem cur-pointer">
           <input type="radio" name="bulk-expiry-type" value="limited" onchange="toggleBulkExpiryDate()">
           특정 날짜까지
         </label>
       </div>
-      <div id="bulk-expiry-date-container" style="margin: 1rem 0; display: none;">
-        <input type="date" id="bulk-expiry-date" style="width: 100%; padding: 0.5rem; border: 1px solid var(--t-line2); border-radius: 4px;">
+      <div class="m-1rem-0 d-none" id="bulk-expiry-date-container">
+        <input class="w-100pct p-0_5rem bd-1px-solid-line2 br-4px" type="date" id="bulk-expiry-date">
       </div>
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+      <div class="d-flex gap-0_5rem jc-flex-end mt-1rem">
         <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">취소</button>
         <button onclick="saveBulkExpiryDate()" class="btn btn-primary">저장</button>
       </div>
@@ -1409,7 +1406,7 @@ async function loadUserStats(users, weekOffset = 0, sectionId = null) {
     }
     
     if (!stats) {
-      statsElement.innerHTML = '<span style="color: var(--t-muted);">-</span>';
+      statsElement.innerHTML = '<span class="c-muted">-</span>';
       return;
     }
     

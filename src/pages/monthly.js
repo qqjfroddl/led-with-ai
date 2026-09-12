@@ -73,7 +73,7 @@ export async function renderMonthly() {
     aiReflectionHtml = await Promise.race([reflectionPromise, timeoutPromise]);
   } catch (error) {
     console.error('Error rendering AI reflection:', error);
-    aiReflectionHtml = '<div class="card" style="padding: 1rem; color: var(--t-danger);">AI 성찰을 불러오는 중 오류가 발생했습니다.</div>';
+    aiReflectionHtml = '<div class="card p-1rem c-danger">AI 성찰을 불러오는 중 오류가 발생했습니다.</div>';
   }
   
   const html = `
@@ -81,12 +81,12 @@ export async function renderMonthly() {
     ${monthSelectorHtml}
     
     ${statsError 
-      ? `<div class="card" style="background: var(--t-danger-soft); border: 2px solid var(--t-danger); padding: 1.5rem; margin-bottom: 1.5rem;">
-           <div style="display: flex; align-items: center; gap: 0.75rem; color: var(--t-danger);">
-             <i data-lucide="alert-circle" style="width: 24px; height: 24px; stroke-width: 2.5;"></i>
+      ? `<div class="card bg-danger-soft bd-2px-solid-danger p-1_5rem mb-1_5rem">
+           <div class="d-flex ai-center gap-0_75rem c-danger">
+             <i class="w-24px h-24px sw-2_5" data-lucide="alert-circle"></i>
              <div>
-               <h3 style="font-weight: 600; margin-bottom: 0.25rem;">통계를 불러올 수 없습니다</h3>
-               <p style="font-size: 0.875rem; color: var(--t-danger);">${statsError}</p>
+               <h3 class="fwt-600 mb-0_25rem">통계를 불러올 수 없습니다</h3>
+               <p class="fz-0_875rem c-danger">${statsError}</p>
              </div>
            </div>
          </div>`
@@ -99,15 +99,15 @@ export async function renderMonthly() {
             
             return hasNoData
               ? `
-                 <div class="card" style="background: var(--t-bg); border: 2px solid var(--t-line); padding: 2rem; text-align: center; margin-bottom: 1.5rem;">
-                   <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--t-muted2); stroke-width: 2.5; margin: 0 auto 1rem; display: block;"></i>
-                   <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 0.5rem;">
+                 <div class="card bg-bg bd-2px-solid-line p-2rem ta-center mb-1_5rem">
+                   <i class="w-48px h-48px c-muted2 sw-2_5 m-0-auto-1rem d-block" data-lucide="inbox"></i>
+                   <h3 class="fz-1_1rem fwt-600 c-text mb-0_5rem">
                      이번 달에는 기록된 데이터가 없습니다
                    </h3>
-                   <p style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
+                   <p class="fz-0_875rem c-muted mb-1rem">
                      할일, 루틴, 성찰을 기록하면 월간 리포트가 생성됩니다.
                    </p>
-                   <a href="#/today" style="display: inline-block; padding: 0.5rem 1rem; background: var(--t-accent); color: white; border-radius: 8px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                   <a class="d-inline-block p-0_5rem-1rem bg-accent c-white br-8px td-none fz-0_875rem fwt-500" href="#/today">
                      오늘 페이지로 이동
                    </a>
                  </div>

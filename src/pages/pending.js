@@ -17,14 +17,14 @@ export async function renderPending(profile) {
     <div class="auth-container">
       <h1>승인 대기 중</h1>
       <p>관리자 승인을 기다리고 있습니다.</p>
-      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem;">
+      <p class="c-var--text-secondary fz-0_9rem mt-1rem">
         승인되면 이메일로 알려드리겠습니다.
       </p>
-      <hr style="border: none; border-top: 1px solid var(--border-color); margin: 2rem 0; width: 100%; max-width: 400px;">
-      <p style="color: var(--text-secondary); font-size: 0.9rem;">
-        혹시 문의 사항이 있으면 <a href="mailto:ledhelper@daum.net" style="color: var(--primary-color); text-decoration: none;">ledhelper@daum.net</a>으로 연락해주세요
+      <hr class="bd-none bdt-1px-solid-var--border-color m-2rem-0 w-100pct maxw-400px">
+      <p class="c-var--text-secondary fz-0_9rem">
+        혹시 문의 사항이 있으면 <a class="c-var--primary-color td-none" href="mailto:ledhelper@daum.net">ledhelper@daum.net</a>으로 연락해주세요
       </p>
-      <button onclick="window.handlePendingLogout()" class="btn btn-secondary" style="margin-top: 2rem;">
+      <button onclick="window.handlePendingLogout()" class="btn btn-secondary mt-2rem">
         로그아웃
       </button>
     </div>

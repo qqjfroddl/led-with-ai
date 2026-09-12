@@ -41,55 +41,38 @@ export function renderWeekSelector(selectedWeekStart, onWeekChange, timezone = '
   const endDate = weekEndDt.toFormat('M/d');
   
   const html = `
-    <div class="week-selector" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: var(--t-surface); border-radius: 12px; box-shadow: 0 2px 8px rgba(42,38,34, 0.08); margin-bottom: 1.5rem;">
+    <div class="week-selector d-flex ai-center jc-space-between gap-1rem p-1rem bg-surface br-12px sh-0-2px-8px-rgba42_38_34_0_08 mb-1_5rem">
       <!-- 이전 주 버튼 -->
-      <button 
-        id="week-prev-btn" 
-        class="btn-week-nav"
-        style="background: none; border: 1px solid var(--t-line); padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);"
-        onmouseover="this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)';"
-        onmouseout="this.style.background='none'; this.style.borderColor='var(--t-line)';"
-        title="이전 주"
-      >
-        <i data-lucide="chevron-left" style="width: 20px; height: 20px; stroke-width: 2.5;"></i>
+      <button id="week-prev-btn" class="btn-week-nav bg-none bd-1px-solid-line p-0_5rem-0_75rem br-8px cur-pointer d-flex ai-center jc-center tr-all-0_2s c-muted hov-bg-bg2 hov-bdc-line2" title="이전 주">
+        <i class="w-20px h-20px sw-2_5" data-lucide="chevron-left"></i>
       </button>
       
       <!-- 주차 정보 및 선택 -->
-      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; position: relative;">
-        <button 
-          id="week-selector-btn"
-          style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: all 0.2s;"
-          onmouseover="this.style.background='var(--t-bg2)';"
-          onmouseout="this.style.background='none';"
-        >
-          <i data-lucide="calendar" style="width: 18px; height: 18px; color: var(--t-accent); stroke-width: 2.5;"></i>
-          <span style="font-weight: 600; color: var(--t-text); font-size: 1rem;">
+      <div class="fx-1 d-flex fd-column ai-center gap-0_5rem pos-relative">
+        <button class="d-flex ai-center gap-0_5rem bg-none bd-none cur-pointer p-0_5rem br-8px tr-all-0_2s hov-bg-bg2" id="week-selector-btn">
+          <i class="w-18px h-18px c-accent sw-2_5" data-lucide="calendar"></i>
+          <span class="fwt-600 c-text fz-1rem">
             ${year}년 ${month}월 ${weekNumber}주차
           </span>
-          <i data-lucide="chevron-down" id="week-selector-chevron" style="width: 16px; height: 16px; color: var(--t-muted); stroke-width: 2.5; transition: transform 0.2s;"></i>
-          ${isCurrentWeek ? '<span style="background: var(--t-success); color: white; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500;">이번 주</span>' : ''}
+          <i class="w-16px h-16px c-muted sw-2_5 tr-transform-0_2s" data-lucide="chevron-down" id="week-selector-chevron"></i>
+          ${isCurrentWeek ? '<span class="bg-success c-white p-0_15rem-0_5rem br-999px fz-0_75rem fwt-500">이번 주</span>' : ''}
         </button>
-        <div style="font-size: 0.875rem; color: var(--t-muted);">
+        <div class="fz-0_875rem c-muted">
           ${startDate} ~ ${endDate}
         </div>
       </div>
       
       <!-- 주차 선택 모달 -->
-      <div id="week-selector-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-        <div id="week-selector-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--t-line);">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: var(--t-text); font-size: 1rem;">주차 선택</span>
-            <button 
-              id="week-selector-close"
-              style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
-              onmouseover="this.style.background='var(--t-bg2)';"
-              onmouseout="this.style.background='none';"
-            >
-              <i data-lucide="x" style="width: 20px; height: 20px; color: var(--t-muted); stroke-width: 2.5;"></i>
+      <div id="week-selector-overlay" class="date-overlay hidden pos-fixed ins-0 bg-rgba42_38_34_0_35 bf-blur6px d-none ai-center jc-center z-2000 p-1rem">
+        <div class="bg-surface sh-0-20px-40px-rgba42_38_34_0_18 w-min360px_90vw p-1rem d-flex fd-column gap-0_75rem bd-1px-solid-line" id="week-selector-modal">
+          <div class="d-flex jc-space-between ai-center">
+            <span class="fwt-700 c-text fz-1rem">주차 선택</span>
+            <button class="bg-none bd-none cur-pointer p-0_25rem br-4px d-flex ai-center jc-center tr-all-0_2s hov-bg-bg2" id="week-selector-close">
+              <i class="w-20px h-20px c-muted sw-2_5" data-lucide="x"></i>
             </button>
           </div>
-          <div style="background: var(--t-bg); border-radius: 0.75rem; padding: 0.5rem; border: 1px solid var(--t-line); max-height: 300px; overflow-y: auto;">
-            <div id="week-selector-options" style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <div class="bg-bg p-0_5rem bd-1px-solid-line maxh-300px ovy-auto">
+            <div class="d-flex fd-column gap-0_25rem" id="week-selector-options">
               ${generateWeekOptions(currentWeekStart, timezone, selectedWeekStart, 4)}
             </div>
           </div>
@@ -97,27 +80,13 @@ export function renderWeekSelector(selectedWeekStart, onWeekChange, timezone = '
       </div>
       
       <!-- 다음 주 버튼 -->
-      <button 
-        id="week-next-btn" 
-        class="btn-week-nav"
-        style="background: none; border: 1px solid var(--t-line); padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);"
-        onmouseover="this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)';"
-        onmouseout="this.style.background='none'; this.style.borderColor='var(--t-line)';"
-        title="다음 주"
-      >
-        <i data-lucide="chevron-right" style="width: 20px; height: 20px; stroke-width: 2.5;"></i>
+      <button id="week-next-btn" class="btn-week-nav bg-none bd-1px-solid-line p-0_5rem-0_75rem br-8px cur-pointer d-flex ai-center jc-center tr-all-0_2s c-muted hov-bg-bg2 hov-bdc-line2" title="다음 주">
+        <i class="w-20px h-20px sw-2_5" data-lucide="chevron-right"></i>
       </button>
       
       <!-- 이번 주로 이동 버튼 -->
       ${!isCurrentWeek ? `
-        <button 
-          id="week-current-btn" 
-          class="btn-week-current"
-          style="background: var(--t-accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; white-space: nowrap; transition: all 0.2s;"
-          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)';"
-          onmouseout="this.style.transform='none'; this.style.boxShadow='none';"
-          title="이번 주로 이동"
-        >
+        <button id="week-current-btn" class="btn-week-current bg-accent c-white bd-none p-0_5rem-1rem br-8px cur-pointer fz-0_875rem fwt-500 ws-nowrap tr-all-0_2s hov-tf-translatey-1px hov-sh-0-4px-12px-rgba42_38_34_0_15" title="이번 주로 이동">
           이번 주
         </button>
       ` : ''}
@@ -158,16 +127,10 @@ function generateWeekOptions(currentWeekStart, timezone, selectedWeekStart, maxW
       : 'background: var(--t-surface); color: var(--t-text);';
     
     options.push(`
-      <button 
-        class="week-option-btn"
-        data-week-start="${weekStart}"
-        style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%;"
-        onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }"
-        onmouseout="if (!this.dataset.selected) { this.style.background='white'; this.style.borderColor='var(--t-line)'; }"
-        ${isSelected ? 'data-selected="true"' : ''}
-      >
+      <button class="week-option-btn br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct" data-week-start="${weekStart}" style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; font-weight: ${isSelected ? '600' : '500'};" onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }" onmouseout="if (!this.dataset.selected) { this.style.background='white'; this.style.borderColor='var(--t-line)'; }"
+        ${isSelected ? 'data-selected="true"' : ''}>
         ${label}
-        ${isSelected ? '<i data-lucide="check" style="width: 16px; height: 16px; float: right; stroke-width: 2.5;"></i>' : ''}
+        ${isSelected ? '<i class="w-16px h-16px fl-right sw-2_5" data-lucide="check"></i>' : ''}
       </button>
     `);
   }
