@@ -15,13 +15,13 @@ export function renderYearlyInsights(stats) {
   const improvementInsights = insights.filter(i => i.type === 'improvement');
   
   const html = `
-    <div class="card" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #f87171; box-shadow: 0 8px 24px rgba(248, 113, 113, 0.15); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid rgba(248, 113, 113, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-insight-soft); border: 2px solid var(--t-insight); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-insight-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);">
+          <div style="width: 40px; height: 40px; background: var(--t-insight); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="lightbulb" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
-          <div class="card-title" style="color: #dc2626; font-size: 1.5rem; margin: 0;">${year}년 연간 분석</div>
+          <div class="card-title" style="color: var(--t-insight); font-size: 1.5rem; margin: 0;">${year}년 연간 분석</div>
         </div>
       </div>
       
@@ -45,8 +45,8 @@ export function renderYearlyInsights(stats) {
 function renderPracticeRateSection(routineInsights, todoInsights, reflectionInsights, todos, routines, reflections) {
   return `
     <div style="margin-bottom: 2rem;">
-      <h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="target" style="width: 20px; height: 20px; color: #f87171; stroke-width: 2.5;"></i>
+      <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="target" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
         실천율
       </h3>
       <div style="display: flex; flex-direction: column; gap: 1rem;">
@@ -64,12 +64,12 @@ function renderPracticeRateSection(routineInsights, todoInsights, reflectionInsi
 function renderComparisonSection(comparison, improvementInsights) {
   if (!comparison) {
     return `
-      <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid rgba(248, 113, 113, 0.1);">
-        <h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="trending-up" style="width: 20px; height: 20px; color: #f87171; stroke-width: 2.5;"></i>
+      <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
+        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="trending-up" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
           전년 대비 변화
         </h3>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; text-align: center; color: #6b7280; font-size: 0.95rem;">
+        <div style="background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 12px; padding: 1rem; text-align: center; color: var(--t-muted); font-size: 0.95rem;">
           전년 데이터가 없어 비교할 수 없습니다.
         </div>
       </div>
@@ -116,12 +116,12 @@ function renderComparisonSection(comparison, improvementInsights) {
   
   if (changes.length === 0) {
     return `
-      <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid rgba(248, 113, 113, 0.1);">
-        <h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="trending-up" style="width: 20px; height: 20px; color: #f87171; stroke-width: 2.5;"></i>
+      <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
+        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="trending-up" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
           전년 대비 변화
         </h3>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; text-align: center; color: #6b7280; font-size: 0.95rem;">
+        <div style="background: var(--t-bg); border: 1px solid var(--t-line); border-radius: 12px; padding: 1rem; text-align: center; color: var(--t-muted); font-size: 0.95rem;">
           전년 대비 큰 변화가 없습니다.
         </div>
       </div>
@@ -129,9 +129,9 @@ function renderComparisonSection(comparison, improvementInsights) {
   }
   
   return `
-    <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid rgba(248, 113, 113, 0.1);">
-      <h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="trending-up" style="width: 20px; height: 20px; color: #f87171; stroke-width: 2.5;"></i>
+    <div style="margin-bottom: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
+      <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="trending-up" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
         전년 대비 변화
       </h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
@@ -146,9 +146,9 @@ function renderComparisonSection(comparison, improvementInsights) {
  */
 function renderComparisonCard(change) {
   const isPositive = change.value > 0;
-  const color = isPositive ? '#10b981' : '#ef4444';
-  const bg = isPositive ? '#d1fae5' : '#fee2e2';
-  const border = isPositive ? '#86efac' : '#fecaca';
+  const color = isPositive ? 'var(--t-success)' : 'var(--t-danger)';
+  const bg = isPositive ? 'var(--t-success-soft)' : 'var(--t-danger-soft)';
+  const border = isPositive ? 'var(--t-success-line)' : 'var(--t-danger-line)';
   const icon = isPositive ? 'trending-up' : 'trending-down';
   const sign = change.value > 0 ? '+' : '';
   
@@ -156,7 +156,7 @@ function renderComparisonCard(change) {
     <div style="background: ${bg}; border: 2px solid ${border}; border-radius: 12px; padding: 1rem;">
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
         <i data-lucide="${change.icon}" style="width: 18px; height: 18px; color: ${color}; stroke-width: 2.5;"></i>
-        <span style="font-size: 0.875rem; font-weight: 600; color: #111827;">${change.label}</span>
+        <span style="font-size: 0.875rem; font-weight: 600; color: var(--t-text);">${change.label}</span>
       </div>
       <div style="display: flex; align-items: center; gap: 0.5rem;">
         <i data-lucide="${icon}" style="width: 20px; height: 20px; color: ${color}; stroke-width: 2.5;"></i>
@@ -175,27 +175,27 @@ function renderInsightItem(insight) {
   const typeConfig = {
     positive: {
       icon: 'check-circle-2',
-      color: '#10b981',
-      bg: '#d1fae5',
-      border: '#86efac'
+      color: 'var(--t-success)',
+      bg: 'var(--t-success-soft)',
+      border: 'var(--t-success-line)'
     },
     neutral: {
       icon: 'info',
-      color: '#6366f1',
-      bg: '#eef2ff',
-      border: '#c7d2fe'
+      color: 'var(--t-accent)',
+      bg: 'var(--t-accent-soft)',
+      border: 'var(--t-accent-line)'
     },
     suggestion: {
       icon: 'alert-circle',
-      color: '#f59e0b',
-      bg: '#fef3c7',
-      border: '#fde68a'
+      color: 'var(--t-warn)',
+      bg: 'var(--t-warn-soft)',
+      border: 'var(--t-warn-line)'
     },
     improvement: {
       icon: 'trending-up',
-      color: '#8b5cf6',
-      bg: '#ede9fe',
-      border: '#c4b5fd'
+      color: 'var(--t-accent2)',
+      bg: 'var(--t-accent2-soft)',
+      border: 'var(--t-accent2-line)'
     }
   };
   
@@ -206,7 +206,7 @@ function renderInsightItem(insight) {
       <div style="flex-shrink: 0; width: 32px; height: 32px; background: ${config.color}; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
         <i data-lucide="${config.icon}" style="width: 18px; height: 18px; color: white; stroke-width: 2.5;"></i>
       </div>
-      <div style="flex: 1; color: #111827; font-size: 0.95rem; line-height: 1.6;">
+      <div style="flex: 1; color: var(--t-text); font-size: 0.95rem; line-height: 1.6;">
         ${insight.message}
       </div>
     </div>
@@ -224,15 +224,15 @@ function renderYearlyPatternAnalysis(todos, routines) {
   const monthlySummary = summarizeMonthlyStats(todos.monthlyStats, routines.monthlyStats);
   
   return `
-    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(248, 113, 113, 0.1);">
-      <h3 style="font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="activity" style="width: 18px; height: 18px; color: #f87171; stroke-width: 2.5;"></i>
+    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--t-insight-line);">
+      <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="activity" style="width: 18px; height: 18px; color: var(--t-insight); stroke-width: 2.5;"></i>
         연간 패턴
       </h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         ${bestCategory ? renderPatternCard('layers', '가장 완료율 높은 카테고리', bestCategory.name, `${Number(bestCategory.rate || 0).toFixed(1)}% 완료`) : ''}
         ${monthlySummary.bestMonth ? renderPatternCard('calendar', '가장 활발한 월', `${monthlySummary.bestMonth}월`, monthlySummary.bestMonthDesc) : ''}
-        ${monthlySummary.worstMonth ? renderPatternCard('alert-circle', '개선이 필요한 월', `${monthlySummary.worstMonth}월`, monthlySummary.worstMonthDesc, '#ef4444') : ''}
+        ${monthlySummary.worstMonth ? renderPatternCard('alert-circle', '개선이 필요한 월', `${monthlySummary.worstMonth}월`, monthlySummary.worstMonthDesc, 'var(--t-danger)') : ''}
       </div>
     </div>
   `;
@@ -284,17 +284,17 @@ function summarizeMonthlyStats(todosMonthly, routinesMonthly) {
 /**
  * 패턴 카드 렌더링
  */
-function renderPatternCard(icon, label, title, description, color = '#f87171') {
+function renderPatternCard(icon, label, title, description, color = 'var(--t-insight)') {
   return `
-    <div style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: var(--t-surface); border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
         <i data-lucide="${icon}" style="width: 16px; height: 16px; color: ${color}; stroke-width: 2.5;"></i>
-        <span style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">${label}</span>
+        <span style="font-size: 0.75rem; color: var(--t-muted); font-weight: 500;">${label}</span>
       </div>
-      <div style="font-weight: 600; color: #111827; margin-bottom: 0.25rem; font-size: 0.95rem;">
+      <div style="font-weight: 600; color: var(--t-text); margin-bottom: 0.25rem; font-size: 0.95rem;">
         ${title}
       </div>
-      <div style="font-size: 0.875rem; color: #6b7280;">
+      <div style="font-size: 0.875rem; color: var(--t-muted);">
         ${description}
       </div>
     </div>

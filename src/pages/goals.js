@@ -18,20 +18,20 @@ export async function renderGoals() {
     </div>
 
     <!-- 월간 데일리 루틴 -->
-    <div class="card" style="background: linear-gradient(135deg, #f0e7ff 0%, #fce7f3 100%); border: 2px solid #a78bfa; box-shadow: 0 8px 24px rgba(167, 139, 250, 0.15);">
-      <div class="card-header" style="border-bottom: 2px solid rgba(167, 139, 250, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-accent2-soft); border: 2px solid var(--t-accent2); box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent2-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
+          <div style="width: 40px; height: 40px; background: var(--t-accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="repeat" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="card-title" style="color: #7c3aed; font-size: 1.5rem; margin: 0;">월간 데일리 루틴</div>
+              <div class="card-title" style="color: var(--t-accent2); font-size: 1.5rem; margin: 0;">월간 데일리 루틴</div>
               <button id="toggle-routines" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-                <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #7c3aed;"></i>
+                <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: var(--t-accent2);"></i>
               </button>
             </div>
-            <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;" id="routine-month-label">12월 매일 실천할 루틴</p>
+            <p style="color: var(--t-muted); font-size: 1rem; margin: 0.25rem 0 0 0;" id="routine-month-label">12월 매일 실천할 루틴</p>
           </div>
         </div>
       </div>
@@ -43,11 +43,11 @@ export async function renderGoals() {
           <!-- 모닝루틴 표시 -->
           <div id="morning-display-section">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-              <i data-lucide="sunrise" style="width: 20px; height: 20px; color: #f59e0b;"></i>
-              <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">모닝루틴</h4>
+              <i data-lucide="sunrise" style="width: 20px; height: 20px; color: var(--t-warn);"></i>
+              <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">모닝루틴</h4>
             </div>
             <div id="morning-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-            <div id="morning-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">
+            <div id="morning-empty" style="color: var(--t-muted2); font-size: 0.9rem; padding: 1rem 0; display: none;">
               등록된 모닝루틴이 없습니다
             </div>
           </div>
@@ -55,11 +55,11 @@ export async function renderGoals() {
           <!-- 데이타임 루틴 표시 -->
           <div id="daytime-display-section">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-              <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
-              <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">데이타임 루틴</h4>
+              <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: var(--t-cat-job);"></i>
+              <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">데이타임 루틴</h4>
             </div>
             <div id="daytime-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-            <div id="daytime-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">
+            <div id="daytime-empty" style="color: var(--t-muted2); font-size: 0.9rem; padding: 1rem 0; display: none;">
               등록된 데이타임 루틴이 없습니다
             </div>
           </div>
@@ -67,11 +67,11 @@ export async function renderGoals() {
           <!-- 나이트루틴 표시 -->
           <div id="night-display-section">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-              <i data-lucide="moon" style="width: 20px; height: 20px; color: #6366f1;"></i>
-              <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">나이트루틴</h4>
+              <i data-lucide="moon" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">나이트루틴</h4>
             </div>
             <div id="night-display-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-            <div id="night-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; display: none;">
+            <div id="night-empty" style="color: var(--t-muted2); font-size: 0.9rem; padding: 1rem 0; display: none;">
               등록된 나이트루틴이 없습니다
             </div>
           </div>
@@ -92,13 +92,13 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="sunrise" style="width: 20px; height: 20px; color: #f59e0b;"></i>
-                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">모닝루틴</h4>
+                <i data-lucide="sunrise" style="width: 20px; height: 20px; color: var(--t-warn);"></i>
+                <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">모닝루틴</h4>
               </div>
-              <span style="font-size: 0.85rem; color: #9ca3af;" id="morning-count">0/10</span>
+              <span style="font-size: 0.85rem; color: var(--t-muted2);" id="morning-count">0/10</span>
             </div>
             <div id="morning-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
-            <button id="add-morning-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+            <button id="add-morning-routine-btn" class="btn btn-sm" style="background: var(--t-surface); color: var(--t-accent2); border: 2px dashed var(--t-accent2); width: 100%;">
               <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
               모닝루틴 추가
             </button>
@@ -108,13 +108,13 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
-                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">데이타임 루틴</h4>
+                <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: var(--t-cat-job);"></i>
+                <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">데이타임 루틴</h4>
               </div>
-              <span style="font-size: 0.85rem; color: #9ca3af;" id="daytime-count">0/10</span>
+              <span style="font-size: 0.85rem; color: var(--t-muted2);" id="daytime-count">0/10</span>
             </div>
             <div id="daytime-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
-            <button id="add-daytime-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+            <button id="add-daytime-routine-btn" class="btn btn-sm" style="background: var(--t-surface); color: var(--t-accent2); border: 2px dashed var(--t-accent2); width: 100%;">
               <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
               데이타임 루틴 추가
             </button>
@@ -124,13 +124,13 @@ export async function renderGoals() {
           <div>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="moon" style="width: 20px; height: 20px; color: #6366f1;"></i>
-                <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">나이트루틴</h4>
+                <i data-lucide="moon" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
+                <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">나이트루틴</h4>
               </div>
-              <span style="font-size: 0.85rem; color: #9ca3af;" id="night-count">0/10</span>
+              <span style="font-size: 0.85rem; color: var(--t-muted2);" id="night-count">0/10</span>
             </div>
             <div id="night-routines-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;"></div>
-            <button id="add-night-routine-btn" class="btn btn-sm" style="background: white; color: #a78bfa; border: 2px dashed #a78bfa; width: 100%;">
+            <button id="add-night-routine-btn" class="btn btn-sm" style="background: var(--t-surface); color: var(--t-accent2); border: 2px dashed var(--t-accent2); width: 100%;">
               <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
               나이트루틴 추가
             </button>
@@ -141,13 +141,13 @@ export async function renderGoals() {
             <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             전월 루틴 복사
           </button>
-          <button id="save-routines-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">저장하기</button>
+          <button id="save-routines-btn" class="btn" style="background: var(--t-accent2); color: white; border: none; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">저장하기</button>
           <button id="cancel-edit-btn" class="btn btn-secondary">취소</button>
         </div>
       </div>
 
       <!-- 로딩 상태 -->
-      <div id="routines-loading" style="text-align: center; padding: 2rem; color: #9ca3af;">
+      <div id="routines-loading" style="text-align: center; padding: 2rem; color: var(--t-muted2);">
         <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
         <p style="margin-top: 0.5rem;">로딩 중...</p>
       </div>
@@ -158,7 +158,7 @@ export async function renderGoals() {
     <div id="past-routines-modal" class="modal-overlay" style="display: none;">
       <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">
+          <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--t-text);">
             <i data-lucide="calendar-clock" style="width: 20px; height: 20px; margin-right: 0.5rem; vertical-align: middle;"></i>
             과거 루틴 선택
           </h3>
@@ -169,7 +169,7 @@ export async function renderGoals() {
         
         <!-- 1단계: 월 목록 -->
         <div id="month-list-view" style="display: block;">
-          <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1rem;">
+          <p style="color: var(--t-muted); font-size: 0.9rem; margin-bottom: 1rem;">
             복사할 루틴이 있는 월을 선택하세요
           </p>
           <div id="past-months-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
@@ -184,14 +184,14 @@ export async function renderGoals() {
             목록으로
           </button>
           
-          <h4 id="selected-month-title" style="font-size: 1.1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">
+          <h4 id="selected-month-title" style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem;">
             <!-- 동적: 2025년 12월 루틴 -->
           </h4>
           
           <div id="routine-detail-content">
             <!-- 모닝루틴 -->
             <div id="detail-morning-section" style="margin-bottom: 1.5rem;">
-              <h5 style="font-size: 1rem; font-weight: 600; color: #f59e0b; margin-bottom: 0.75rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: var(--t-warn); margin-bottom: 0.75rem;">
                 <i data-lucide="sunrise" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
                 모닝루틴
               </h5>
@@ -202,7 +202,7 @@ export async function renderGoals() {
             
             <!-- 데이타임루틴 -->
             <div id="detail-daytime-section" style="margin-bottom: 1.5rem;">
-              <h5 style="font-size: 1rem; font-weight: 600; color: #22d3ee; margin-bottom: 0.75rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: var(--t-cat-job); margin-bottom: 0.75rem;">
                 <i data-lucide="sun" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
                 데이타임루틴
               </h5>
@@ -213,7 +213,7 @@ export async function renderGoals() {
             
             <!-- 나이트루틴 -->
             <div id="detail-night-section" style="margin-bottom: 1.5rem;">
-              <h5 style="font-size: 1rem; font-weight: 600; color: #6366f1; margin-bottom: 0.75rem;">
+              <h5 style="font-size: 1rem; font-weight: 600; color: var(--t-accent); margin-bottom: 0.75rem;">
                 <i data-lucide="moon" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: middle;"></i>
                 나이트루틴
               </h5>
@@ -235,32 +235,32 @@ export async function renderGoals() {
     </div>
 
     <!-- 연간 목표 -->
-    <div class="card" style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); border: 2px solid #6366f1; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15); margin-top: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid rgba(99, 102, 241, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-accent-soft); border: 2px solid var(--t-accent); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-top: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
-            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+            <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
               <i data-lucide="target" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
             </div>
             <div style="flex: 1;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div class="card-title" style="color: #4f46e5; font-size: 1.5rem; margin: 0;">연간 목표</div>
+                <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">연간 목표</div>
                 <button id="toggle-yearly-goals" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-                  <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #4f46e5;"></i>
+                  <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
                 </button>
               </div>
-              <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;" id="yearly-goal-subtitle">2025년 연간 목표</p>
+              <p style="color: var(--t-muted); font-size: 1rem; margin: 0.25rem 0 0 0;" id="yearly-goal-subtitle">2025년 연간 목표</p>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button id="yearly-goal-prev-btn" class="btn-icon" style="background: white; border: 1px solid #6366f1; color: #6366f1; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+            <button id="yearly-goal-prev-btn" class="btn-icon" style="background: var(--t-surface); border: 1px solid var(--t-accent); color: var(--t-accent); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
             </button>
-            <span id="yearly-goal-year-label" style="font-size: 1rem; font-weight: 600; color: #4f46e5; min-width: 60px; text-align: center; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'">2025년</span>
-            <button id="yearly-goal-next-btn" class="btn-icon" style="background: white; border: 1px solid #6366f1; color: #6366f1; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+            <span id="yearly-goal-year-label" style="font-size: 1rem; font-weight: 600; color: var(--t-accent); min-width: 60px; text-align: center; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--t-bg2)'" onmouseout="this.style.backgroundColor='transparent'">2025년</span>
+            <button id="yearly-goal-next-btn" class="btn-icon" style="background: var(--t-surface); border: 1px solid var(--t-accent); color: var(--t-accent); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
             </button>
-            <button id="yearly-goal-go-to-current-year-btn" class="btn-icon" style="background: #e0e7ff; border: 1px solid rgba(99, 102, 241, 0.2); color: #1f2937; padding: 0.375rem 0.875rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: none;">
+            <button id="yearly-goal-go-to-current-year-btn" class="btn-icon" style="background: var(--t-accent-soft); border: 1px solid var(--t-accent-line); color: var(--t-text); padding: 0.375rem 0.875rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: none;">
               <i data-lucide="calendar" style="width: 16px; height: 16px; margin-right: 0.25rem;"></i>
               올해로
             </button>
@@ -274,33 +274,33 @@ export async function renderGoals() {
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="book-open" style="width: 18px; height: 18px; color: #6366f1;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">자기계발</h4>
+              <i data-lucide="book-open" style="width: 18px; height: 18px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">자기계발</h4>
             </div>
-            <div id="yearly-goal-self-dev-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
-            <div id="yearly-goal-self-dev-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
+            <div id="yearly-goal-self-dev-display" style="background: var(--t-surface); padding: 1rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap;"></div>
+            <div id="yearly-goal-self-dev-empty" style="background: var(--t-surface); padding: 1rem; border-radius: 8px; color: var(--t-muted2); font-size: 0.9rem; display: none; text-align: center;">
               목표를 입력해주세요
             </div>
           </div>
 
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="heart" style="width: 18px; height: 18px; color: #ec4899;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">가족/관계</h4>
+              <i data-lucide="heart" style="width: 18px; height: 18px; color: var(--t-cat-personal);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">가족/관계</h4>
             </div>
-            <div id="yearly-goal-relationship-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
-            <div id="yearly-goal-relationship-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
+            <div id="yearly-goal-relationship-display" style="background: var(--t-surface); padding: 1rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap;"></div>
+            <div id="yearly-goal-relationship-empty" style="background: var(--t-surface); padding: 1rem; border-radius: 8px; color: var(--t-muted2); font-size: 0.9rem; display: none; text-align: center;">
               목표를 입력해주세요
             </div>
           </div>
 
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #10b981;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">업무/재정</h4>
+              <i data-lucide="briefcase" style="width: 18px; height: 18px; color: var(--t-success);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">업무/재정</h4>
             </div>
-            <div id="yearly-goal-work-finance-display" style="background: white; padding: 1rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
-            <div id="yearly-goal-work-finance-empty" style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; display: none; text-align: center;">
+            <div id="yearly-goal-work-finance-display" style="background: var(--t-surface); padding: 1rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap;"></div>
+            <div id="yearly-goal-work-finance-empty" style="background: var(--t-surface); padding: 1rem; border-radius: 8px; color: var(--t-muted2); font-size: 0.9rem; display: none; text-align: center;">
               목표를 입력해주세요
             </div>
           </div>
@@ -319,26 +319,26 @@ export async function renderGoals() {
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="book-open" style="width: 18px; height: 18px; color: #6366f1;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">자기계발</h4>
+              <i data-lucide="book-open" style="width: 18px; height: 18px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">자기계발</h4>
             </div>
-            <textarea id="yearly-goal-self-dev-input" placeholder="예: 매일 30분 독서하기, 새로운 언어 배우기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
+            <textarea id="yearly-goal-self-dev-input" placeholder="예: 매일 30분 독서하기, 새로운 언어 배우기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
           </div>
 
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="heart" style="width: 18px; height: 18px; color: #ec4899;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">가족/관계</h4>
+              <i data-lucide="heart" style="width: 18px; height: 18px; color: var(--t-cat-personal);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">가족/관계</h4>
             </div>
-            <textarea id="yearly-goal-relationship-input" placeholder="예: 가족과 더 많은 시간 보내기, 새로운 인연 만들기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
+            <textarea id="yearly-goal-relationship-input" placeholder="예: 가족과 더 많은 시간 보내기, 새로운 인연 만들기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
           </div>
 
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #10b981;"></i>
-              <h4 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 1.1rem;">업무/재정</h4>
+              <i data-lucide="briefcase" style="width: 18px; height: 18px; color: var(--t-success);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">업무/재정</h4>
             </div>
-            <textarea id="yearly-goal-work-finance-input" placeholder="예: 연봉 증가 목표, 부업 시작하기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #6366f1; border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: white;"></textarea>
+            <textarea id="yearly-goal-work-finance-input" placeholder="예: 연봉 증가 목표, 부업 시작하기..." style="width: 100%; min-height: 100px; padding: 1rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 1rem; font-family: inherit; resize: vertical; background: var(--t-surface);"></textarea>
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;">
@@ -346,75 +346,75 @@ export async function renderGoals() {
             <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             작년 목표 복사
           </button>
-          <button id="ai-feedback-yearly-goals-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
+          <button id="ai-feedback-yearly-goals-btn" class="btn" style="background: var(--t-accent2); color: white; border: none; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="sparkles" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             AI로 피드백받기
           </button>
-          <button id="save-yearly-goals-btn" class="btn" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">저장하기</button>
+          <button id="save-yearly-goals-btn" class="btn" style="background: var(--t-accent); color: white; border: none; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">저장하기</button>
           <button id="cancel-yearly-goals-btn" class="btn btn-secondary">취소</button>
         </div>
 
         <!-- AI 피드백 표시 영역 -->
-        <div id="yearly-goals-ai-feedback" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #f0e7ff 0%, #fce7f3 100%); border: 2px solid #a78bfa; border-radius: 12px;">
+        <div id="yearly-goals-ai-feedback" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: var(--t-accent2-soft); border: 2px solid var(--t-accent2); border-radius: 12px;">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <i data-lucide="sparkles" style="width: 20px; height: 20px; color: #a78bfa;"></i>
-            <h4 style="color: #7c3aed; font-weight: 600; margin: 0;">AI 피드백</h4>
+            <i data-lucide="sparkles" style="width: 20px; height: 20px; color: var(--t-accent2);"></i>
+            <h4 style="color: var(--t-accent2); font-weight: 600; margin: 0;">AI 피드백</h4>
           </div>
           <div style="display: flex; flex-direction: column; gap: 1rem;">
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
-                <div id="feedback-original-self-dev" style="color: #374151; white-space: pre-wrap;"></div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.85rem; color: var(--t-muted); margin-bottom: 0.25rem;">원본:</div>
+                <div id="feedback-original-self-dev" style="color: var(--t-text2); white-space: pre-wrap;"></div>
               </div>
-              <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 8px; border: 1px solid #86efac;">
-                <div style="font-size: 0.85rem; color: #16a34a; margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
-                <div id="feedback-improved-self-dev" style="color: #166534; white-space: pre-wrap;"></div>
+              <div style="background: var(--t-success-soft); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--t-success-line);">
+                <div style="font-size: 0.85rem; color: var(--t-success); margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
+                <div id="feedback-improved-self-dev" style="color: var(--t-success); white-space: pre-wrap;"></div>
               </div>
-              <button class="apply-feedback-btn" data-field="self_dev" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
+              <button class="apply-feedback-btn" data-field="self_dev" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: var(--t-success); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
             </div>
 
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
-                <div id="feedback-original-relationship" style="color: #374151; white-space: pre-wrap;"></div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.85rem; color: var(--t-muted); margin-bottom: 0.25rem;">원본:</div>
+                <div id="feedback-original-relationship" style="color: var(--t-text2); white-space: pre-wrap;"></div>
               </div>
-              <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 8px; border: 1px solid #86efac;">
-                <div style="font-size: 0.85rem; color: #16a34a; margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
-                <div id="feedback-improved-relationship" style="color: #166534; white-space: pre-wrap;"></div>
+              <div style="background: var(--t-success-soft); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--t-success-line);">
+                <div style="font-size: 0.85rem; color: var(--t-success); margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
+                <div id="feedback-improved-relationship" style="color: var(--t-success); white-space: pre-wrap;"></div>
               </div>
-              <button class="apply-feedback-btn" data-field="relationship" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
+              <button class="apply-feedback-btn" data-field="relationship" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: var(--t-success); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
             </div>
 
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.25rem;">원본:</div>
-                <div id="feedback-original-work-finance" style="color: #374151; white-space: pre-wrap;"></div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.85rem; color: var(--t-muted); margin-bottom: 0.25rem;">원본:</div>
+                <div id="feedback-original-work-finance" style="color: var(--t-text2); white-space: pre-wrap;"></div>
               </div>
-              <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 8px; border: 1px solid #86efac;">
-                <div style="font-size: 0.85rem; color: #16a34a; margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
-                <div id="feedback-improved-work-finance" style="color: #166534; white-space: pre-wrap;"></div>
+              <div style="background: var(--t-success-soft); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--t-success-line);">
+                <div style="font-size: 0.85rem; color: var(--t-success); margin-bottom: 0.25rem; font-weight: 600;">개선 제안:</div>
+                <div id="feedback-improved-work-finance" style="color: var(--t-success); white-space: pre-wrap;"></div>
               </div>
-              <button class="apply-feedback-btn" data-field="work_finance" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
+              <button class="apply-feedback-btn" data-field="work_finance" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; background: var(--t-success); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">적용하기</button>
             </div>
           </div>
-          <button id="close-feedback-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">닫기</button>
+          <button id="close-feedback-btn" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--t-line); color: var(--t-text2); border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">닫기</button>
         </div>
       </div>
 
       <!-- 로딩 상태 -->
-      <div id="yearly-goals-loading" style="text-align: center; padding: 2rem; color: #9ca3af;">
+      <div id="yearly-goals-loading" style="text-align: center; padding: 2rem; color: var(--t-muted2);">
         <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
         <p style="margin-top: 0.5rem;">로딩 중...</p>
       </div>
@@ -422,20 +422,20 @@ export async function renderGoals() {
     </div>
 
       <!-- 연도 선택 모달 -->
-      <div id="yearly-goal-year-selector-overlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-        <div id="yearly-goal-year-selector-modal" style="background: #ffffff; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid #e5e7eb;">
+      <div id="yearly-goal-year-selector-overlay" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+        <div id="yearly-goal-year-selector-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--t-line);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: #111827; font-size: 1rem;">연도 선택</span>
+            <span style="font-weight: 700; color: var(--t-text); font-size: 1rem;">연도 선택</span>
             <button 
               id="yearly-goal-year-selector-close"
               style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
-              onmouseover="this.style.background='#f3f4f6';"
+              onmouseover="this.style.background='var(--t-bg2)';"
               onmouseout="this.style.background='none';"
             >
-              <i data-lucide="x" style="width: 20px; height: 20px; color: #6b7280; stroke-width: 2.5;"></i>
+              <i data-lucide="x" style="width: 20px; height: 20px; color: var(--t-muted); stroke-width: 2.5;"></i>
             </button>
           </div>
-          <div style="background: #f8fafc; border-radius: 0.75rem; padding: 0.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
+          <div style="background: var(--t-bg); border-radius: 0.75rem; padding: 0.5rem; border: 1px solid var(--t-line); max-height: 300px; overflow-y: auto;">
             <div id="yearly-goal-year-selector-options" style="display: flex; flex-direction: column; gap: 0.25rem;">
               <!-- 연도 옵션은 JavaScript로 동적으로 생성됨 -->
             </div>
@@ -445,32 +445,32 @@ export async function renderGoals() {
     </div>
 
     <!-- 월간 실천계획 -->
-    <div class="card" style="background: linear-gradient(135deg, #e0f7f4 0%, #f0fdf4 100%); border: 2px solid #14b8a6; box-shadow: 0 8px 24px rgba(20, 184, 166, 0.15); margin-top: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid rgba(20, 184, 166, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-success-soft); border: 2px solid var(--t-accent); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-top: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">
+            <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
               <i data-lucide="calendar-check" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
             </div>
             <div style="flex: 1;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div class="card-title" style="color: #0f766e; font-size: 1.5rem; margin: 0;">월간 실천계획</div>
+                <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">월간 실천계획</div>
                 <button id="toggle-monthly-plans" class="btn-icon" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer;">
-                  <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #0f766e;"></i>
+                  <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: var(--t-accent);"></i>
                 </button>
               </div>
-              <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;" id="monthly-plan-subtitle">2025년 12월 실천 계획 & 결과</p>
+              <p style="color: var(--t-muted); font-size: 1rem; margin: 0.25rem 0 0 0;" id="monthly-plan-subtitle">2025년 12월 실천 계획 & 결과</p>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button id="monthly-plan-prev-btn" class="btn-icon" style="background: white; border: 1px solid #14b8a6; color: #14b8a6; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+            <button id="monthly-plan-prev-btn" class="btn-icon" style="background: var(--t-surface); border: 1px solid var(--t-accent); color: var(--t-accent); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
             </button>
-            <span id="monthly-plan-month-label" style="font-size: 1rem; font-weight: 600; color: #0f766e; min-width: 80px; text-align: center; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='transparent'">2025년 12월</span>
-            <button id="monthly-plan-next-btn" class="btn-icon" style="background: white; border: 1px solid #14b8a6; color: #14b8a6; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
+            <span id="monthly-plan-month-label" style="font-size: 1rem; font-weight: 600; color: var(--t-accent); min-width: 80px; text-align: center; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--t-bg2)'" onmouseout="this.style.backgroundColor='transparent'">2025년 12월</span>
+            <button id="monthly-plan-next-btn" class="btn-icon" style="background: var(--t-surface); border: 1px solid var(--t-accent); color: var(--t-accent); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer;">
               <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
             </button>
-            <button id="monthly-plan-go-to-current-month-btn" class="btn-icon" style="background: #e0f7f4; border: 1px solid rgba(20, 184, 166, 0.2); color: #1f2937; padding: 0.375rem 0.875rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: none;">
+            <button id="monthly-plan-go-to-current-month-btn" class="btn-icon" style="background: var(--t-success-soft); border: 1px solid var(--t-accent-line); color: var(--t-text); padding: 0.375rem 0.875rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: none;">
               <i data-lucide="calendar" style="width: 16px; height: 16px; margin-right: 0.25rem;"></i>
               이번 달로
             </button>
@@ -483,10 +483,10 @@ export async function renderGoals() {
       <div id="monthly-plans-view-mode" style="display: none;">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
           <!-- 왼쪽: 연간목표 표시 -->
-          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed var(--t-cat-job-line);">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="target" style="width: 18px; height: 18px; color: #6366f1;"></i>
-              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">연간목표</h4>
+              <i data-lucide="target" style="width: 18px; height: 18px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">연간목표</h4>
             </div>
             <div id="monthly-plan-yearly-goals-container" style="display: flex; flex-direction: column; gap: 1rem;">
               <!-- 연간목표는 JavaScript로 동적으로 채워짐 -->
@@ -494,10 +494,10 @@ export async function renderGoals() {
           </div>
 
           <!-- 가운데: 월실천계획 표시 -->
-          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed var(--t-cat-job-line);">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="calendar-check" style="width: 18px; height: 18px; color: #14b8a6;"></i>
-              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월실천계획</h4>
+              <i data-lucide="calendar-check" style="width: 18px; height: 18px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">월실천계획</h4>
             </div>
             <div id="monthly-plan-plan-content-container" style="display: flex; flex-direction: column; gap: 1rem;">
               <!-- 월실천계획은 JavaScript로 동적으로 채워짐 -->
@@ -507,8 +507,8 @@ export async function renderGoals() {
           <!-- 오른쪽: 월말 결과 표시 -->
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #10b981;"></i>
-              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월말 결과</h4>
+              <i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--t-success);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">월말 결과</h4>
             </div>
             <div id="monthly-plan-results-content-container" style="display: flex; flex-direction: column; gap: 1rem;">
               <!-- 월말 결과는 JavaScript로 동적으로 채워짐 -->
@@ -520,7 +520,7 @@ export async function renderGoals() {
             <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             지난달 계획 복사
           </button>
-          <button id="ai-suggest-monthly-plan-btn" class="btn" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
+          <button id="ai-suggest-monthly-plan-btn" class="btn" style="background: var(--t-accent2); color: white; border: none; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="sparkles" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
             AI로 제안받기
           </button>
@@ -532,10 +532,10 @@ export async function renderGoals() {
       <div id="monthly-plans-edit-mode" style="display: none;">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
           <!-- 왼쪽: 연간목표 표시 (읽기 전용) -->
-          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed var(--t-cat-job-line);">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="target" style="width: 18px; height: 18px; color: #6366f1;"></i>
-              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">연간목표</h4>
+              <i data-lucide="target" style="width: 18px; height: 18px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">연간목표</h4>
             </div>
             <div id="monthly-plan-yearly-goals-edit-container" style="display: flex; flex-direction: column; gap: 1rem;">
               <!-- 연간목표는 JavaScript로 동적으로 채워짐 -->
@@ -543,10 +543,10 @@ export async function renderGoals() {
           </div>
 
           <!-- 가운데: 월실천계획 입력 -->
-          <div style="padding-right: 1.5rem; border-right: 1.4px dashed #80E2E2;">
+          <div style="padding-right: 1.5rem; border-right: 1.4px dashed var(--t-cat-job-line);">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="calendar-check" style="width: 18px; height: 18px; color: #14b8a6;"></i>
-              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월실천계획</h4>
+              <i data-lucide="calendar-check" style="width: 18px; height: 18px; color: var(--t-accent);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">월실천계획</h4>
             </div>
             <div id="monthly-plan-plan-content-edit-container" style="display: flex; flex-direction: column; gap: 1rem;">
               <!-- 월실천계획 입력 필드는 JavaScript로 동적으로 생성됨 -->
@@ -556,8 +556,8 @@ export async function renderGoals() {
           <!-- 오른쪽: 월말 결과 입력 -->
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #10b981;"></i>
-              <h4 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 1.1rem;">월말 결과</h4>
+              <i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--t-success);"></i>
+              <h4 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 1.1rem;">월말 결과</h4>
             </div>
             <div id="monthly-plan-results-content-edit-container" style="display: flex; flex-direction: column; gap: 1rem;">
               <!-- 월말 결과 입력 필드는 JavaScript로 동적으로 생성됨 -->
@@ -569,33 +569,33 @@ export async function renderGoals() {
             <i data-lucide="copy" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             지난달 계획 복사
           </button>
-          <button id="save-monthly-plans-btn" class="btn" style="background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);">저장하기</button>
+          <button id="save-monthly-plans-btn" class="btn" style="background: var(--t-accent); color: white; border: none; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">저장하기</button>
           <button id="cancel-monthly-plans-btn" class="btn btn-secondary">취소</button>
         </div>
       </div>
 
       <!-- 로딩 상태 -->
-      <div id="monthly-plans-loading" style="text-align: center; padding: 2rem; color: #9ca3af;">
+      <div id="monthly-plans-loading" style="text-align: center; padding: 2rem; color: var(--t-muted2);">
         <i data-lucide="loader" class="spin" style="width: 24px; height: 24px;"></i>
         <p style="margin-top: 0.5rem;">로딩 중...</p>
       </div>
       </div>
 
       <!-- 월 선택 모달 -->
-      <div id="monthly-plan-month-selector-overlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-        <div id="monthly-plan-month-selector-modal" style="background: #ffffff; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid #e5e7eb;">
+      <div id="monthly-plan-month-selector-overlay" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+        <div id="monthly-plan-month-selector-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--t-line);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: #111827; font-size: 1rem;">월 선택</span>
+            <span style="font-weight: 700; color: var(--t-text); font-size: 1rem;">월 선택</span>
             <button 
               id="monthly-plan-month-selector-close"
               style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
-              onmouseover="this.style.background='#f3f4f6';"
+              onmouseover="this.style.background='var(--t-bg2)';"
               onmouseout="this.style.background='none';"
             >
-              <i data-lucide="x" style="width: 20px; height: 20px; color: #6b7280; stroke-width: 2.5;"></i>
+              <i data-lucide="x" style="width: 20px; height: 20px; color: var(--t-muted); stroke-width: 2.5;"></i>
             </button>
           </div>
-          <div style="background: #f8fafc; border-radius: 0.75rem; padding: 0.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
+          <div style="background: var(--t-bg); border-radius: 0.75rem; padding: 0.5rem; border: 1px solid var(--t-line); max-height: 300px; overflow-y: auto;">
             <div id="monthly-plan-month-selector-options" style="display: flex; flex-direction: column; gap: 0.25rem;">
               <!-- 월 옵션은 JavaScript로 동적으로 생성됨 -->
             </div>
@@ -683,11 +683,11 @@ export async function renderGoals() {
         // 모닝루틴 표시
         if (morningRoutines.length > 0) {
           morningList.innerHTML = morningRoutines.map((routine, idx) => `
-            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--t-surface); border-radius: 8px; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
+              <span style="background: var(--t-accent2); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
                 ${idx + 1}
               </span>
-              <span style="color: #374151; font-weight: 500;">${routine}</span>
+              <span style="color: var(--t-text2); font-weight: 500;">${routine}</span>
             </div>
           `).join('');
           morningEmpty.style.display = 'none';
@@ -699,11 +699,11 @@ export async function renderGoals() {
         // 데이타임 루틴 표시
         if (daytimeRoutines.length > 0) {
           daytimeList.innerHTML = daytimeRoutines.map((routine, idx) => `
-            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--t-surface); border-radius: 8px; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
+              <span style="background: var(--t-accent2); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
                 ${idx + 1}
               </span>
-              <span style="color: #374151; font-weight: 500;">${routine}</span>
+              <span style="color: var(--t-text2); font-weight: 500;">${routine}</span>
             </div>
           `).join('');
           daytimeEmpty.style.display = 'none';
@@ -715,11 +715,11 @@ export async function renderGoals() {
         // 나이트루틴 표시
         if (nightRoutines.length > 0) {
           nightList.innerHTML = nightRoutines.map((routine, idx) => `
-            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              <span style="background: #a78bfa; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--t-surface); border-radius: 8px; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
+              <span style="background: var(--t-accent2); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;">
                 ${idx + 1}
               </span>
-              <span style="color: #374151; font-weight: 500;">${routine}</span>
+              <span style="color: var(--t-text2); font-weight: 500;">${routine}</span>
             </div>
           `).join('');
           nightEmpty.style.display = 'none';
@@ -812,11 +812,11 @@ export async function renderGoals() {
         inputGroup.innerHTML = `
           <!-- 드래그 핸들 (PC 전용) -->
           <div class="drag-handle" style="cursor: grab; padding: 0.25rem; display: flex; align-items: center; flex-shrink: 0;">
-            <i data-lucide="grip-vertical" style="width: 18px; height: 18px; color: #9ca3af;"></i>
+            <i data-lucide="grip-vertical" style="width: 18px; height: 18px; color: var(--t-muted2);"></i>
           </div>
           
           <!-- 번호 -->
-          <span class="routine-number" style="background: #a78bfa; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; flex-shrink: 0;">
+          <span class="routine-number" style="background: var(--t-accent2); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; flex-shrink: 0;">
             ${index + 1}
           </span>
           
@@ -828,21 +828,21 @@ export async function renderGoals() {
             placeholder="${type === 'morning' ? '예: 아침 명상 10분' : '예: 감사 일기'}" 
             value="${value}"
             maxlength="50"
-            style="flex: 1; border: 2px solid #d8b4fe; background: white;"
+            style="flex: 1; border: 2px solid var(--t-accent2-line); background: var(--t-surface);"
           />
           
           <!-- 순서 조정 버튼 (모바일 대응) -->
           <div class="order-controls" style="display: flex; flex-direction: column; gap: 0.1rem; flex-shrink: 0;">
-            <button class="btn-icon move-routine-up" data-type="${type}" data-index="${index}" style="padding: 0.15rem; background: #e0e7ff; border: 1px solid #c7d2fe; cursor: pointer;">
-              <i data-lucide="chevron-up" style="width: 14px; height: 14px; color: #6366f1;"></i>
+            <button class="btn-icon move-routine-up" data-type="${type}" data-index="${index}" style="padding: 0.15rem; background: var(--t-accent-soft); border: 1px solid var(--t-accent-line); cursor: pointer;">
+              <i data-lucide="chevron-up" style="width: 14px; height: 14px; color: var(--t-accent);"></i>
             </button>
-            <button class="btn-icon move-routine-down" data-type="${type}" data-index="${index}" style="padding: 0.15rem; background: #e0e7ff; border: 1px solid #c7d2fe; cursor: pointer;">
-              <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: #6366f1;"></i>
+            <button class="btn-icon move-routine-down" data-type="${type}" data-index="${index}" style="padding: 0.15rem; background: var(--t-accent-soft); border: 1px solid var(--t-accent-line); cursor: pointer;">
+              <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: var(--t-accent);"></i>
             </button>
           </div>
           
           <!-- 삭제 버튼 -->
-          <button class="btn btn-sm remove-routine-btn" data-type="${type}" data-index="${index}" style="background: #fecaca; color: #991b1b; border: none; padding: 0.4rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <button class="btn btn-sm remove-routine-btn" data-type="${type}" data-index="${index}" style="background: var(--t-danger-line); color: var(--t-danger); border: none; padding: 0.4rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
           </button>
         `;
@@ -918,7 +918,7 @@ export async function renderGoals() {
         
         if (countEl) {
           countEl.textContent = `${count}/10`;
-          countEl.style.color = count >= 10 ? '#dc2626' : '#9ca3af';
+          countEl.style.color = count >= 10 ? 'var(--t-danger)' : 'var(--t-muted2)';
         }
       }
 
@@ -975,11 +975,11 @@ export async function renderGoals() {
           const midpoint = rect.top + rect.height / 2;
           
           if (e.clientY < midpoint) {
-            inputGroup.style.borderTop = '2px solid #6366f1';
+            inputGroup.style.borderTop = '2px solid var(--t-accent)';
             inputGroup.style.borderBottom = '';
           } else {
             inputGroup.style.borderTop = '';
-            inputGroup.style.borderBottom = '2px solid #6366f1';
+            inputGroup.style.borderBottom = '2px solid var(--t-accent)';
           }
         });
         
@@ -1926,8 +1926,8 @@ export async function renderGoals() {
           const isSelected = year === selectedYear;
           const isCurrentYear = year === currentYear;
           const selectedStyle = isSelected 
-            ? 'background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;'
-            : 'background: white; color: #111827;';
+            ? 'background: var(--t-accent); color: white;'
+            : 'background: var(--t-surface); color: var(--t-text);';
           
           let label = `${year}년`;
           if (isCurrentYear) {
@@ -1938,9 +1938,9 @@ export async function renderGoals() {
             <button 
               class="yearly-goal-year-option-btn"
               data-year="${year}"
-              style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? '#6366f1' : '#e5e7eb'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: space-between;"
-              onmouseover="if (!this.dataset.selected) { this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db'; }"
-              onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'white'}'; this.style.borderColor='${isSelected ? '#6366f1' : '#e5e7eb'}'; }"
+              style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: space-between;"
+              onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }"
+              onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'var(--t-accent)' : 'white'}'; this.style.borderColor='${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}'; }"
               ${isSelected ? 'data-selected="true"' : ''}
             >
               <span>${label}</span>
@@ -2726,8 +2726,8 @@ export async function renderGoals() {
           const isCurrentMonth = isCurrentYear && monthNum === currentMonthNum;
           
           const selectedStyle = isSelected 
-            ? 'background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;'
-            : 'background: white; color: #111827;';
+            ? 'background: var(--t-accent); color: white;'
+            : 'background: var(--t-surface); color: var(--t-text);';
           
           let label = `${targetYear}년 ${monthName}`;
           if (isCurrentMonth) {
@@ -2738,9 +2738,9 @@ export async function renderGoals() {
             <button 
               class="monthly-plan-month-option-btn"
               data-month-start="${monthStart}"
-              style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? '#6366f1' : '#e5e7eb'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: space-between;"
-              onmouseover="if (!this.dataset.selected) { this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db'; }"
-              onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'white'}'; this.style.borderColor='${isSelected ? '#6366f1' : '#e5e7eb'}'; }"
+              style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: space-between;"
+              onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }"
+              onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'var(--t-accent)' : 'white'}'; this.style.borderColor='${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}'; }"
               ${isSelected ? 'data-selected="true"' : ''}
             >
               <span>${label}</span>
@@ -2854,28 +2854,28 @@ export async function renderGoals() {
             yearlyGoalsContainer.innerHTML = `
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+                  <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+                  <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
                 </div>
-                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.self_dev) || '목표를 입력해주세요'}</div>
+                <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.self_dev) || '목표를 입력해주세요'}</div>
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+                  <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+                  <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
                 </div>
-                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.relationship) || '목표를 입력해주세요'}</div>
+                <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.relationship) || '목표를 입력해주세요'}</div>
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-                  <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+                  <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+                  <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
                 </div>
-                <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.work_finance) || '목표를 입력해주세요'}</div>
+                <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${formatYearlyGoalText(linkedYearlyGoals.work_finance) || '목표를 입력해주세요'}</div>
               </div>
             `;
           } else {
-            yearlyGoalsContainer.innerHTML = '<div style="background: white; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; text-align: center;">연결된 연간목표가 없습니다</div>';
+            yearlyGoalsContainer.innerHTML = '<div style="background: var(--t-surface); padding: 1rem; border-radius: 8px; color: var(--t-muted2); font-size: 0.9rem; text-align: center;">연결된 연간목표가 없습니다</div>';
           }
         }
 
@@ -2885,24 +2885,24 @@ export async function renderGoals() {
           planContainer.innerHTML = `
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.self_dev || '실천계획을 입력해주세요'}</div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.self_dev || '실천계획을 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.relationship || '실천계획을 입력해주세요'}</div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.relationship || '실천계획을 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.work_finance || '실천계획을 입력해주세요'}</div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.plan_content?.work_finance || '실천계획을 입력해주세요'}</div>
             </div>
           `;
         }
@@ -2913,24 +2913,24 @@ export async function renderGoals() {
           resultsContainer.innerHTML = `
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.self_dev || '결과를 입력해주세요'}</div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.self_dev || '결과를 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.relationship || '결과를 입력해주세요'}</div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.relationship || '결과를 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-                <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 8px; min-height: 60px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.work_finance || '결과를 입력해주세요'}</div>
+              <div style="background: var(--t-surface); padding: 0.75rem; border-radius: 8px; min-height: 60px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem;">${monthlyPlan.results_content?.work_finance || '결과를 입력해주세요'}</div>
             </div>
           `;
         }
@@ -3022,28 +3022,28 @@ export async function renderGoals() {
           container.innerHTML = `
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+                <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
               </div>
-              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${formatYearlyGoalText(linkedYearlyGoals.self_dev) || '목표를 입력해주세요'}</div>
+              <div style="background: var(--t-bg2); padding: 0.75rem; border-radius: 8px; min-height: 80px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid var(--t-line2);">${formatYearlyGoalText(linkedYearlyGoals.self_dev) || '목표를 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+                <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
               </div>
-              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${formatYearlyGoalText(linkedYearlyGoals.relationship) || '목표를 입력해주세요'}</div>
+              <div style="background: var(--t-bg2); padding: 0.75rem; border-radius: 8px; min-height: 80px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid var(--t-line2);">${formatYearlyGoalText(linkedYearlyGoals.relationship) || '목표를 입력해주세요'}</div>
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-                <h5 style="color: #4f46e5; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+                <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+                <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
               </div>
-              <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 8px; min-height: 80px; color: #374151; line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #d1d5db;">${formatYearlyGoalText(linkedYearlyGoals.work_finance) || '목표를 입력해주세요'}</div>
+              <div style="background: var(--t-bg2); padding: 0.75rem; border-radius: 8px; min-height: 80px; color: var(--t-text2); line-height: 1.6; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid var(--t-line2);">${formatYearlyGoalText(linkedYearlyGoals.work_finance) || '목표를 입력해주세요'}</div>
             </div>
           `;
         } else {
-          container.innerHTML = '<div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; color: #9ca3af; font-size: 0.9rem; text-align: center; border: 1px solid #d1d5db;">연결된 연간목표가 없습니다</div>';
+          container.innerHTML = '<div style="background: var(--t-bg2); padding: 1rem; border-radius: 8px; color: var(--t-muted2); font-size: 0.9rem; text-align: center; border: 1px solid var(--t-line2);">연결된 연간목표가 없습니다</div>';
         }
       }
 
@@ -3055,24 +3055,24 @@ export async function renderGoals() {
         container.innerHTML = `
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+              <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+              <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
             </div>
-            <textarea id="plan-content-self-dev-input" placeholder="이번 달 자기계발 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.self_dev || ''}</textarea>
+            <textarea id="plan-content-self-dev-input" placeholder="이번 달 자기계발 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: var(--t-surface); line-height: 1.6;">${monthlyPlan.plan_content?.self_dev || ''}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+              <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+              <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
             </div>
-            <textarea id="plan-content-relationship-input" placeholder="이번 달 가족/관계 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.relationship || ''}</textarea>
+            <textarea id="plan-content-relationship-input" placeholder="이번 달 가족/관계 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: var(--t-surface); line-height: 1.6;">${monthlyPlan.plan_content?.relationship || ''}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+              <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+              <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
             </div>
-            <textarea id="plan-content-work-finance-input" placeholder="이번 달 업무/재정 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.plan_content?.work_finance || ''}</textarea>
+            <textarea id="plan-content-work-finance-input" placeholder="이번 달 업무/재정 실천계획을 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: var(--t-surface); line-height: 1.6;">${monthlyPlan.plan_content?.work_finance || ''}</textarea>
           </div>
         `;
       }
@@ -3096,24 +3096,24 @@ export async function renderGoals() {
         container.innerHTML = `
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <i data-lucide="book-open" style="width: 16px; height: 16px; color: #6366f1;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
+              <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--t-accent);"></i>
+              <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">자기계발</h5>
             </div>
-            <textarea id="results-content-self-dev-input" placeholder="월말 자기계발 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.self_dev || defaultResultsTemplate}</textarea>
+            <textarea id="results-content-self-dev-input" placeholder="월말 자기계발 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: var(--t-surface); line-height: 1.6;">${monthlyPlan.results_content?.self_dev || defaultResultsTemplate}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <i data-lucide="heart" style="width: 16px; height: 16px; color: #ec4899;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
+              <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--t-cat-personal);"></i>
+              <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">가족/관계</h5>
             </div>
-            <textarea id="results-content-relationship-input" placeholder="월말 가족/관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.relationship || defaultResultsTemplate}</textarea>
+            <textarea id="results-content-relationship-input" placeholder="월말 가족/관계 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: var(--t-surface); line-height: 1.6;">${monthlyPlan.results_content?.relationship || defaultResultsTemplate}</textarea>
           </div>
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <i data-lucide="briefcase" style="width: 16px; height: 16px; color: #10b981;"></i>
-              <h5 style="color: #0f766e; font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
+              <i data-lucide="briefcase" style="width: 16px; height: 16px; color: var(--t-success);"></i>
+              <h5 style="color: var(--t-accent); font-weight: 600; margin: 0; font-size: 0.95rem;">업무/재정</h5>
             </div>
-            <textarea id="results-content-work-finance-input" placeholder="월말 업무/재정 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #14b8a6; border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: white; line-height: 1.6;">${monthlyPlan.results_content?.work_finance || defaultResultsTemplate}</textarea>
+            <textarea id="results-content-work-finance-input" placeholder="월말 업무/재정 결과를 입력하세요..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; font-size: 0.9rem; font-family: inherit; resize: vertical; background: var(--t-surface); line-height: 1.6;">${monthlyPlan.results_content?.work_finance || defaultResultsTemplate}</textarea>
           </div>
         `;
       }

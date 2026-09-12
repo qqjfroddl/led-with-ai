@@ -50,7 +50,7 @@ async function init() {
         <div class="error" style="margin: 2rem;">
           <h2>환경 변수 오류</h2>
           <p>config.js 파일에 Supabase URL과 Anon Key를 설정해주세요.</p>
-          <pre style="background: #f5f5f5; padding: 1rem; margin-top: 1rem; border-radius: 0.5rem;">
+          <pre style="background: var(--t-bg2); padding: 1rem; margin-top: 1rem; border-radius: 0.5rem;">
 window.SUPABASE_CONFIG = {
   url: 'your_supabase_url',
   anonKey: 'your_supabase_anon_key'
@@ -134,7 +134,7 @@ window.SUPABASE_CONFIG = {
         <p>${error.message}</p>
         <details style="margin-top: 1rem;">
           <summary>상세 정보</summary>
-          <pre style="background: #f5f5f5; padding: 1rem; margin-top: 0.5rem; border-radius: 0.5rem; overflow-x: auto;">${error.stack}</pre>
+          <pre style="background: var(--t-bg2); padding: 1rem; margin-top: 0.5rem; border-radius: 0.5rem; overflow-x: auto;">${error.stack}</pre>
         </details>
         <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">
           새로고침
@@ -261,7 +261,7 @@ function render() {
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="hourglass" style="width:20px; height:20px;"></i>
+            <i data-lucide="hourglass" style="width: 20px; height: 20px;"></i>
             <strong>대기 중</strong>
           </div>
           <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">
@@ -270,7 +270,7 @@ function render() {
         </div>
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="check-circle-2" style="width:20px; height:20px;"></i>
+            <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
             <strong>승인된 사용자</strong>
           </div>
           <div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">
@@ -279,7 +279,7 @@ function render() {
         </div>
         <div class="card">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="users" style="width:20px; height:20px;"></i>
+            <i data-lucide="users" style="width: 20px; height: 20px;"></i>
             <strong>전체 사용자</strong>
           </div>
           <div style="font-size: 2rem; font-weight: bold;">
@@ -289,7 +289,7 @@ function render() {
         ${allUsers.filter(u => u.status === 'rejected').length > 0 ? `
         <div class="card" style="border: 2px solid var(--warning-color);">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="alert-circle" style="width:20px; height:20px; color: var(--warning-color);"></i>
+            <i data-lucide="alert-circle" style="width: 20px; height: 20px; color: var(--warning-color);"></i>
             <strong style="color: var(--warning-color);">재신청 대기</strong>
           </div>
           <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">
@@ -300,12 +300,12 @@ function render() {
           </div>
         </div>
         ` : ''}
-        <div class="card" style="border: 2px solid #ef4444;">
+        <div class="card" style="border: 2px solid var(--t-danger);">
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <i data-lucide="clock" style="width:20px; height:20px; color: #ef4444;"></i>
-            <strong style="color: #ef4444;">기한 만료</strong>
+            <i data-lucide="clock" style="width: 20px; height: 20px; color: var(--t-danger);"></i>
+            <strong style="color: var(--t-danger);">기한 만료</strong>
           </div>
-          <div style="font-size: 2rem; font-weight: bold; color: #ef4444;">
+          <div style="font-size: 2rem; font-weight: bold; color: var(--t-danger);">
             ${expiredUsers.length}
           </div>
           <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
@@ -325,7 +325,7 @@ function render() {
         <button class="tab ${activeTab === 'challenge' ? 'active' : ''}" onclick="showTab('challenge')">
           챌린지 참가자 (${challengeParticipants.length})
         </button>
-        <button class="tab ${activeTab === 'expired' ? 'active' : ''}" onclick="showTab('expired')" style="color: #ef4444;">
+        <button class="tab ${activeTab === 'expired' ? 'active' : ''}" onclick="showTab('expired')" style="color: var(--t-danger);">
           기한 만료 (${expiredUsers.length})
         </button>
       </div>
@@ -333,7 +333,7 @@ function render() {
       <!-- 승인 대기 목록 -->
       <div id="pending-section" class="tab-content" style="display: ${activeTab === 'pending' ? 'block' : 'none'};">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h2><i data-lucide="bell" style="width:20px; height:20px; margin-right:6px;"></i>승인 대기 중인 사용자</h2>
+          <h2><i data-lucide="bell" style="width: 20px; height: 20px; margin-right: 6px;"></i>승인 대기 중인 사용자</h2>
           <div style="display: flex; align-items: center; gap: 1rem;">
             <span style="color: var(--text-secondary); font-size: 0.9rem;">
               마지막 업데이트: ${lastUpdate}
@@ -352,16 +352,16 @@ function render() {
           <h2>✅ 승인된 사용자</h2>
           <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
             <!-- 주간 선택 -->
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: #f3f4f6; padding: 0.5rem; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--t-bg2); padding: 0.5rem; border-radius: 8px;">
               <button onclick="changeWeek(-1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-left" style="width:16px; height:16px;"></i>
+                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
               </button>
               <span id="week-label" style="font-size: 0.875rem; font-weight: 600; min-width: 120px; text-align: center;">이번 주</span>
               <button onclick="changeWeek(1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-right" style="width:16px; height:16px;"></i>
+                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
               </button>
               <button onclick="resetWeek()" class="btn btn-sm" style="padding: 0.25rem 0.75rem; ${selectedWeekOffset === 0 ? 'display: none;' : ''}" id="reset-week-btn">
-                <i data-lucide="calendar" style="width:16px; height:16px;"></i> 이번 주
+                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> 이번 주
               </button>
             </div>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
@@ -378,16 +378,16 @@ function render() {
           <h2>🏆 챌린지 참가자</h2>
           <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
             <!-- 주간 선택 -->
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: #f3f4f6; padding: 0.5rem; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--t-bg2); padding: 0.5rem; border-radius: 8px;">
               <button onclick="changeWeek(-1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-left" style="width:16px; height:16px;"></i>
+                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
               </button>
               <span id="week-label-challenge" style="font-size: 0.875rem; font-weight: 600; min-width: 120px; text-align: center;">이번 주</span>
               <button onclick="changeWeek(1)" class="btn btn-sm" style="padding: 0.25rem 0.5rem;">
-                <i data-lucide="chevron-right" style="width:16px; height:16px;"></i>
+                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
               </button>
               <button onclick="resetWeek()" class="btn btn-sm" style="padding: 0.25rem 0.75rem; ${selectedWeekOffset === 0 ? 'display: none;' : ''}" id="reset-week-btn-challenge">
-                <i data-lucide="calendar" style="width:16px; height:16px;"></i> 이번 주
+                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> 이번 주
               </button>
             </div>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
@@ -406,8 +406,8 @@ function render() {
             <button id="bulk-extend-expired" class="btn btn-primary btn-sm" disabled>일괄 기한 연장</button>
           </div>
         </div>
-        <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
-          <p style="color: #991b1b; margin: 0; font-size: 0.9rem;">
+        <div style="background: var(--t-danger-soft); border: 1px solid var(--t-danger); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+          <p style="color: var(--t-danger); margin: 0; font-size: 0.9rem;">
             <strong>안내:</strong> 사용 기한이 만료된 사용자입니다. 기한을 연장할 수 있습니다.
           </p>
         </div>
@@ -418,11 +418,11 @@ function render() {
       ${allUsers.filter(u => u.status === 'rejected').length > 0 ? `
       <div id="reapplied-section" class="tab-content" style="display: block; margin-top: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h2><i data-lucide="refresh-cw" style="width:20px; height:20px; margin-right:6px;"></i>재신청 대기 (${allUsers.filter(u => u.status === 'rejected').length})</h2>
+          <h2><i data-lucide="refresh-cw" style="width: 20px; height: 20px; margin-right: 6px;"></i>재신청 대기 (${allUsers.filter(u => u.status === 'rejected').length})</h2>
           <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
         </div>
-        <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
-          <p style="color: #856404; margin: 0; font-size: 0.9rem;">
+        <div style="background: var(--t-warn-soft); border: 1px solid var(--t-warn); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+          <p style="color: var(--t-warn); margin: 0; font-size: 0.9rem;">
             <strong>안내:</strong> 취소된 사용자가 다시 신청한 경우입니다. 승인하거나 다시 취소할 수 있습니다.
           </p>
         </div>
@@ -527,8 +527,8 @@ function renderUserTable(users, type) {
         <thead>
           <tr>
             ${type === 'pending' || type === 'approved' || type === 'challenge' || type === 'expired'
-              ? `<th style="width:40px; text-align:center;"><input type="checkbox" id="select-all-${type}"></th>` 
-              : '<th style="width:40px;"></th>'}
+              ? `<th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all-${type}"></th>` 
+              : '<th style="width: 40px;"></th>'}
             <th>프로필</th>
             <th>이름</th>
             <th>이메일</th>
@@ -541,7 +541,7 @@ function renderUserTable(users, type) {
         <tbody>
           ${users.map(user => `
             <tr>
-              <td style="text-align:center;">
+              <td style="text-align: center;">
                 ${type === 'pending'
                   ? `<input type="checkbox" class="pending-select" data-id="${user.id}" ${selectedPendingIds.has(user.id) ? 'checked' : ''}>`
                   : type === 'approved'
@@ -563,7 +563,7 @@ function renderUserTable(users, type) {
               ${type === 'approved' || type === 'challenge' ? `
               <td>
                 <div class="user-stats" data-user-id="${user.id}" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
-                  <span class="stats-loading" style="color: #6b7280;">로딩 중...</span>
+                  <span class="stats-loading" style="color: var(--t-muted);">로딩 중...</span>
                 </div>
               </td>
               ` : ''}
@@ -571,11 +571,11 @@ function renderUserTable(users, type) {
               <td>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                   ${user.expires_at 
-                    ? `<span style="color: ${new Date(user.expires_at) < new Date() ? '#ef4444' : '#10b981'};">
+                    ? `<span style="color: ${new Date(user.expires_at) < new Date() ? 'var(--t-danger)' : 'var(--t-success)'};">
                         ${new Date(user.expires_at).toLocaleDateString('ko-KR')}
                         ${new Date(user.expires_at) < new Date() ? ' (만료됨)' : ''}
                        </span>`
-                    : '<span style="color: #6b7280;">무제한</span>'
+                    : '<span style="color: var(--t-muted);">무제한</span>'
                   }
                   <button onclick="openExpiryModal('${user.id}', '${user.expires_at || ''}')" 
                           class="btn btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
@@ -1075,9 +1075,9 @@ window.signOut = signOut;
 window.openExpiryModal = function(userId, currentExpiry) {
   const modal = document.createElement('div');
   modal.className = 'modal';
-  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
   modal.innerHTML = `
-    <div class="modal-content" style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+    <div class="modal-content" style="background: var(--t-surface); padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
       <h3 style="margin-top: 0;">사용 기한 설정</h3>
       <div style="margin: 1rem 0;">
         <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
@@ -1096,7 +1096,7 @@ window.openExpiryModal = function(userId, currentExpiry) {
       <div id="expiry-date-container-${userId}" style="margin: 1rem 0; ${!currentExpiry ? 'display: none;' : ''}">
         <input type="date" id="expiry-date-${userId}" 
                value="${currentExpiry || ''}" 
-               style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+               style="width: 100%; padding: 0.5rem; border: 1px solid var(--t-line2); border-radius: 4px;">
       </div>
       <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
         <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">취소</button>
@@ -1174,9 +1174,9 @@ window.openBulkExpiryModal = function(sourceType = 'approved') {
 
   const modal = document.createElement('div');
   modal.className = 'modal';
-  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+  modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
   modal.innerHTML = `
-    <div class="modal-content" style="background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
+    <div class="modal-content" style="background: var(--t-surface); padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%;">
       <h3 style="margin-top: 0;">일괄 사용 기한 설정</h3>
       <p style="color: var(--text-secondary); margin-bottom: 1rem;">
         선택된 사용자: <strong>${selectedIds.length}명</strong>
@@ -1192,7 +1192,7 @@ window.openBulkExpiryModal = function(sourceType = 'approved') {
         </label>
       </div>
       <div id="bulk-expiry-date-container" style="margin: 1rem 0; display: none;">
-        <input type="date" id="bulk-expiry-date" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="date" id="bulk-expiry-date" style="width: 100%; padding: 0.5rem; border: 1px solid var(--t-line2); border-radius: 4px;">
       </div>
       <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
         <button onclick="this.closest('.modal').remove()" class="btn btn-secondary">취소</button>
@@ -1409,7 +1409,7 @@ async function loadUserStats(users, weekOffset = 0, sectionId = null) {
     }
     
     if (!stats) {
-      statsElement.innerHTML = '<span style="color: #6b7280;">-</span>';
+      statsElement.innerHTML = '<span style="color: var(--t-muted);">-</span>';
       return;
     }
     
@@ -1422,15 +1422,15 @@ async function loadUserStats(users, weekOffset = 0, sectionId = null) {
     
     // 통계 span 요소들 생성
     const routineSpan = document.createElement('span');
-    routineSpan.style.cssText = 'color: #10b981; font-weight: 600; margin-right: 0.5rem;';
+    routineSpan.style.cssText = 'color: var(--t-success); font-weight: 600; margin-right: 0.5rem;';
     routineSpan.textContent = `🎯 ${routineRate.toFixed(1)}%`;
     
     const todoSpan = document.createElement('span');
-    todoSpan.style.cssText = 'color: #6366f1; font-weight: 600; margin-right: 0.5rem;';
+    todoSpan.style.cssText = 'color: var(--t-accent); font-weight: 600; margin-right: 0.5rem;';
     todoSpan.textContent = `✅ ${todoRate.toFixed(1)}%`;
     
     const reflectionSpan = document.createElement('span');
-    reflectionSpan.style.cssText = 'color: #a78bfa; font-weight: 600;';
+    reflectionSpan.style.cssText = 'color: var(--t-accent2); font-weight: 600;';
     reflectionSpan.textContent = `📝 ${reflectionDays}일`;
     
     // DOM에 추가

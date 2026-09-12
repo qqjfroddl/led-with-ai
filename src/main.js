@@ -102,7 +102,7 @@ async function init() {
           <p>${error.message}</p>
           <details style="margin-top: 1rem;">
             <summary>상세 정보</summary>
-            <pre style="background: #f5f5f5; padding: 1rem; margin-top: 0.5rem; border-radius: 0.5rem; overflow-x: auto;">${error.stack}</pre>
+            <pre style="background: var(--t-bg2); padding: 1rem; margin-top: 0.5rem; border-radius: 0.5rem; overflow-x: auto;">${error.stack}</pre>
           </details>
         </div>
       `;

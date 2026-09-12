@@ -20,15 +20,15 @@ export async function renderRecurring() {
   }
 
   const html = `
-    <div class="card" style="background: linear-gradient(135deg, #f0e7ff 0%, #fce7f3 100%); border: 2px solid #9b8cd9; box-shadow: 0 8px 24px rgba(155, 140, 217, 0.15);">
-      <div class="card-header" style="border-bottom: 2px solid rgba(155, 140, 217, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-accent2-soft); border: 2px solid var(--t-accent2); box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent2-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #9b8cd9 0%, #8678c7 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(155, 140, 217, 0.3);">
+          <div style="width: 40px; height: 40px; background: var(--t-accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="repeat" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
           <div style="flex: 1;">
-            <div class="card-title" style="color: #6b21a8; font-size: 1.5rem; margin: 0;">반복업무</div>
-            <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;">반복되는 할일을 설정하고 관리하세요</p>
+            <div class="card-title" style="color: var(--t-accent2); font-size: 1.5rem; margin: 0;">반복업무</div>
+            <p style="color: var(--t-muted); font-size: 1rem; margin: 0.25rem 0 0 0;">반복되는 할일을 설정하고 관리하세요</p>
           </div>
           <button id="add-recurring-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
             <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
@@ -42,7 +42,7 @@ export async function renderRecurring() {
         <div id="recurring-tasks-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;"></div>
         
         <!-- 빈 상태 -->
-        <div id="recurring-empty" style="text-align: center; padding: 3rem 1rem; color: #9ca3af; display: none;">
+        <div id="recurring-empty" style="text-align: center; padding: 3rem 1rem; color: var(--t-muted2); display: none;">
           <i data-lucide="repeat" style="width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.5;"></i>
           <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">등록된 반복업무가 없습니다</p>
           <p style="font-size: 0.9rem;">새 반복업무를 추가하여 시작하세요</p>
@@ -51,11 +51,11 @@ export async function renderRecurring() {
     </div>
 
     <!-- 반복업무 추가/수정 모달 -->
-    <div id="recurring-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
-      <div style="background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+    <div id="recurring-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: var(--t-surface); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(42,38,34, 0.3);">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
-          <h3 id="recurring-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">반복업무 추가</h3>
-          <button id="recurring-modal-close" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer; color: #9ca3af; transition: color 0.2s;">
+          <h3 id="recurring-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--t-text);">반복업무 추가</h3>
+          <button id="recurring-modal-close" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer; color: var(--t-muted2); transition: color 0.2s;">
             <i data-lucide="x" style="width: 24px; height: 24px;"></i>
           </button>
         </div>
@@ -63,8 +63,8 @@ export async function renderRecurring() {
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           <!-- 카테고리 선택 -->
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">카테고리</label>
-            <select id="recurring-category-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">카테고리</label>
+            <select id="recurring-category-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 0.95rem; background: var(--t-surface); cursor: pointer;">
               <option value="work">Work</option>
               <option value="job">Job</option>
               <option value="self_dev">Growth</option>
@@ -74,14 +74,14 @@ export async function renderRecurring() {
 
           <!-- 할일 입력 -->
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">할일</label>
-            <input type="text" id="recurring-title-input" placeholder="반복할 할일을 입력하세요" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">할일</label>
+            <input type="text" id="recurring-title-input" placeholder="반복할 할일을 입력하세요" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
           </div>
 
           <!-- 반복 주기 선택 -->
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">반복 주기</label>
-            <select id="recurring-repeat-type-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">반복 주기</label>
+            <select id="recurring-repeat-type-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 0.95rem; background: var(--t-surface); cursor: pointer;">
               <option value="daily">매일 (월~일)</option>
               <option value="weekdays">주중 매일 (월~금)</option>
               <option value="weekends">매주 주말 (토, 일)</option>
@@ -93,8 +93,8 @@ export async function renderRecurring() {
 
           <!-- 주간 선택 (주간 선택 시에만 표시) -->
           <div id="recurring-weekly-config" style="display: none;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">요일 선택</label>
-            <select id="recurring-weekly-day-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">요일 선택</label>
+            <select id="recurring-weekly-day-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 0.95rem; background: var(--t-surface); cursor: pointer;">
               <option value="0">일요일</option>
               <option value="1">월요일</option>
               <option value="2">화요일</option>
@@ -107,33 +107,33 @@ export async function renderRecurring() {
 
           <!-- 여러 요일 선택 (custom_weekly 선택 시에만 표시) -->
           <div id="recurring-custom-weekly-config" style="display: none;">
-            <label style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: #1f2937;">요일 선택 (여러 개 가능)</label>
+            <label style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: var(--t-text);">요일 선택 (여러 개 가능)</label>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="1" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">월</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="2" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">화</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="3" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">수</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="4" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">목</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="5" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">금</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="6" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">토</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#f5f3ff'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+              <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 2px solid var(--t-line); border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="day-checkbox-label" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
                 <input type="checkbox" class="recurring-day-checkbox" value="0" style="width: 18px; height: 18px; cursor: pointer;">
                 <span style="font-size: 0.9rem; font-weight: 500;">일</span>
               </label>
@@ -142,32 +142,32 @@ export async function renderRecurring() {
 
           <!-- 월간 선택 (월간 선택 시에만 표시) -->
           <div id="recurring-monthly-config" style="display: none;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">날짜 선택</label>
-            <input type="number" id="recurring-monthly-day-input" min="1" max="31" placeholder="1~31" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">날짜 선택</label>
+            <input type="number" id="recurring-monthly-day-input" min="1" max="31" placeholder="1~31" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
           </div>
 
           <!-- 시작일 -->
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">시작일</label>
-            <input type="date" id="recurring-start-date-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">시작일</label>
+            <input type="date" id="recurring-start-date-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
           </div>
 
           <!-- 종료일 (선택) -->
           <div>
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1f2937;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--t-text);">
               종료일 (선택)
-              <span style="font-weight: 400; font-size: 0.85rem; color: #6b7280;">(비워두면 3개월 후까지 등록)</span>
+              <span style="font-weight: 400; font-size: 0.85rem; color: var(--t-muted);">(비워두면 3개월 후까지 등록)</span>
             </label>
-            <input type="date" id="recurring-end-date-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            <input type="date" id="recurring-end-date-input" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
           </div>
 
           <!-- 저장 버튼 -->
           <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-            <button id="recurring-modal-save" style="flex: 1; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(99, 102, 241, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.3)'">
+            <button id="recurring-modal-save" style="flex: 1; padding: 0.75rem 1.5rem; background: var(--t-accent); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)'">
               <i data-lucide="check" style="width: 18px; height: 18px; margin-right: 0.25rem; vertical-align: -3px;"></i>
               저장
             </button>
-            <button id="recurring-modal-cancel" style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #1f2937; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+            <button id="recurring-modal-cancel" style="padding: 0.75rem 1.5rem; background: var(--t-bg2); color: var(--t-text); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;">
               취소
             </button>
           </div>
@@ -241,10 +241,10 @@ function renderRecurringTaskCard(task) {
   };
 
   const categoryColors = {
-    work: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #F59E42 0%, #E8922E 100%)', shadow: 'rgba(245, 158, 66, 0.3)' },
-    job: { bg: '#e7f8ff', border: '#b5e6ff', gradient: 'linear-gradient(135deg, #22C7DD 0%, #1AACBE 100%)', shadow: 'rgba(34, 199, 221, 0.3)' },
-    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #9B8CD9 0%, #8678C7 100%)', shadow: 'rgba(155, 140, 217, 0.3)' },
-    personal: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #E66BA4 0%, #D65590 100%)', shadow: 'rgba(230, 107, 164, 0.3)' }
+    work: { bg: 'var(--t-cat-work-soft)', border: 'var(--t-cat-work-line)', gradient: 'var(--t-cat-work)', shadow: 'rgba(42,38,34, 0.15)' },
+    job: { bg: 'var(--t-cat-job-soft)', border: 'var(--t-cat-job-line)', gradient: 'var(--t-cat-job)', shadow: 'rgba(42,38,34, 0.15)' },
+    self_dev: { bg: 'var(--t-accent2-soft)', border: 'var(--t-accent2-line)', gradient: 'var(--t-accent2)', shadow: 'rgba(42,38,34, 0.15)' },
+    personal: { bg: 'var(--t-cat-personal-soft)', border: 'var(--t-cat-personal-line)', gradient: 'var(--t-cat-personal)', shadow: 'rgba(42,38,34, 0.15)' }
   };
 
   const colors = categoryColors[task.category] || categoryColors.work;
@@ -278,41 +278,34 @@ function renderRecurringTaskCard(task) {
 
   return `
     <div class="recurring-task-card" data-task-id="${task.id}" 
-         style="background: ${colors.bg}; 
-                border: 2px solid ${colors.border}; 
-                border-radius: 12px; 
-                padding: 1rem; 
-                transition: all 0.2s;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-                display: flex;
-                flex-direction: column;">
+         style="background: ${colors.bg}; border: 2px solid ${colors.border}; border-radius: 12px; padding: 1rem; transition: all 0.2s; box-shadow: 0 2px 8px rgba(42,38,34, 0.08); display: flex; flex-direction: column;">
       <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 0.75rem;">
         <div style="width: 36px; height: 36px; background: ${colors.gradient}; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i data-lucide="${icon}" style="width: 20px; height: 20px; color: white;"></i>
         </div>
         <div style="flex: 1; min-width: 0;">
-          <h4 style="color: #1f2937; font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0; line-height: 1.4; word-break: break-word;">${task.title}</h4>
+          <h4 style="color: var(--t-text); font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0; line-height: 1.4; word-break: break-word;">${task.title}</h4>
           <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[task.category]}</span>
           </div>
         </div>
-        <button class="delete-recurring-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제">
+        <button class="delete-recurring-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제">
           <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
         </button>
       </div>
       
       <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px dashed ${colors.border};">
         <div style="margin-bottom: 0.75rem;">
-          <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+          <div style="font-size: 0.75rem; color: var(--t-muted); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
             <i data-lucide="repeat" style="width: 12px; height: 12px;"></i>
             <span>${repeatLabel}</span>
           </div>
-          <div style="font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 0.25rem;">
+          <div style="font-size: 0.75rem; color: var(--t-muted); display: flex; align-items: center; gap: 0.25rem;">
             <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
             <span>${dateRange}</span>
           </div>
         </div>
-        <button class="register-recurring-todos-btn" data-task-id="${task.id}" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(99, 102, 241, 0.3)'">
+        <button class="register-recurring-todos-btn" data-task-id="${task.id}" style="width: 100%; padding: 0.75rem; background: var(--t-accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(42,38,34, 0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(42,38,34, 0.15)'">
           <i data-lucide="calendar-check" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
           오늘 할일 등록하기
         </button>

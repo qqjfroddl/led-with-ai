@@ -14,6 +14,18 @@
   --t-accent: #23506B; --t-accent-soft: #E6EDF2; --t-accent-line: #C9D6E0;
   --t-shadow: 0 1px 2px rgba(42,38,34,.05), 0 2px 8px rgba(42,38,34,.04);
   --t-shadow-sm: 0 1px 2px rgba(42,38,34,.05);
+  /* 보조 포인트(자두색): 성찰·성장 — 남색(행동)과 짝. P2 토큰화(2026-09-12)에서 옛 퍼플 계열이 여기로 온다 */
+  --t-accent2: #6B4E8C; --t-accent2-soft: #EDE7F3; --t-accent2-line: #D3C6E1;
+  /* 상태색: 종이 위 잉크 톤 */
+  --t-success: #2F6B4F; --t-success-soft: #E4EFE8; --t-success-line: #BFD8C9;
+  --t-danger: #8C3B32; --t-danger-soft: #F5E3E0; --t-danger-line: #E3BDB7;
+  --t-insight: #9A5B3C; --t-insight-soft: #F6E8E0; --t-insight-line: #E5C9B8; /* 리뷰 '분석' 섹션 정체성 */
+  --t-warn: #8A6A1F; --t-warn-soft: #F5ECD9; --t-warn-line: #E4D3A8;
+  /* 카테고리 4색(일·직업·성장·개인): 리뷰 차트에서 구분용. 성장은 accent2와 같다 */
+  --t-cat-work: #A8712A; --t-cat-work-soft: #F5EBDD; --t-cat-work-line: #E6CFA8;
+  --t-cat-job: #2F6F7E; --t-cat-job-soft: #E1EEF1; --t-cat-job-line: #B9D3DA;
+  --t-cat-growth: var(--t-accent2); --t-cat-growth-soft: var(--t-accent2-soft); --t-cat-growth-line: var(--t-accent2-line);
+  --t-cat-personal: #A04E66; --t-cat-personal-soft: #F5E3E8; --t-cat-personal-line: #E4BFCA;
 }
 
 /* ─────────────────────────── 공통 ─────────────────────────── */

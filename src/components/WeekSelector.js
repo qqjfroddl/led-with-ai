@@ -41,14 +41,14 @@ export function renderWeekSelector(selectedWeekStart, onWeekChange, timezone = '
   const endDate = weekEndDt.toFormat('M/d');
   
   const html = `
-    <div class="week-selector" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+    <div class="week-selector" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: var(--t-surface); border-radius: 12px; box-shadow: 0 2px 8px rgba(42,38,34, 0.08); margin-bottom: 1.5rem;">
       <!-- 이전 주 버튼 -->
       <button 
         id="week-prev-btn" 
         class="btn-week-nav"
-        style="background: none; border: 1px solid #e5e7eb; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #6b7280;"
-        onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';"
-        onmouseout="this.style.background='none'; this.style.borderColor='#e5e7eb';"
+        style="background: none; border: 1px solid var(--t-line); padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);"
+        onmouseover="this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)';"
+        onmouseout="this.style.background='none'; this.style.borderColor='var(--t-line)';"
         title="이전 주"
       >
         <i data-lucide="chevron-left" style="width: 20px; height: 20px; stroke-width: 2.5;"></i>
@@ -59,36 +59,36 @@ export function renderWeekSelector(selectedWeekStart, onWeekChange, timezone = '
         <button 
           id="week-selector-btn"
           style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: all 0.2s;"
-          onmouseover="this.style.background='#f3f4f6';"
+          onmouseover="this.style.background='var(--t-bg2)';"
           onmouseout="this.style.background='none';"
         >
-          <i data-lucide="calendar" style="width: 18px; height: 18px; color: #6366f1; stroke-width: 2.5;"></i>
-          <span style="font-weight: 600; color: #111827; font-size: 1rem;">
+          <i data-lucide="calendar" style="width: 18px; height: 18px; color: var(--t-accent); stroke-width: 2.5;"></i>
+          <span style="font-weight: 600; color: var(--t-text); font-size: 1rem;">
             ${year}년 ${month}월 ${weekNumber}주차
           </span>
-          <i data-lucide="chevron-down" id="week-selector-chevron" style="width: 16px; height: 16px; color: #6b7280; stroke-width: 2.5; transition: transform 0.2s;"></i>
-          ${isCurrentWeek ? '<span style="background: #10b981; color: white; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500;">이번 주</span>' : ''}
+          <i data-lucide="chevron-down" id="week-selector-chevron" style="width: 16px; height: 16px; color: var(--t-muted); stroke-width: 2.5; transition: transform 0.2s;"></i>
+          ${isCurrentWeek ? '<span style="background: var(--t-success); color: white; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500;">이번 주</span>' : ''}
         </button>
-        <div style="font-size: 0.875rem; color: #6b7280;">
+        <div style="font-size: 0.875rem; color: var(--t-muted);">
           ${startDate} ~ ${endDate}
         </div>
       </div>
       
       <!-- 주차 선택 모달 -->
-      <div id="week-selector-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
-        <div id="week-selector-modal" style="background: #ffffff; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid #e5e7eb;">
+      <div id="week-selector-overlay" class="date-overlay hidden" style="position: fixed; inset: 0; background: rgba(42,38,34, 0.35); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;">
+        <div id="week-selector-modal" style="background: var(--t-surface); border-radius: 1rem; box-shadow: 0 20px 40px rgba(42,38,34, 0.18); width: min(360px, 90vw); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--t-line);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; color: #111827; font-size: 1rem;">주차 선택</span>
+            <span style="font-weight: 700; color: var(--t-text); font-size: 1rem;">주차 선택</span>
             <button 
               id="week-selector-close"
               style="background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
-              onmouseover="this.style.background='#f3f4f6';"
+              onmouseover="this.style.background='var(--t-bg2)';"
               onmouseout="this.style.background='none';"
             >
-              <i data-lucide="x" style="width: 20px; height: 20px; color: #6b7280; stroke-width: 2.5;"></i>
+              <i data-lucide="x" style="width: 20px; height: 20px; color: var(--t-muted); stroke-width: 2.5;"></i>
             </button>
           </div>
-          <div style="background: #f8fafc; border-radius: 0.75rem; padding: 0.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
+          <div style="background: var(--t-bg); border-radius: 0.75rem; padding: 0.5rem; border: 1px solid var(--t-line); max-height: 300px; overflow-y: auto;">
             <div id="week-selector-options" style="display: flex; flex-direction: column; gap: 0.25rem;">
               ${generateWeekOptions(currentWeekStart, timezone, selectedWeekStart, 4)}
             </div>
@@ -100,9 +100,9 @@ export function renderWeekSelector(selectedWeekStart, onWeekChange, timezone = '
       <button 
         id="week-next-btn" 
         class="btn-week-nav"
-        style="background: none; border: 1px solid #e5e7eb; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #6b7280;"
-        onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';"
-        onmouseout="this.style.background='none'; this.style.borderColor='#e5e7eb';"
+        style="background: none; border: 1px solid var(--t-line); padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--t-muted);"
+        onmouseover="this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)';"
+        onmouseout="this.style.background='none'; this.style.borderColor='var(--t-line)';"
         title="다음 주"
       >
         <i data-lucide="chevron-right" style="width: 20px; height: 20px; stroke-width: 2.5;"></i>
@@ -113,8 +113,8 @@ export function renderWeekSelector(selectedWeekStart, onWeekChange, timezone = '
         <button 
           id="week-current-btn" 
           class="btn-week-current"
-          style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; white-space: nowrap; transition: all 0.2s;"
-          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.3)';"
+          style="background: var(--t-accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; white-space: nowrap; transition: all 0.2s;"
+          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)';"
           onmouseout="this.style.transform='none'; this.style.boxShadow='none';"
           title="이번 주로 이동"
         >
@@ -154,16 +154,16 @@ function generateWeekOptions(currentWeekStart, timezone, selectedWeekStart, maxW
     
     const isSelected = weekStart === selectedWeekStart;
     const selectedStyle = isSelected 
-      ? 'background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;'
-      : 'background: white; color: #111827;';
+      ? 'background: var(--t-accent); color: white;'
+      : 'background: var(--t-surface); color: var(--t-text);';
     
     options.push(`
       <button 
         class="week-option-btn"
         data-week-start="${weekStart}"
-        style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? '#6366f1' : '#e5e7eb'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%;"
-        onmouseover="if (!this.dataset.selected) { this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db'; }"
-        onmouseout="if (!this.dataset.selected) { this.style.background='white'; this.style.borderColor='#e5e7eb'; }"
+        style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.875rem; font-weight: ${isSelected ? '600' : '500'}; transition: all 0.2s; width: 100%;"
+        onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }"
+        onmouseout="if (!this.dataset.selected) { this.style.background='white'; this.style.borderColor='var(--t-line)'; }"
         ${isSelected ? 'data-selected="true"' : ''}
       >
         ${label}

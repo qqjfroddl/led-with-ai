@@ -205,28 +205,28 @@ class Router {
               btn.classList.add('active');
               // 활성 스타일 적용
               if (targetId === 'today-todos-section') {
-                btn.style.background = 'linear-gradient(120deg, #6366f1 0%, #8b5cf6 100%)';
+                btn.style.background = 'var(--t-accent)';
                 btn.style.color = 'white';
                 btn.style.borderColor = 'transparent';
-                btn.style.boxShadow = '0 2px 4px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(99, 102, 241, 0.25)';
+                btn.style.boxShadow = '0 2px 4px rgba(42,38,34, 0.1), 0 4px 12px rgba(42,38,34, 0.13)';
               } else if (targetId === 'today-reflection-section') {
-                btn.style.background = 'linear-gradient(120deg, #a78bfa 0%, #c084fc 100%)';
+                btn.style.background = 'var(--t-accent2)';
                 btn.style.color = 'white';
                 btn.style.borderColor = 'transparent';
-                btn.style.boxShadow = '0 2px 4px rgba(167, 139, 250, 0.2), 0 4px 12px rgba(167, 139, 250, 0.25)';
+                btn.style.boxShadow = '0 2px 4px rgba(42,38,34, 0.1), 0 4px 12px rgba(42,38,34, 0.13)';
               }
             } else {
               btn.classList.remove('active');
               // 비활성 스타일 복원
               if (btn.id === 'scroll-to-todos') {
-                btn.style.background = '#e0e7ff';
-                btn.style.color = '#1f2937';
-                btn.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+                btn.style.background = 'var(--t-accent-soft)';
+                btn.style.color = 'var(--t-text)';
+                btn.style.borderColor = 'var(--t-accent-line)';
                 btn.style.boxShadow = '';
               } else if (btn.id === 'scroll-to-reflection') {
-                btn.style.background = '#f3e8ff';
-                btn.style.color = '#1f2937';
-                btn.style.borderColor = 'rgba(167, 139, 250, 0.2)';
+                btn.style.background = 'var(--t-accent2-soft)';
+                btn.style.color = 'var(--t-text)';
+                btn.style.borderColor = 'var(--t-accent2-line)';
                 btn.style.boxShadow = '';
               }
             }
@@ -354,7 +354,7 @@ class Router {
                 Google로 로그인
               </button>
             </div>
-            <div id="login-error" style="margin-top: 1rem; color: #ef4444; display: none;"></div>
+            <div id="login-error" style="margin-top: 1rem; color: var(--t-danger); display: none;"></div>
           </div>
         `;
         

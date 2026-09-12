@@ -8,10 +8,10 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORY_COLORS = {
-  work: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)' },
-  job: { bg: '#e7f8ff', border: '#b5e6ff', gradient: 'linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)' },
-  self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)' },
-  personal: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)' }
+  work: { bg: 'var(--t-cat-work-soft)', border: 'var(--t-cat-work-line)', gradient: 'var(--t-cat-work)' },
+  job: { bg: 'var(--t-cat-job-soft)', border: 'var(--t-cat-job-line)', gradient: 'var(--t-cat-job)' },
+  self_dev: { bg: 'var(--t-accent2-soft)', border: 'var(--t-accent2-line)', gradient: 'var(--t-accent2)' },
+  personal: { bg: 'var(--t-cat-personal-soft)', border: 'var(--t-cat-personal-line)', gradient: 'var(--t-cat-personal)' }
 };
 
 /**
@@ -23,13 +23,13 @@ export function renderMonthlyStats(stats) {
   const { todos, routines, reflections, comparison, totalDays } = stats;
   
   const html = `
-    <div class="card" style="background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); border: 2px solid #6366f1; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid rgba(99, 102, 241, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-accent-soft); border: 2px solid var(--t-accent); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+          <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="bar-chart-3" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
-          <div class="card-title" style="color: #4338ca; font-size: 1.5rem; margin: 0;">월간 지표</div>
+          <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">월간 지표</div>
         </div>
       </div>
       
@@ -61,22 +61,22 @@ function renderTodoCompletionCard(todos, comparison) {
     : '';
   
   return `
-    <div style="background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: var(--t-surface); border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: #10b981; stroke-width: 2.5;"></i>
-          <h3 style="font-size: 1rem; font-weight: 600; color: #111827; margin: 0;">할일 완료율</h3>
+          <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: var(--t-success); stroke-width: 2.5;"></i>
+          <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin: 0;">할일 완료율</h3>
         </div>
         ${changeIndicator}
       </div>
-      <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--t-success); margin-bottom: 0.5rem;">
         ${Number(todos.completionRate || 0).toFixed(1)}%
       </div>
-      <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+      <div style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
         ${todos.completed} / ${todos.total} 완료
       </div>
-      ${renderProgressBar(todos.completionRate, '#10b981')}
-      <div style="margin-top: 0.75rem; font-size: 0.75rem; color: #9ca3af;">
+      ${renderProgressBar(todos.completionRate, 'var(--t-success)')}
+      <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--t-muted2);">
         평균 일일 할일: ${todos.avgDailyTodos}개
       </div>
     </div>
@@ -92,22 +92,22 @@ function renderRoutinePracticeCard(routines, comparison) {
     : '';
   
   return `
-    <div style="background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: var(--t-surface); border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="target" style="width: 20px; height: 20px; color: #14b8a6; stroke-width: 2.5;"></i>
-          <h3 style="font-size: 1rem; font-weight: 600; color: #111827; margin: 0;">루틴 실천율</h3>
+          <i data-lucide="target" style="width: 20px; height: 20px; color: var(--t-accent); stroke-width: 2.5;"></i>
+          <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin: 0;">루틴 실천율</h3>
         </div>
         ${changeIndicator}
       </div>
-      <div style="font-size: 2rem; font-weight: 700; color: #14b8a6; margin-bottom: 0.5rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--t-accent); margin-bottom: 0.5rem;">
         ${Number(routines.practiceRate || 0).toFixed(1)}%
       </div>
-      <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+      <div style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
         ${routines.totalChecks} / ${routines.totalPossibleChecks} 체크
       </div>
-      ${renderProgressBar(routines.practiceRate, '#14b8a6')}
-      <div style="margin-top: 0.75rem; display: flex; gap: 1rem; font-size: 0.75rem; color: #9ca3af;">
+      ${renderProgressBar(routines.practiceRate, 'var(--t-accent)')}
+      <div style="margin-top: 0.75rem; display: flex; gap: 1rem; font-size: 0.75rem; color: var(--t-muted2);">
         <span>☀ 모닝: ${Number(routines.morningRate || 0).toFixed(1)}%</span>
         <span>🌙 나이트: ${Number(routines.nightRate || 0).toFixed(1)}%</span>
       </div>
@@ -124,22 +124,22 @@ function renderReflectionCard(reflections, comparison, totalDays) {
     : '';
   
   return `
-    <div style="background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: var(--t-surface); border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08);">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i data-lucide="pen-square" style="width: 20px; height: 20px; color: #f87171; stroke-width: 2.5;"></i>
-          <h3 style="font-size: 1rem; font-weight: 600; color: #111827; margin: 0;">성찰 작성일</h3>
+          <i data-lucide="pen-square" style="width: 20px; height: 20px; color: var(--t-insight); stroke-width: 2.5;"></i>
+          <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin: 0;">성찰 작성일</h3>
         </div>
         ${changeIndicator}
       </div>
-      <div style="font-size: 2rem; font-weight: 700; color: #f87171; margin-bottom: 0.5rem;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--t-insight); margin-bottom: 0.5rem;">
         ${reflections.writtenDays}일
       </div>
-      <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+      <div style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
         ${Number(reflections.writingRate || 0).toFixed(1)}% 작성률
       </div>
-      ${renderProgressBar(reflections.writingRate, '#f87171')}
-      <div style="margin-top: 0.75rem; font-size: 0.75rem; color: #9ca3af;">
+      ${renderProgressBar(reflections.writingRate, 'var(--t-insight)')}
+      <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--t-muted2);">
         ${totalDays}일 중 ${reflections.writtenDays}일 기록
       </div>
     </div>
@@ -153,9 +153,9 @@ function renderCategoryBreakdown(todos) {
   const categories = Object.entries(todos.byCategory);
   
   return `
-    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(99, 102, 241, 0.1);">
-      <h3 style="font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i data-lucide="layers" style="width: 18px; height: 18px; color: #6366f1; stroke-width: 2.5;"></i>
+    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--t-accent-line);">
+      <h3 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--t-accent); stroke-width: 2.5;"></i>
         카테고리별 완료율
       </h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
@@ -175,11 +175,11 @@ function renderCategoryCard(category, stats) {
   return `
     <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; border-radius: 12px; padding: 1rem;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-        <span style="font-weight: 600; color: #111827; font-size: 0.95rem;">${label}</span>
-        <span style="font-weight: 700; color: #111827; font-size: 1.1rem;">${Number(stats.completionRate || 0).toFixed(1)}%</span>
+        <span style="font-weight: 600; color: var(--t-text); font-size: 0.95rem;">${label}</span>
+        <span style="font-weight: 700; color: var(--t-text); font-size: 1.1rem;">${Number(stats.completionRate || 0).toFixed(1)}%</span>
       </div>
       ${renderProgressBar(stats.completionRate, colors.border, 4)}
-      <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
+      <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--t-muted);">
         ${stats.completed} / ${stats.total} 완료
       </div>
     </div>
@@ -193,7 +193,7 @@ function renderProgressBar(percentage, color, height = 8) {
   const clampedPercentage = Math.min(100, Math.max(0, percentage));
   
   return `
-    <div style="width: 100%; height: ${height}px; background: #e5e7eb; border-radius: 999px; overflow: hidden; position: relative;">
+    <div style="width: 100%; height: ${height}px; background: var(--t-line); border-radius: 999px; overflow: hidden; position: relative;">
       <div style="width: ${clampedPercentage}%; height: 100%; background: ${color}; border-radius: 999px; transition: width 0.3s ease;"></div>
     </div>
   `;
@@ -205,7 +205,7 @@ function renderProgressBar(percentage, color, height = 8) {
 function renderChangeIndicator(change, unit = '') {
   const isPositive = change > 0;
   const isNegative = change < 0;
-  const color = isPositive ? '#10b981' : isNegative ? '#ef4444' : '#6b7280';
+  const color = isPositive ? 'var(--t-success)' : isNegative ? 'var(--t-danger)' : 'var(--t-muted)';
   const icon = isPositive ? 'trending-up' : isNegative ? 'trending-down' : 'minus';
   const sign = change > 0 ? '+' : '';
   

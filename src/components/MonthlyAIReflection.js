@@ -14,14 +14,14 @@ export async function renderMonthlyAIReflection(monthStart, timezone = 'Asia/Seo
   const reflection = await getMonthlyAIReflection(monthStart);
   
   const html = `
-    <div class="card" style="background: linear-gradient(135deg, #f0e7ff 0%, #fce7f3 100%); border: 2px solid #a78bfa; box-shadow: 0 8px 24px rgba(167, 139, 250, 0.15); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 2px solid rgba(167, 139, 250, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-accent2-soft); border: 2px solid var(--t-accent2); box-shadow: 0 8px 24px rgba(42,38,34, 0.07); margin-bottom: 1.5rem;">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent2-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);">
+            <div style="width: 40px; height: 40px; background: var(--t-accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
               <i data-lucide="sparkles" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
             </div>
-            <div class="card-title" style="color: #7c3aed; font-size: 1.5rem; margin: 0;">AI 월간 성찰</div>
+            <div class="card-title" style="color: var(--t-accent2); font-size: 1.5rem; margin: 0;">AI 월간 성찰</div>
           </div>
         </div>
       </div>
@@ -148,12 +148,12 @@ function renderExistingReflection(reflection, timezone = 'Asia/Seoul') {
   
   return `
     <div id="ai-reflection-content">
-      <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-height: 600px; overflow-y: scroll; overflow-x: hidden; position: relative; display: flex; flex-direction: column;">
-        <div id="reflection-markdown" style="color: #111827; line-height: 1.8; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;">
+      <div style="background: var(--t-surface); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(42,38,34, 0.08); max-height: 600px; overflow-y: scroll; overflow-x: hidden; position: relative; display: flex; flex-direction: column;">
+        <div id="reflection-markdown" style="color: var(--t-text); line-height: 1.8; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;">
           ${contentHtml}
         </div>
       </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: white; border-radius: 8px; font-size: 0.875rem; color: #6b7280;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: var(--t-surface); border-radius: 8px; font-size: 0.875rem; color: var(--t-muted);">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <i data-lucide="clock" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
           <span>생성일: ${formatDate(displayDate, timezone)}</span>
@@ -161,8 +161,8 @@ function renderExistingReflection(reflection, timezone = 'Asia/Seoul') {
         <button 
           id="regenerate-ai-reflection-btn"
           class="btn-regenerate"
-          style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 0.25rem;"
-          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(167, 139, 250, 0.3)';"
+          style="background: var(--t-accent2); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 0.25rem;"
+          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)';"
           onmouseout="this.style.transform='none'; this.style.boxShadow='none';"
         >
           <i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i>
@@ -180,20 +180,20 @@ function renderEmptyState(monthStart) {
   return `
     <div id="ai-reflection-empty" style="text-align: center; padding: 2rem;">
       <div style="margin-bottom: 1rem;">
-        <i data-lucide="sparkles" style="width: 48px; height: 48px; color: #a78bfa; stroke-width: 2.5; margin: 0 auto;"></i>
+        <i data-lucide="sparkles" style="width: 48px; height: 48px; color: var(--t-accent2); stroke-width: 2.5; margin: 0 auto;"></i>
       </div>
-      <h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 0.5rem;">
         AI 월간 성찰이 아직 없습니다
       </h3>
-      <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem;">
+      <p style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1.5rem;">
         이번 달의 활동을 분석하여 맞춤형 피드백을 제공합니다.
       </p>
       <button 
         id="generate-ai-reflection-btn"
         class="btn-generate"
-        style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3); white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; margin: 0 auto;"
-        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(167, 139, 250, 0.4)';"
-        onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 12px rgba(167, 139, 250, 0.3)';"
+        style="background: var(--t-accent2); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; margin: 0 auto;"
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)';"
+        onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)';"
       >
         <i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i>
         AI 성찰 생성하기
@@ -295,7 +295,7 @@ function convertMarkdownToHtml(markdown) {
           result.push(`<p style="margin-bottom: 1rem; line-height: 1.8;">${currentPara.join(' ')}</p>`);
           currentPara = [];
         }
-        result.push('<hr style="border: none; border-top: 2px solid #e5e7eb; margin: 1.5rem 0;">');
+        result.push('<hr style="border: none; border-top: 2px solid var(--t-line); margin: 1.5rem 0;">');
         processedLines++;
         continue;
       }
@@ -317,7 +317,7 @@ function convertMarkdownToHtml(markdown) {
           currentPara = [];
         }
         const text = trimmed.substring(5).trim();
-        result.push(`<h4 style="font-size: 1rem; font-weight: 600; color: #111827; margin-top: 1.25rem; margin-bottom: 0.5rem;">${escapeHtml(text)}</h4>`);
+        result.push(`<h4 style="font-size: 1rem; font-weight: 600; color: var(--t-text); margin-top: 1.25rem; margin-bottom: 0.5rem;">${escapeHtml(text)}</h4>`);
         processedLines++;
         continue;
       }
@@ -337,7 +337,7 @@ function convertMarkdownToHtml(markdown) {
           currentPara = [];
         }
         const text = trimmed.substring(4).trim();
-        result.push(`<h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-top: 1.5rem; margin-bottom: 0.75rem;">${escapeHtml(text)}</h3>`);
+        result.push(`<h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-top: 1.5rem; margin-bottom: 0.75rem;">${escapeHtml(text)}</h3>`);
         processedLines++;
         continue;
       }
@@ -357,7 +357,7 @@ function convertMarkdownToHtml(markdown) {
           currentPara = [];
         }
         const text = trimmed.substring(3).trim();
-        result.push(`<h2 style="font-size: 1.25rem; font-weight: 600; color: #111827; margin-top: 1.5rem; margin-bottom: 0.75rem;">${escapeHtml(text)}</h2>`);
+        result.push(`<h2 style="font-size: 1.25rem; font-weight: 600; color: var(--t-text); margin-top: 1.5rem; margin-bottom: 0.75rem;">${escapeHtml(text)}</h2>`);
         processedLines++;
         continue;
       }
@@ -377,7 +377,7 @@ function convertMarkdownToHtml(markdown) {
           currentPara = [];
         }
         const text = trimmed.substring(2).trim();
-        result.push(`<h1 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin-top: 2rem; margin-bottom: 1rem;">${escapeHtml(text)}</h1>`);
+        result.push(`<h1 style="font-size: 1.5rem; font-weight: 700; color: var(--t-text); margin-top: 2rem; margin-bottom: 1rem;">${escapeHtml(text)}</h1>`);
         processedLines++;
         continue;
       }
@@ -521,7 +521,7 @@ function escapeHtml(text) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/'/g, '&var(--t-accent);');
 }
 
 /**

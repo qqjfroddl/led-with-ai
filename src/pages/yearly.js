@@ -72,7 +72,7 @@ export async function renderYearly() {
     aiReflectionHtml = await Promise.race([reflectionPromise, timeoutPromise]);
   } catch (error) {
     console.error('Error rendering AI reflection:', error);
-    aiReflectionHtml = '<div class="card" style="padding: 1rem; color: #dc2626;">AI 성찰을 불러오는 중 오류가 발생했습니다.</div>';
+    aiReflectionHtml = '<div class="card" style="padding: 1rem; color: var(--t-danger);">AI 성찰을 불러오는 중 오류가 발생했습니다.</div>';
   }
   
   const html = `
@@ -80,12 +80,12 @@ export async function renderYearly() {
     ${yearSelectorHtml}
     
     ${statsError 
-      ? `<div class="card" style="background: #fee2e2; border: 2px solid #ef4444; padding: 1.5rem; margin-bottom: 1.5rem;">
-           <div style="display: flex; align-items: center; gap: 0.75rem; color: #dc2626;">
+      ? `<div class="card" style="background: var(--t-danger-soft); border: 2px solid var(--t-danger); padding: 1.5rem; margin-bottom: 1.5rem;">
+           <div style="display: flex; align-items: center; gap: 0.75rem; color: var(--t-danger);">
              <i data-lucide="alert-circle" style="width: 24px; height: 24px; stroke-width: 2.5;"></i>
              <div>
                <h3 style="font-weight: 600; margin-bottom: 0.25rem;">통계를 불러올 수 없습니다</h3>
-               <p style="font-size: 0.875rem; color: #991b1b;">${statsError}</p>
+               <p style="font-size: 0.875rem; color: var(--t-danger);">${statsError}</p>
              </div>
            </div>
          </div>`
@@ -98,15 +98,15 @@ export async function renderYearly() {
             
             return hasNoData
               ? `
-                 <div class="card" style="background: #f9fafb; border: 2px solid #e5e7eb; padding: 2rem; text-align: center; margin-bottom: 1.5rem;">
-                   <i data-lucide="inbox" style="width: 48px; height: 48px; color: #9ca3af; stroke-width: 2.5; margin: 0 auto 1rem; display: block;"></i>
-                   <h3 style="font-size: 1.1rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem;">
+                 <div class="card" style="background: var(--t-bg); border: 2px solid var(--t-line); padding: 2rem; text-align: center; margin-bottom: 1.5rem;">
+                   <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--t-muted2); stroke-width: 2.5; margin: 0 auto 1rem; display: block;"></i>
+                   <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--t-text); margin-bottom: 0.5rem;">
                      ${selectedYear}년에는 기록된 데이터가 없습니다
                    </h3>
-                   <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+                   <p style="font-size: 0.875rem; color: var(--t-muted); margin-bottom: 1rem;">
                      할일, 루틴, 성찰을 기록하면 연간 리포트가 생성됩니다.
                    </p>
-                   <a href="#/today" style="display: inline-block; padding: 0.5rem 1rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border-radius: 8px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                   <a href="#/today" style="display: inline-block; padding: 0.5rem 1rem; background: var(--t-accent); color: white; border-radius: 8px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
                      오늘 페이지로 이동
                    </a>
                  </div>

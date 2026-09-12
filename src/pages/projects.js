@@ -30,15 +30,15 @@ export async function renderProjects() {
   }
 
   const html = `
-    <div class="card" style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border: 2px solid #3b82f6; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);">
-      <div class="card-header" style="border-bottom: 2px solid rgba(59, 130, 246, 0.2); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+    <div class="card" style="background: var(--t-accent-soft); border: 2px solid var(--t-accent); box-shadow: 0 8px 24px rgba(42,38,34, 0.07);">
+      <div class="card-header" style="border-bottom: 2px solid var(--t-accent-line); padding-bottom: 1rem; margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+          <div style="width: 40px; height: 40px; background: var(--t-accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(42,38,34, 0.15);">
             <i data-lucide="folder-kanban" style="width: 24px; height: 24px; color: white; stroke-width: 2.5;"></i>
           </div>
           <div style="flex: 1;">
-            <div class="card-title" style="color: #1e40af; font-size: 1.5rem; margin: 0;">프로젝트</div>
-            <p style="color: #6b7280; font-size: 1rem; margin: 0.25rem 0 0 0;">프로젝트를 관리하고 할일을 등록하세요</p>
+            <div class="card-title" style="color: var(--t-accent); font-size: 1.5rem; margin: 0;">프로젝트</div>
+            <p style="color: var(--t-muted); font-size: 1rem; margin: 0.25rem 0 0 0;">프로젝트를 관리하고 할일을 등록하세요</p>
           </div>
           <button id="add-project-btn" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
             <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
@@ -50,11 +50,11 @@ export async function renderProjects() {
       <div id="projects-content" style="display: block;">
         <!-- 탭 영역 -->
         <div id="projects-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
-          <button id="tab-in-progress" class="project-tab active" data-tab="in_progress" style="flex: 1; padding: 0.75rem; border: 2px solid #3b82f6; border-radius: 8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button id="tab-in-progress" class="project-tab active" data-tab="in_progress" style="flex: 1; padding: 0.75rem; border: 2px solid var(--t-accent); border-radius: 8px; background: var(--t-accent); color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             <i data-lucide="loader" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             진행중 (<span id="in-progress-count">0</span>)
           </button>
-          <button id="tab-completed" class="project-tab" data-tab="completed" style="flex: 1; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; background: #f3f4f6; color: #6b7280; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button id="tab-completed" class="project-tab" data-tab="completed" style="flex: 1; padding: 0.75rem; border: 2px solid var(--t-line2); border-radius: 8px; background: var(--t-bg2); color: var(--t-muted); font-weight: 600; cursor: pointer; transition: all 0.2s;">
             <i data-lucide="check-circle" style="width: 16px; height: 16px; margin-right: 0.5rem;"></i>
             완료 (<span id="completed-count">0</span>)
           </button>
@@ -64,7 +64,7 @@ export async function renderProjects() {
         <div id="projects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;"></div>
         
         <!-- 빈 상태 -->
-        <div id="projects-empty" style="text-align: center; padding: 3rem 1rem; color: #9ca3af; display: none;">
+        <div id="projects-empty" style="text-align: center; padding: 3rem 1rem; color: var(--t-muted2); display: none;">
           <i data-lucide="folder-x" style="width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.5;"></i>
           <p id="projects-empty-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">진행중인 프로젝트가 없습니다</p>
           <p id="projects-empty-desc" style="font-size: 0.9rem;">새 프로젝트를 추가하여 시작하세요</p>
@@ -76,23 +76,23 @@ export async function renderProjects() {
     </div>
 
     <!-- 프로젝트 추가/수정 모달 (심플 버전) -->
-    <div id="project-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; display: none; align-items: center; justify-content: center;">
-      <div style="background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 520px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+    <div id="project-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,38,34, 0.5); z-index: 1000; display: none; align-items: center; justify-content: center;">
+      <div style="background: var(--t-surface); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 520px; box-shadow: 0 20px 60px rgba(42,38,34, 0.3);">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
-          <h3 id="project-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937;">프로젝트 추가</h3>
-          <button id="project-modal-close" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer; color: #9ca3af; transition: color 0.2s;">
+          <h3 id="project-modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--t-text);">프로젝트 추가</h3>
+          <button id="project-modal-close" style="background: transparent; border: none; padding: 0.25rem; cursor: pointer; color: var(--t-muted2); transition: color 0.2s;">
             <i data-lucide="x" style="width: 24px; height: 24px;"></i>
           </button>
         </div>
         
         <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="project-name-input" placeholder="프로젝트 이름" style="flex: 1; min-width: 180px; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-          <select id="project-category-input" style="padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer; min-width: 120px;">
+          <input type="text" id="project-name-input" placeholder="프로젝트 이름" style="flex: 1; min-width: 180px; padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 1rem; transition: border-color 0.2s; outline: none;" onfocus="this.style.borderColor='var(--t-accent)'" onblur="this.style.borderColor='var(--t-line)'">
+          <select id="project-category-input" style="padding: 0.75rem 1rem; border: 2px solid var(--t-line); border-radius: 10px; font-size: 0.95rem; background: var(--t-surface); cursor: pointer; min-width: 120px;">
             <option value="self_dev">자기계발</option>
             <option value="relationship">가족/관계</option>
             <option value="work_finance">업무/재정</option>
           </select>
-          <button id="project-modal-save" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(99, 102, 241, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.3)'">
+          <button id="project-modal-save" style="padding: 0.75rem 1.5rem; background: var(--t-accent); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(42,38,34, 0.15); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)'">
             <i data-lucide="check" style="width: 18px; height: 18px; margin-right: 0.25rem; vertical-align: -3px;"></i>
             저장
           </button>
@@ -254,9 +254,9 @@ function renderProjectCardCompact(project) {
   };
 
   const categoryColors = {
-    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)', shadow: 'rgba(167, 139, 250, 0.3)' },
-    relationship: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)', shadow: 'rgba(244, 114, 182, 0.3)' },
-    work_finance: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)', shadow: 'rgba(251, 146, 60, 0.3)' }
+    self_dev: { bg: 'var(--t-accent2-soft)', border: 'var(--t-accent2-line)', gradient: 'var(--t-accent2)', shadow: 'rgba(42,38,34, 0.15)' },
+    relationship: { bg: 'var(--t-cat-personal-soft)', border: 'var(--t-cat-personal-line)', gradient: 'var(--t-cat-personal)', shadow: 'rgba(42,38,34, 0.15)' },
+    work_finance: { bg: 'var(--t-cat-work-soft)', border: 'var(--t-cat-work-line)', gradient: 'var(--t-cat-work)', shadow: 'rgba(42,38,34, 0.15)' }
   };
 
   const colors = categoryColors[project.category] || categoryColors.self_dev;
@@ -266,35 +266,28 @@ function renderProjectCardCompact(project) {
 
   return `
     <div class="project-card-compact ${isExpanded ? 'expanded' : ''}" data-project-id="${project.id}" 
-         style="background: ${project.isCompleted ? '#f3f4f6' : colors.bg}; 
-                border: 2px solid ${project.isCompleted ? '#d1d5db' : colors.border}; 
-                border-radius: 12px; 
-                padding: 1rem; 
-                cursor: pointer; 
-                transition: all 0.2s;
-                box-shadow: ${isExpanded ? `0 8px 24px ${colors.shadow}` : '0 2px 8px rgba(0, 0, 0, 0.08)'};
-                ${isExpanded ? `transform: scale(1.02);` : ''}
+         style="background: ${project.isCompleted ? 'var(--t-bg2)' : colors.bg}; border: 2px solid ${project.isCompleted ? 'var(--t-line2)' : colors.border}; border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.2s; box-shadow: ${isExpanded ? `0 8px 24px ${colors.shadow}` : '0 2px 8px rgba(42,38,34, 0.08)'}; ${isExpanded ? `transform: scale(1.02);` : ''}
                 ${project.isCompleted ? 'opacity: 0.8;' : ''}">
       <div style="display: flex; align-items: start; gap: 0.75rem;">
-        <div style="width: 36px; height: 36px; background: ${project.isCompleted ? '#9ca3af' : colors.gradient}; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <div style="width: 36px; height: 36px; background: ${project.isCompleted ? 'var(--t-muted2)' : colors.gradient}; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
           <i data-lucide="${project.isCompleted ? 'check-circle' : icon}" style="width: 20px; height: 20px; color: white;"></i>
         </div>
         <div style="flex: 1; min-width: 0;">
-          <h4 style="color: ${project.isCompleted ? '#6b7280' : '#1f2937'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.3;">${project.name}</h4>
+          <h4 style="color: ${project.isCompleted ? 'var(--t-muted)' : 'var(--t-text)'}; font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.3;">${project.name}</h4>
           <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${project.isCompleted ? '#e5e7eb' : colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[project.category]}</span>
+            <span style="font-size: 0.75rem; padding: 0.125rem 0.5rem; background: ${project.isCompleted ? 'var(--t-line)' : colors.gradient}; color: white; border-radius: 999px; font-weight: 500;">${categoryLabels[project.category]}</span>
           </div>
         </div>
-        <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" style="width: 18px; height: 18px; color: #9ca3af; flex-shrink: 0;"></i>
+        <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" style="width: 18px; height: 18px; color: var(--t-muted2); flex-shrink: 0;"></i>
       </div>
       
       <div style="margin-top: 0.75rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <span style="font-size: 0.75rem; color: #6b7280;">${project.completedCount} / ${project.totalCount}</span>
-          <span style="font-size: 0.75rem; font-weight: 600; color: ${project.isCompleted ? '#10b981' : '#1f2937'};">${progress}%</span>
+          <span style="font-size: 0.75rem; color: var(--t-muted);">${project.completedCount} / ${project.totalCount}</span>
+          <span style="font-size: 0.75rem; font-weight: 600; color: ${project.isCompleted ? 'var(--t-success)' : 'var(--t-text)'};">${progress}%</span>
         </div>
-        <div style="width: 100%; height: 6px; background: #e5e7eb; border-radius: 999px; overflow: hidden;">
-          <div style="width: ${progress}%; height: 100%; background: ${project.isCompleted ? '#10b981' : colors.gradient}; transition: width 0.3s;"></div>
+        <div style="width: 100%; height: 6px; background: var(--t-line); border-radius: 999px; overflow: hidden;">
+          <div style="width: ${progress}%; height: 100%; background: ${project.isCompleted ? 'var(--t-success)' : colors.gradient}; transition: width 0.3s;"></div>
         </div>
       </div>
     </div>
@@ -324,32 +317,32 @@ async function renderProjectDetail(project, profile) {
   }
 
   const categoryColors = {
-    self_dev: { bg: '#f4e9ff', border: '#d8c7ff', gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)' },
-    relationship: { bg: '#ffe9f0', border: '#f8c7d6', gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)' },
-    work_finance: { bg: '#fff7e6', border: '#f5d38f', gradient: 'linear-gradient(135deg, #fb923c 0%, #f59e0b 100%)' }
+    self_dev: { bg: 'var(--t-accent2-soft)', border: 'var(--t-accent2-line)', gradient: 'var(--t-accent2)' },
+    relationship: { bg: 'var(--t-cat-personal-soft)', border: 'var(--t-cat-personal-line)', gradient: 'var(--t-cat-personal)' },
+    work_finance: { bg: 'var(--t-cat-work-soft)', border: 'var(--t-cat-work-line)', gradient: 'var(--t-cat-work)' }
   };
 
   const colors = categoryColors[project.category] || categoryColors.self_dev;
   const tasksList = tasks || [];
 
   projectDetail.innerHTML = `
-    <div style="background: ${project.isCompleted ? '#f9fafb' : colors.bg}; border: 2px solid ${project.isCompleted ? '#e5e7eb' : colors.border}; border-radius: 12px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px dashed ${project.isCompleted ? '#d1d5db' : colors.border};">
-        <h3 style="color: #1f2937; font-size: 1.1rem; font-weight: 700; margin: 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.4;">
+    <div style="background: ${project.isCompleted ? 'var(--t-bg)' : colors.bg}; border: 2px solid ${project.isCompleted ? 'var(--t-line)' : colors.border}; border-radius: 12px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(42,38,34, 0.1);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px dashed ${project.isCompleted ? 'var(--t-line2)' : colors.border};">
+        <h3 style="color: var(--t-text); font-size: 1.1rem; font-weight: 700; margin: 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.4;">
           <i data-lucide="list-checks" style="width: 18px; height: 18px; margin-right: 0.5rem; vertical-align: -3px;"></i>
           ${project.name} 할일 목록
         </h3>
         <div style="display: flex; gap: 0.5rem;">
           ${project.isCompleted ? `
-            <button class="reopen-project-btn" data-project-id="${project.id}" style="padding: 0.375rem 0.75rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+            <button class="reopen-project-btn" data-project-id="${project.id}" style="padding: 0.375rem 0.75rem; background: var(--t-success); color: white; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
               <i data-lucide="rotate-ccw" style="width: 14px; height: 14px; margin-right: 0.25rem;"></i>
               다시 진행
             </button>
           ` : ''}
-          <button class="edit-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: #6b7280; cursor: pointer; padding: 0.25rem;">
+          <button class="edit-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: var(--t-muted); cursor: pointer; padding: 0.25rem;">
             <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
           </button>
-          <button class="delete-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem;">
+          <button class="delete-project-btn" data-project-id="${project.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem;">
             <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
           </button>
         </div>
@@ -358,7 +351,7 @@ async function renderProjectDetail(project, profile) {
       <div id="project-tasks-${project.id}" style="margin-bottom: 1rem; max-height: 400px; overflow-y: auto;">
         ${tasksList.map(task => renderProjectTask(task, project.category)).join('')}
         ${tasksList.length === 0 ? `
-          <div style="text-align: center; padding: 2rem 1rem; color: #9ca3af;">
+          <div style="text-align: center; padding: 2rem 1rem; color: var(--t-muted2);">
             <i data-lucide="clipboard-list" style="width: 32px; height: 32px; margin: 0 auto 0.5rem; opacity: 0.5;"></i>
             <p style="font-size: 0.9rem; margin: 0;">등록된 할일이 없습니다</p>
           </div>
@@ -367,13 +360,13 @@ async function renderProjectDetail(project, profile) {
 
       ${!project.isCompleted ? `
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-          <input type="text" id="project-task-input-${project.id}" placeholder="할일을 입력하세요... (Enter로 추가)" style="flex: 1; padding: 0.625rem; border: 2px solid ${colors.border}; border-radius: 8px; font-size: 0.95rem; background: white;">
+          <input type="text" id="project-task-input-${project.id}" placeholder="할일을 입력하세요... (Enter로 추가)" style="flex: 1; padding: 0.625rem; border: 2px solid ${colors.border}; border-radius: 8px; font-size: 0.95rem; background: var(--t-surface);">
           <button class="add-project-task-btn" data-project-id="${project.id}" style="padding: 0.625rem 1rem; background: ${colors.gradient}; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
             <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
           </button>
         </div>
 
-        <button class="register-todos-btn" data-project-id="${project.id}" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);">
+        <button class="register-todos-btn" data-project-id="${project.id}" style="width: 100%; padding: 0.75rem; background: var(--t-accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(42,38,34, 0.15);">
           <i data-lucide="calendar-check" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i>
           오늘 할일 등록하기
         </button>
@@ -437,43 +430,43 @@ function renderProjectTask(task, projectCategory) {
   let dateDisplay = '';
   let dateText = ''; // PC용 텍스트만 추출
   if (task.start_date && task.end_date) {
-    dateDisplay = `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.start_date} ~ ${task.end_date}</span>`;
+    dateDisplay = `<span style="font-size: 0.75rem; color: var(--t-muted);">📅 ${task.start_date} ~ ${task.end_date}</span>`;
     dateText = `📅 ${task.start_date} ~ ${task.end_date}`;
   } else if (task.start_date) {
-    dateDisplay = `<span style="font-size: 0.75rem; color: #6b7280;">📅 ${task.start_date}</span>`;
+    dateDisplay = `<span style="font-size: 0.75rem; color: var(--t-muted);">📅 ${task.start_date}</span>`;
     dateText = `📅 ${task.start_date}`;
   } else if (task.due_date) {
-    dateDisplay = `<span style="font-size: 0.75rem; color: #9ca3af;">📅 ${task.due_date} (구)</span>`;
+    dateDisplay = `<span style="font-size: 0.75rem; color: var(--t-muted2);">📅 ${task.due_date} (구)</span>`;
     dateText = `📅 ${task.due_date} (구)`;
   }
   
   return `
-    <div class="project-task-item" data-task-id="${task.id}" style="background: white; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="project-task-item" data-task-id="${task.id}" style="background: var(--t-surface); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(42,38,34, 0.05);">
       <!-- 첫 번째 줄: 체크박스 + 제목 + 날짜(PC용) + 버튼들 -->
       <div class="project-task-row" style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
         <input type="checkbox" ${task.is_done ? 'checked' : ''} class="project-task-checkbox" data-task-id="${task.id}" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;" ${isEditing ? 'disabled' : ''}>
         ${isEditing ? `
-          <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid #6366f1; border-radius: 4px; font-size: 1rem;">
+          <input type="text" class="project-task-edit-input" value="${task.title.replace(/"/g, '&quot;')}" style="flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid var(--t-accent); border-radius: 4px; font-size: 1rem;">
         ` : `
-          <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: #9ca3af;' : 'color: #1f2937; cursor: pointer;'}">${task.title}</span>
-          ${dateText ? `<span class="project-task-date-pc" style="font-size: 0.75rem; color: #6b7280; white-space: nowrap; flex-shrink: 0; margin-left: 0.5rem;">${dateText}</span>` : ''}
+          <span class="project-task-title" data-task-id="${task.id}" style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word; ${task.is_done ? 'text-decoration: line-through; color: var(--t-muted2);' : 'color: var(--t-text); cursor: pointer;'}">${task.title}</span>
+          ${dateText ? `<span class="project-task-date-pc" style="font-size: 0.75rem; color: var(--t-muted); white-space: nowrap; flex-shrink: 0; margin-left: 0.5rem;">${dateText}</span>` : ''}
         `}
         ${!isEditing ? `
-          <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #6366f1; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="시작일/종료일 설정">
+          <button class="project-task-dates-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-accent); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="시작일/종료일 설정">
             <i data-lucide="calendar-range" style="width: 18px; height: 18px;"></i>
           </button>
-          <button class="project-task-edit-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="수정">
+          <button class="project-task-edit-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-success); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="수정">
             <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
           </button>
         ` : `
-          <button class="project-task-save-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #10b981; cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
+          <button class="project-task-save-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-success); cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
             <i data-lucide="check" style="width: 18px; height: 18px;"></i>
           </button>
-          <button class="project-task-cancel-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
+          <button class="project-task-cancel-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem; flex-shrink: 0;">
             <i data-lucide="x" style="width: 18px; height: 18px;"></i>
           </button>
         `}
-        <button class="project-task-delete-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제" ${isEditing ? 'disabled' : ''}>
+        <button class="project-task-delete-btn" data-task-id="${task.id}" style="background: transparent; border: none; color: var(--t-danger); cursor: pointer; padding: 0.25rem; flex-shrink: 0;" title="삭제" ${isEditing ? 'disabled' : ''}>
           <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
         </button>
       </div>
@@ -982,23 +975,23 @@ function openProjectTaskDateRangePicker(taskId, profile) {
   // 모달 HTML 생성 (처음 호출 시만)
   if (!document.getElementById('project-task-daterange-overlay')) {
     const modalHTML = `
-      <div id="project-task-daterange-overlay" class="hidden" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 12px; padding: 1.5rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.15);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid #e5e7eb;">
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0;">시작일/종료일 설정</h3>
+      <div id="project-task-daterange-overlay" class="hidden" style="display: none; position: fixed; inset: 0; background: rgba(42,38,34, 0.5); z-index: 999; align-items: center; justify-content: center;">
+        <div style="background: var(--t-surface); border-radius: 12px; padding: 1.5rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 16px rgba(42,38,34, 0.1), 0 20px 48px rgba(42,38,34, 0.15);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--t-line);">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--t-text); margin: 0;">시작일/종료일 설정</h3>
             <button id="project-task-daterange-close" style="background: transparent; border: none; cursor: pointer; padding: 0.25rem;" title="닫기">
-              <i data-lucide="x" style="width: 24px; height: 24px; color: #6b7280;"></i>
+              <i data-lucide="x" style="width: 24px; height: 24px; color: var(--t-muted);"></i>
             </button>
           </div>
           
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">시작일</label>
-            <input type="text" id="project-task-startdate-input" readonly placeholder="시작일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+            <label style="display: block; font-weight: 600; color: var(--t-text2); margin-bottom: 0.5rem;">시작일</label>
+            <input type="text" id="project-task-startdate-input" readonly placeholder="시작일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--t-line2); border-radius: 8px; font-size: 1rem; cursor: pointer;">
           </div>
           
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">종료일</label>
-            <input type="text" id="project-task-enddate-input" readonly placeholder="종료일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+            <label style="display: block; font-weight: 600; color: var(--t-text2); margin-bottom: 0.5rem;">종료일</label>
+            <input type="text" id="project-task-enddate-input" readonly placeholder="종료일 선택..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--t-line2); border-radius: 8px; font-size: 1rem; cursor: pointer;">
           </div>
           
           <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
@@ -1475,25 +1468,25 @@ function updateTabStyles() {
   
   if (tabInProgress) {
     if (activeProjectTab === 'in_progress') {
-      tabInProgress.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
-      tabInProgress.style.borderColor = '#3b82f6';
+      tabInProgress.style.background = 'var(--t-accent)';
+      tabInProgress.style.borderColor = 'var(--t-accent)';
       tabInProgress.style.color = 'white';
     } else {
-      tabInProgress.style.background = '#f3f4f6';
-      tabInProgress.style.borderColor = '#d1d5db';
-      tabInProgress.style.color = '#6b7280';
+      tabInProgress.style.background = 'var(--t-bg2)';
+      tabInProgress.style.borderColor = 'var(--t-line2)';
+      tabInProgress.style.color = 'var(--t-muted)';
     }
   }
   
   if (tabCompleted) {
     if (activeProjectTab === 'completed') {
-      tabCompleted.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-      tabCompleted.style.borderColor = '#10b981';
+      tabCompleted.style.background = 'var(--t-success)';
+      tabCompleted.style.borderColor = 'var(--t-success)';
       tabCompleted.style.color = 'white';
     } else {
-      tabCompleted.style.background = '#f3f4f6';
-      tabCompleted.style.borderColor = '#d1d5db';
-      tabCompleted.style.color = '#6b7280';
+      tabCompleted.style.background = 'var(--t-bg2)';
+      tabCompleted.style.borderColor = 'var(--t-line2)';
+      tabCompleted.style.color = 'var(--t-muted)';
     }
   }
   
