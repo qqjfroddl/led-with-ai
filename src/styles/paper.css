@@ -160,3 +160,6 @@
 :root .top-navigation-grouped .nav-group { border-radius: 10px; }
 :root #today-reflection-section { border-style: dashed !important; }
 
+
+/* 로그인 화면 로고: 이미지 자체가 흰 바탕이라 종이 위에 각진 흰 판으로 떴다 → 종이 카드로 감싼다 */
+:root .auth-logo { border-radius: 14px; border: 1px solid var(--t-line); box-shadow: var(--t-shadow); background: #fff; }
