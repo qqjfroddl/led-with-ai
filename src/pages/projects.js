@@ -1,3 +1,4 @@
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
@@ -234,7 +235,7 @@ async function loadProjects(profile) {
 
   } catch (error) {
     console.error('Error loading projects:', error);
-    alert('프로젝트를 불러오는 중 오류가 발생했습니다.');
+    toast('프로젝트를 불러오는 중 오류가 발생했습니다.');
   }
 }
 
@@ -708,7 +709,7 @@ function setupProjectModalEvents(profile) {
   if (saveBtn) {
     saveBtn.onclick = async () => {
       if (!nameInput || !nameInput.value.trim()) {
-        alert('프로젝트 이름을 입력해주세요.');
+        toast('프로젝트 이름을 입력해주세요.');
         nameInput?.focus();
         return;
       }
@@ -742,7 +743,7 @@ function setupProjectModalEvents(profile) {
         await loadProjects(profile);
       } catch (error) {
         console.error('Error saving project:', error);
-        alert('프로젝트 저장 중 오류가 발생했습니다.');
+        toast('프로젝트 저장 중 오류가 발생했습니다.');
       }
     };
   }
@@ -817,7 +818,7 @@ async function addProjectTask(projectId, title, profile) {
     }, 100);
   } catch (error) {
     console.error('Error adding project task:', error);
-    alert('할일 추가 중 오류가 발생했습니다.');
+    toast('할일 추가 중 오류가 발생했습니다.');
   } finally {
     addingProjectTask = false;
     if (input) input.disabled = false;
@@ -864,7 +865,7 @@ async function toggleProjectTask(taskId, isDone, profile) {
     await loadProjects(profile);
   } catch (error) {
     console.error('Error toggling project task:', error);
-    alert('할일 상태 변경 중 오류가 발생했습니다.');
+    toast('할일 상태 변경 중 오류가 발생했습니다.');
   } finally {
     syncingProjectTask = false;
   }
@@ -872,7 +873,7 @@ async function toggleProjectTask(taskId, isDone, profile) {
 
 async function saveProjectTaskEdit(taskId, newTitle, profile) {
   if (!newTitle.trim()) {
-    alert('할일을 입력해주세요.');
+    toast('할일을 입력해주세요.');
     editingProjectTaskId = null;
     await loadProjects(profile);
     return;
@@ -906,7 +907,7 @@ async function saveProjectTaskEdit(taskId, newTitle, profile) {
     await loadProjects(profile);
   } catch (error) {
     console.error('Error saving project task:', error);
-    alert('할일 수정 중 오류가 발생했습니다.');
+    toast('할일 수정 중 오류가 발생했습니다.');
   }
 }
 
@@ -972,7 +973,7 @@ async function updateProjectTaskDate(taskId, dueDate, profile) {
     await loadProjects(profile);
   } catch (error) {
     console.error('Error updating project task date:', error);
-    alert('마감날짜 설정 중 오류가 발생했습니다.');
+    toast('마감날짜 설정 중 오류가 발생했습니다.');
   }
 }
 
@@ -1088,15 +1089,15 @@ function openProjectTaskDateRangePicker(taskId, profile) {
     saveBtn.parentNode.replaceChild(newBtn, saveBtn);
     newBtn.onclick = async () => {
       if (!selectedStartDate) {
-        alert('시작일을 선택해주세요.');
+        toast('시작일을 선택해주세요.');
         return;
       }
       if (!selectedEndDate) {
-        alert('종료일을 선택해주세요.');
+        toast('종료일을 선택해주세요.');
         return;
       }
       if (selectedEndDate < selectedStartDate) {
-        alert('종료일은 시작일보다 이후여야 합니다.');
+        toast('종료일은 시작일보다 이후여야 합니다.');
         return;
       }
       await updateProjectTaskDateRange(currentTaskId, selectedStartDate, selectedEndDate, profile);
@@ -1144,7 +1145,7 @@ async function updateProjectTaskDateRange(taskId, startDate, endDate, profile) {
     await loadProjects(profile);
   } catch (error) {
     console.error('Error updating project task date range:', error);
-    alert('시작일/종료일 설정 중 오류가 발생했습니다.');
+    toast('시작일/종료일 설정 중 오류가 발생했습니다.');
   }
 }
 
@@ -1194,7 +1195,7 @@ async function deleteProjectTask(taskId, profile) {
   } catch (error) {
     console.error('[DeleteProjectTask] Error deleting project task:', error);
     console.error('[DeleteProjectTask] Error details:', JSON.stringify(error, null, 2));
-    alert('할일 삭제 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
+    toast('할일 삭제 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
   }
 }
 
@@ -1274,7 +1275,7 @@ async function deleteProject(projectId, profile) {
   } catch (error) {
     console.error('[DeleteProject] Error deleting project:', error);
     console.error('[DeleteProject] Error details:', JSON.stringify(error, null, 2));
-    alert('프로젝트 삭제 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
+    toast('프로젝트 삭제 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
   }
 }
 
@@ -1342,7 +1343,7 @@ async function registerProjectTasksToTodos(projectId, profile) {
     if (tasksError) throw tasksError;
 
     if (!tasks || tasks.length === 0) {
-      alert('등록할 할일이 없습니다.');
+      toast('등록할 할일이 없습니다.');
       return;
     }
 
@@ -1391,7 +1392,7 @@ async function registerProjectTasksToTodos(projectId, profile) {
     }
 
     if (datesToCheck.length === 0) {
-      alert('오늘 이후 등록할 할일이 없습니다.');
+      toast('오늘 이후 등록할 할일이 없습니다.');
       return;
     }
 
@@ -1448,15 +1449,15 @@ async function registerProjectTasksToTodos(projectId, profile) {
 
       if (insertError) throw insertError;
 
-      alert(`${todosToInsert.length}개의 할일이 등록되었습니다.`);
+      toast(`${todosToInsert.length}개의 할일이 등록되었습니다.`);
     } else {
-      alert('모든 할일이 이미 등록되어 있습니다.');
+      toast('모든 할일이 이미 등록되어 있습니다.');
     }
 
     await loadProjects(profile);
   } catch (error) {
     console.error('Error registering project tasks:', error);
-    alert('할일 등록 중 오류가 발생했습니다.');
+    toast('할일 등록 중 오류가 발생했습니다.');
   } finally {
     registeringProjectTasks = false;
     // UI 피드백: 버튼 복구
@@ -1536,7 +1537,7 @@ async function reopenProject(projectId, profile) {
     await loadProjects(profile);
   } catch (error) {
     console.error('Error reopening project:', error);
-    alert('프로젝트 다시 진행 중 오류가 발생했습니다.');
+    toast('프로젝트 다시 진행 중 오류가 발생했습니다.');
   }
 }
 

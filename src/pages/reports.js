@@ -1,4 +1,5 @@
 // 주간 리포트 페이지
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getWeekStart, getToday } from '../utils/date.js';
@@ -67,7 +68,7 @@ export async function renderReports() {
     // 타임아웃 설정 (5초)
     const reflectionPromise = renderWeeklyAIReflection(selectedWeekStart, timezone);
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('AI 성찰 로딩 시간 초과')), 5000)
+      setTimeout(() => reject(new Error('AI 성찰 로딩 시간 초과')), 20000) // 7/18 B2: 5초 → 20초
     );
     aiReflectionHtml = await Promise.race([reflectionPromise, timeoutPromise]);
   } catch (error) {
@@ -304,12 +305,12 @@ async function generateAIReflection(weekStart) {
     }
     
     // 성공 시 페이지 새로고침하여 결과 표시
-    alert('AI 성찰이 생성되었습니다!');
+    toast('AI 성찰이 생성되었습니다!');
     window.location.reload();
     
   } catch (error) {
     console.error('Error generating AI reflection:', error);
-    alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
+    toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
     throw error;
   }
 }

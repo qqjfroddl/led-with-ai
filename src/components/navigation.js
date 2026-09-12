@@ -1,6 +1,6 @@
+import { toast } from '../utils/toast.js';
 import { signOut } from '../utils/auth.js';
 import { formatSelectedDate } from '../state/dateState.js';
-import { themeSwitcherHtml } from '../theme.js';
 
 /**
  * 네비게이션 바 렌더링 (헤더 포함)
@@ -109,26 +109,6 @@ export async function renderNavigation(currentRoute, profile) {
     `;
   }).join('');
 
-  // 4안(흰 종이·하단 탭) 전용 네비: 상단 스텝퍼(PLAN→DO→SEE, 활성 그룹만 하위 탭) + 하단 탭바. 기본 테마에서는 CSS로 숨긴다
-  const mainGroups = navGroups.filter(g => g.id !== 'admin');
-  const groupHref = (g) => `#${g.routes[0].path}`;
-  const stepperHtml = `
-    <div class="nav-stepper">
-      ${mainGroups.map(g => {
-        const on = g.id === activeGroupId;
-        const sub = on
-          ? g.routes.map(r => `<a href="#${r.path}" class="nav-step-sub ${currentRoute === r.path || (r.path === '/weekly' && currentRoute === '/reports') ? 'active' : ''}">${r.label}</a>`).join('')
-          : g.routes.map(r => r.label).join(' · ');
-        // a 안에 a를 넣을 수 없으므로 블록은 div, 그룹 이동은 라벨 링크로
-        return `<div class="nav-step nav-step-${g.id} ${on ? 'active' : ''}"><a href="${groupHref(g)}" class="nav-step-head"><span class="nav-step-en">${g.id.toUpperCase()}</span><span class="nav-step-label">${g.label}</span></a><span class="nav-step-subs">${sub}</span></div>`;
-      }).join('<span class="nav-step-arrow"></span>')}
-    </div>`;
-  const tabbarHtml = `
-    <nav class="nav-tabbar">
-      ${mainGroups.map(g => `<a href="${groupHref(g)}" class="nav-tab nav-tab-${g.id} ${g.id === activeGroupId ? 'active' : ''}"><i data-lucide="${g.routes[0].icon}"></i><span class="nav-tab-label">${g.label}</span><span class="nav-tab-subs">${g.routes.map(r => r.label).join('·')}</span></a>`).join('')}
-      ${isUserAdmin ? `<a href="/admin.html" target="_blank" rel="noopener noreferrer" class="nav-tab nav-tab-admin"><i data-lucide="shield-check"></i><span class="nav-tab-label">관리</span></a>` : ''}
-    </nav>`;
-
   // 사용자 정보
   const userName = profile?.name || profile?.email?.split('@')[0] || '사용자';
   const avatarUrl = profile?.avatar_url || null;
@@ -140,7 +120,7 @@ export async function renderNavigation(currentRoute, profile) {
       await signOut();
     } catch (error) {
       console.error('Logout error:', error);
-      alert('로그아웃 중 오류가 발생했습니다.');
+      toast('로그아웃 중 오류가 발생했습니다.');
     }
   };
 
@@ -218,7 +198,6 @@ export async function renderNavigation(currentRoute, profile) {
             }
             <span class="user-name">${userName}</span>
           </div>
-          ${themeSwitcherHtml()}
           <button id="logout-btn" class="btn btn-secondary" onclick="window.handleNavigationLogout && window.handleNavigationLogout()">
             로그아웃
           </button>
@@ -228,8 +207,6 @@ export async function renderNavigation(currentRoute, profile) {
       <nav class="top-navigation-grouped">
         ${navGroupsHtml}
       </nav>
-      ${stepperHtml}
-      ${tabbarHtml}
       <!-- 3줄: 날짜 바 (오늘 탭일 때만) -->
       ${dateBarHtml}
     </div>

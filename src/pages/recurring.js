@@ -1,3 +1,4 @@
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
@@ -220,7 +221,7 @@ async function loadRecurringTasks(profile) {
     if (window.lucide?.createIcons) window.lucide.createIcons();
   } catch (error) {
     console.error('Error loading recurring tasks:', error);
-    alert('반복업무를 불러오는 중 오류가 발생했습니다.');
+    toast('반복업무를 불러오는 중 오류가 발생했습니다.');
   }
 }
 
@@ -349,7 +350,7 @@ function setupEventHandlers(profile) {
         window.openRecurringModal(null, profile);
       } else {
         console.error('openRecurringModal function not found');
-        alert('추가 기능을 불러오는 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+        toast('추가 기능을 불러오는 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
       }
     });
   }
@@ -474,13 +475,13 @@ function setupRecurringModalEvents(profile) {
   if (saveBtn) {
     saveBtn.onclick = async () => {
       if (!titleInput || !titleInput.value.trim()) {
-        alert('할일을 입력해주세요.');
+        toast('할일을 입력해주세요.');
         titleInput?.focus();
         return;
       }
 
       if (!startDateInput || !startDateInput.value) {
-        alert('시작일을 선택해주세요.');
+        toast('시작일을 선택해주세요.');
         startDateInput?.focus();
         return;
       }
@@ -489,7 +490,7 @@ function setupRecurringModalEvents(profile) {
       let repeatConfig = {};
       if (repeatTypeInput.value === 'weekly') {
         if (!weeklyDayInput || !weeklyDayInput.value) {
-          alert('요일을 선택해주세요.');
+          toast('요일을 선택해주세요.');
           return;
         }
         repeatConfig = { day_of_week: parseInt(weeklyDayInput.value) };
@@ -500,14 +501,14 @@ function setupRecurringModalEvents(profile) {
         
         // 검증: 최소 1개 선택
         if (selectedDays.length === 0) {
-          alert('최소 1개 이상의 요일을 선택해주세요.');
+          toast('최소 1개 이상의 요일을 선택해주세요.');
           return;
         }
         
         // 검증: 0~6 범위 체크 및 중복 제거
         const validDays = [...new Set(selectedDays.filter(d => d >= 0 && d <= 6))];
         if (validDays.length === 0) {
-          alert('올바른 요일을 선택해주세요.');
+          toast('올바른 요일을 선택해주세요.');
           return;
         }
         
@@ -516,7 +517,7 @@ function setupRecurringModalEvents(profile) {
         repeatConfig = { days_of_week: validDays };
       } else if (repeatTypeInput.value === 'monthly') {
         if (!monthlyDayInput || !monthlyDayInput.value || parseInt(monthlyDayInput.value) < 1 || parseInt(monthlyDayInput.value) > 31) {
-          alert('날짜를 1~31 사이로 입력해주세요.');
+          toast('날짜를 1~31 사이로 입력해주세요.');
           return;
         }
         repeatConfig = { day_of_month: parseInt(monthlyDayInput.value) };
@@ -554,7 +555,7 @@ function setupRecurringModalEvents(profile) {
         await loadRecurringTasks(profile);
       } catch (error) {
         console.error('Error saving recurring task:', error);
-        alert('반복업무 저장 중 오류가 발생했습니다.');
+        toast('반복업무 저장 중 오류가 발생했습니다.');
       }
     };
   }
@@ -635,7 +636,7 @@ async function deleteRecurringTask(taskId, profile) {
     await loadRecurringTasks(profile);
   } catch (error) {
     console.error('Error deleting recurring task:', error);
-    alert('반복업무 삭제 중 오류가 발생했습니다.');
+    toast('반복업무 삭제 중 오류가 발생했습니다.');
   }
 }
 
@@ -751,7 +752,7 @@ async function registerRecurringTaskToTodos(taskId, profile) {
     }
     
     if (datesToCheck.length === 0) {
-      alert('등록할 할일이 없습니다. 해당 날짜가 없습니다.');
+      toast('등록할 할일이 없습니다. 해당 날짜가 없습니다.');
       return;
     }
     
@@ -786,7 +787,7 @@ async function registerRecurringTaskToTodos(taskId, profile) {
     }
 
     if (todosToInsert.length === 0) {
-      alert('등록할 할일이 없습니다. 모든 날짜에 이미 등록되어 있거나 해당 날짜가 없습니다.');
+      toast('등록할 할일이 없습니다. 모든 날짜에 이미 등록되어 있거나 해당 날짜가 없습니다.');
       return;
     }
 
@@ -797,11 +798,11 @@ async function registerRecurringTaskToTodos(taskId, profile) {
 
     if (insertError) throw insertError;
 
-    alert(`${todosToInsert.length}개의 할일이 등록되었습니다.`);
+    toast(`${todosToInsert.length}개의 할일이 등록되었습니다.`);
     await loadRecurringTasks(profile);
   } catch (error) {
     console.error('Error registering recurring task:', error);
-    alert('할일 등록 중 오류가 발생했습니다.');
+    toast('할일 등록 중 오류가 발생했습니다.');
   } finally {
     // 플래그 해제
     registeringRecurringTasks = false;

@@ -1,3 +1,4 @@
+import { toast } from '../utils/toast.js';
 import { signOut } from '../utils/auth.js';
 import { supabase } from '../config/supabase.js';
 
@@ -10,7 +11,7 @@ export async function renderRejected(profile) {
       await signOut();
     } catch (error) {
       console.error('Logout error:', error);
-      alert('로그아웃 중 오류가 발생했습니다.');
+      toast('로그아웃 중 오류가 발생했습니다.');
     }
   };
   
@@ -28,17 +29,17 @@ export async function renderRejected(profile) {
       if (error) {
         console.error('[Reapply] Error updating status:', error);
         console.error('[Reapply] Error details:', JSON.stringify(error, null, 2));
-        alert(`다시 승인 요청 중 오류가 발생했습니다: ${error.message}`);
+        toast(`다시 승인 요청 중 오류가 발생했습니다: ${error.message}`);
         return;
       }
       
       console.log('[Reapply] Successfully updated status:', data);
-      alert('승인 요청을 다시 보냈습니다. 관리자 확인 후 이용 가능합니다.');
+      toast('승인 요청을 다시 보냈습니다. 관리자 확인 후 이용 가능합니다.');
       // 상태를 pending으로 바꿨으므로 새로고침하여 pending 화면으로 이동
       window.location.reload();
     } catch (error) {
       console.error('[Reapply] Exception:', error);
-      alert('다시 승인 요청 중 오류가 발생했습니다: ' + error.message);
+      toast('다시 승인 요청 중 오류가 발생했습니다: ' + error.message);
     }
   };
   

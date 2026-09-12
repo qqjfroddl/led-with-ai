@@ -1,3 +1,4 @@
+import { toast } from '../utils/toast.js';
 import { signOut } from '../utils/auth.js';
 
 export async function renderExpired(profile) {
@@ -7,7 +8,7 @@ export async function renderExpired(profile) {
       await signOut();
     } catch (error) {
       console.error('Logout error:', error);
-      alert('로그아웃 중 오류가 발생했습니다.');
+      toast('로그아웃 중 오류가 발생했습니다.');
     }
   };
   

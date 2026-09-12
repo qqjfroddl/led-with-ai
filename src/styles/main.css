@@ -1,3 +1,24 @@
+/* ============================================================
+   페이퍼로지 실물 폰트 (팀 절대규칙: 유사 폰트·대체 금지)
+   public/fonts/ 의 두 파일은 정본(deeptactlearning-fonts.netlify.app)의 5Medium·7Bold 원본에서
+   한글 11,172자 + 라틴·기호만 남긴 서브셋이다(fonttools, 2026-09-12 소장님 허용).
+   원본 436KB → 141KB/파일. 600은 700으로 스냅되므로 두 굵기로 충분하다.
+   ============================================================ */
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Paperlogy-5Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/Paperlogy-7Bold.woff2') format('woff2');
+}
+
 /* 기본 스타일 */
 * {
   margin: 0;
@@ -38,7 +59,10 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Paperlogy', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 500;
+  word-break: keep-all; /* 한국어 어절 단위 줄바꿈 */
+  -webkit-font-smoothing: antialiased;
   background: var(--bg-secondary);
   color: var(--text-primary);
   line-height: 1.6;
@@ -1517,3 +1541,32 @@ input[type="date"]:focus {
 @media (max-width: 768px) {
   .theme-switch { max-width: 96px; font-size: 0.72rem; padding: 0.3rem 0.25rem; }
 }
+
+/* ============================================================
+   토스트 알림 (src/utils/toast.js) — alert() 137곳 대체 (2026-09-12)
+   화면 하단 중앙, 최대 3개 쌓임, 클릭하면 닫힘. 색은 paper 토큰을 쓰되 없으면 기본값.
+   ============================================================ */
+.toast-region {
+  position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: min(92vw, 420px); z-index: 2000; pointer-events: none;
+}
+.toast {
+  pointer-events: auto; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-height: 44px; padding: 10px 14px; box-sizing: border-box;
+  border-radius: 12px; border: 1px solid transparent;
+  background: var(--t-text, #2A2622); color: #fff;
+  font-size: 0.9rem; line-height: 1.45; word-break: keep-all;
+  box-shadow: 0 6px 20px rgba(42,38,34,.18);
+  animation: toast-in .22s ease-out;
+}
+.toast[data-type="success"] { background: #2F6B4F; }
+.toast[data-type="error"]   { background: #8C3B32; }
+.toast[data-type="warn"]    { background: #8A6A1F; }
+.toast-icon { flex: 0 0 18px; width: 18px; height: 18px; }
+.toast-text { flex: 1; }
+.toast.is-leaving { animation: toast-out .18s ease-in forwards; }
+@keyframes toast-in  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .toast, .toast.is-leaving { animation: none; } }

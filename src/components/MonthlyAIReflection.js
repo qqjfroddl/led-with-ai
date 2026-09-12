@@ -1,4 +1,5 @@
 // 월간 AI 성찰 UI 컴포넌트
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getMonthStart } from '../utils/date.js';
 
@@ -57,7 +58,7 @@ async function getMonthlyAIReflection(monthStart) {
       .maybeSingle(); // .single() 대신 .maybeSingle() 사용 (결과 없을 때 406 방지)
     
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Query timeout')), 5000)
+      setTimeout(() => reject(new Error('Query timeout')), 15000) // 5초는 느린 망에서 정상 응답도 오류로 보였다(7/18 B2)
     );
     
     const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
@@ -600,7 +601,7 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
         await onGenerate(monthStart);
       } catch (error) {
         console.error('Error generating AI reflection:', error);
-        alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
+        toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i> AI 성찰 생성하기';
         
@@ -632,7 +633,7 @@ export function initMonthlyAIReflection(onGenerate, monthStart) {
         await onGenerate(monthStart);
       } catch (error) {
         console.error('Error regenerating AI reflection:', error);
-        alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
+        toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         regenerateBtn.disabled = false;
         regenerateBtn.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i> 다시 생성';
         

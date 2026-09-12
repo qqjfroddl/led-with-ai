@@ -1,3 +1,4 @@
+import { toast } from './utils/toast.js';
 import './vendor.js'; // 외부 라이브러리 전역(window.luxon 등)을 가장 먼저 세운다
 import { supabase, getSupabase } from './config/supabase.js';
 import { getCurrentProfile, isAdmin, signOut } from './utils/auth.js';
@@ -712,7 +713,7 @@ window.updateUserStatus = async function(userId, newStatus) {
       
       if (checkError) {
         console.error('[Admin] Error checking user before delete:', checkError);
-        alert(`사용자를 찾을 수 없습니다: ${checkError.message}`);
+        toast(`사용자를 찾을 수 없습니다: ${checkError.message}`);
         return;
       }
       
@@ -738,7 +739,7 @@ window.updateUserStatus = async function(userId, newStatus) {
           errorMsg += 'CREATE POLICY "profiles_admin_delete_all" ON public.profiles\n';
           errorMsg += '  FOR DELETE USING (public.is_admin());';
         }
-        alert(errorMsg);
+        toast(errorMsg);
         return;
       }
 
@@ -753,7 +754,7 @@ window.updateUserStatus = async function(userId, newStatus) {
       
       if (!verifyError && verifyData) {
         console.warn('[Admin] User still exists after delete:', verifyData);
-        alert('삭제가 완료되지 않았을 수 있습니다. 새로고침 후 확인해주세요.');
+        toast('삭제가 완료되지 않았을 수 있습니다. 새로고침 후 확인해주세요.');
       } else {
         console.log('[Admin] Delete verified: user no longer exists');
       }
@@ -762,10 +763,10 @@ window.updateUserStatus = async function(userId, newStatus) {
       await loadUsers();
       render();
       
-      alert('사용자가 삭제되었습니다.');
+      toast('사용자가 삭제되었습니다.');
     } catch (err) {
       console.error('[Admin] Delete exception:', err);
-      alert('삭제 중 예외가 발생했습니다: ' + err.message);
+      toast('삭제 중 예외가 발생했습니다: ' + err.message);
     }
     return;
   }
@@ -786,14 +787,14 @@ window.updateUserStatus = async function(userId, newStatus) {
     .eq('id', userId);
 
   if (error) {
-    alert('오류가 발생했습니다: ' + error.message);
+    toast('오류가 발생했습니다: ' + error.message);
     console.error('Error updating user status:', error);
     return;
   }
 
   await loadUsers();
   render();
-  alert('상태가 변경되었습니다.');
+  toast('상태가 변경되었습니다.');
 };
 
 async function updateUserStatusBulk(ids, newStatus) {
@@ -830,7 +831,7 @@ async function updateUserStatusBulk(ids, newStatus) {
           errorMsg += 'CREATE POLICY "profiles_admin_delete_all" ON public.profiles\n';
           errorMsg += '  FOR DELETE USING (public.is_admin());';
         }
-        alert(errorMsg);
+        toast(errorMsg);
         return;
       }
 
@@ -841,10 +842,10 @@ async function updateUserStatusBulk(ids, newStatus) {
       await loadUsers();
       render();
       
-      alert(`선택한 ${ids.length}명이 삭제되었습니다.`);
+      toast(`선택한 ${ids.length}명이 삭제되었습니다.`);
     } catch (err) {
       console.error('[Admin] Bulk delete exception:', err);
-      alert('삭제 중 예외가 발생했습니다: ' + err.message);
+      toast('삭제 중 예외가 발생했습니다: ' + err.message);
     }
     return;
   }
@@ -863,7 +864,7 @@ async function updateUserStatusBulk(ids, newStatus) {
     .in('id', ids);
 
   if (error) {
-    alert('오류가 발생했습니다: ' + error.message);
+    toast('오류가 발생했습니다: ' + error.message);
     console.error('Bulk update error:', error);
     return;
   }
@@ -871,7 +872,7 @@ async function updateUserStatusBulk(ids, newStatus) {
   selectedPendingIds.clear();
   await loadUsers();
   render();
-  alert(`선택한 ${ids.length}명 상태가 변경되었습니다.`);
+  toast(`선택한 ${ids.length}명 상태가 변경되었습니다.`);
 }
 
 function bindSelectionEvents() {
@@ -1025,7 +1026,7 @@ window.refreshUsers = async function(event) {
     // 세션/권한 재검증
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+      toast('로그인이 만료되었습니다. 다시 로그인해주세요.');
       window.location.href = '/index.html';
       return;
     }
@@ -1033,7 +1034,7 @@ window.refreshUsers = async function(event) {
     currentProfile = await getCurrentProfile();
     const adminCheck = await isAdmin();
     if (!adminCheck) {
-      alert('관리자 권한이 없습니다. 메인으로 이동합니다.');
+      toast('관리자 권한이 없습니다. 메인으로 이동합니다.');
       window.location.href = '/index.html';
       return;
     }
@@ -1055,14 +1056,10 @@ window.refreshUsers = async function(event) {
     }
     
     // 성공 메시지 (선택적)
-    const toast = document.createElement('div');
-    toast.textContent = '목록이 갱신되었습니다.';
-    toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success-color); color: white; padding: 1rem; border-radius: 0.5rem; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
+    toast('목록이 갱신되었습니다.', 'success');
   } catch (error) {
     console.error('[Admin] Refresh error:', error);
-    alert('목록을 새로고침하는 중 오류가 발생했습니다: ' + error.message);
+    toast('목록을 새로고침하는 중 오류가 발생했습니다: ' + error.message);
     const button = event?.target || document.querySelector('button[onclick*="refreshUsers"]');
     if (button) {
       button.disabled = false;
@@ -1152,7 +1149,7 @@ window.saveExpiryDate = async function(userId) {
       errorMessage += '   - Ctrl+Shift+R (강력 새로고침)';
     }
     
-    alert(errorMessage);
+    toast(errorMessage);
     console.error('Error updating expiry date:', error);
     console.error('Full error object:', JSON.stringify(error, null, 2));
     return;
@@ -1161,7 +1158,7 @@ window.saveExpiryDate = async function(userId) {
   document.querySelector('.modal').remove();
   await loadUsers();
   render();
-  alert('사용 기한이 설정되었습니다.');
+  toast('사용 기한이 설정되었습니다.');
 };
 
 // 일괄 기한 설정 모달 열기
@@ -1171,7 +1168,7 @@ window.openBulkExpiryModal = function(sourceType = 'approved') {
     : Array.from(selectedApprovedIds);
     
   if (selectedIds.length === 0) {
-    alert('사용자를 선택해주세요.');
+    toast('사용자를 선택해주세요.');
     return;
   }
 
@@ -1223,7 +1220,7 @@ window.saveBulkExpiryDate = async function() {
     : Array.from(selectedApprovedIds);
     
   if (selectedIds.length === 0) {
-    alert('사용자를 선택해주세요.');
+    toast('사용자를 선택해주세요.');
     return;
   }
 
@@ -1233,7 +1230,7 @@ window.saveBulkExpiryDate = async function() {
     : null;
 
   if (type === 'limited' && !expiryDate) {
-    alert('날짜를 선택해주세요.');
+    toast('날짜를 선택해주세요.');
     return;
   }
 
@@ -1268,7 +1265,7 @@ window.saveBulkExpiryDate = async function() {
       errorMessage += '   - Ctrl+Shift+R (강력 새로고침)';
     }
     
-    alert(errorMessage);
+    toast(errorMessage);
     console.error('Error updating bulk expiry date:', error);
     console.error('Full error object:', JSON.stringify(error, null, 2));
     return;
@@ -1284,7 +1281,7 @@ window.saveBulkExpiryDate = async function() {
   
   await loadUsers();
   render();
-  alert(`선택한 ${selectedIds.length}명의 사용 기한이 설정되었습니다.`);
+  toast(`선택한 ${selectedIds.length}명의 사용 기한이 설정되었습니다.`);
 };
 
 // 사용자별 주간 통계 조회 함수
@@ -1463,7 +1460,7 @@ async function addToChallenge(userIds) {
     
     if (error) {
       console.error('[Admin] Error adding to challenge:', error);
-      alert('챌린지 참가자 추가 실패: ' + error.message);
+      toast('챌린지 참가자 추가 실패: ' + error.message);
       return;
     }
     
@@ -1474,10 +1471,10 @@ async function addToChallenge(userIds) {
     await loadUsers();
     render();
     
-    alert(`선택한 ${userIds.length}명이 챌린지 참가자로 추가되었습니다.`);
+    toast(`선택한 ${userIds.length}명이 챌린지 참가자로 추가되었습니다.`);
   } catch (err) {
     console.error('[Admin] Add to challenge exception:', err);
-    alert('챌린지 참가자 추가 중 예외가 발생했습니다: ' + err.message);
+    toast('챌린지 참가자 추가 중 예외가 발생했습니다: ' + err.message);
   }
 }
 
@@ -1495,7 +1492,7 @@ window.removeFromChallenge = async function(userId) {
     
     if (error) {
       console.error('[Admin] Error removing from challenge:', error);
-      alert('챌린지에서 제외 실패: ' + error.message);
+      toast('챌린지에서 제외 실패: ' + error.message);
       return;
     }
     
@@ -1505,10 +1502,10 @@ window.removeFromChallenge = async function(userId) {
     await loadUsers();
     render();
     
-    alert('챌린지에서 제외되었습니다.');
+    toast('챌린지에서 제외되었습니다.');
   } catch (err) {
     console.error('[Admin] Remove from challenge exception:', err);
-    alert('챌린지에서 제외 중 예외가 발생했습니다: ' + err.message);
+    toast('챌린지에서 제외 중 예외가 발생했습니다: ' + err.message);
   }
 };
 
@@ -1528,7 +1525,7 @@ async function removeFromChallengeBulk(userIds) {
     
     if (error) {
       console.error('[Admin] Error bulk removing from challenge:', error);
-      alert('챌린지에서 제외 실패: ' + error.message);
+      toast('챌린지에서 제외 실패: ' + error.message);
       return;
     }
     
@@ -1539,10 +1536,10 @@ async function removeFromChallengeBulk(userIds) {
     await loadUsers();
     render();
     
-    alert(`선택한 ${userIds.length}명이 챌린지에서 제외되었습니다.`);
+    toast(`선택한 ${userIds.length}명이 챌린지에서 제외되었습니다.`);
   } catch (err) {
     console.error('[Admin] Bulk remove from challenge exception:', err);
-    alert('챌린지에서 제외 중 예외가 발생했습니다: ' + err.message);
+    toast('챌린지에서 제외 중 예외가 발생했습니다: ' + err.message);
   }
 }
 

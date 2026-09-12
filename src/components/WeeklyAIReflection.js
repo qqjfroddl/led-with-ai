@@ -1,4 +1,5 @@
 // 주간 AI 성찰 UI 컴포넌트
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getWeekStart } from '../utils/date.js';
 
@@ -584,7 +585,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
         await onGenerate(weekStart);
       } catch (error) {
         console.error('Error generating AI reflection:', error);
-        alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
+        toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i data-lucide="sparkles" style="width: 18px; height: 18px; stroke-width: 2.5;"></i> AI 성찰 생성하기';
         
@@ -616,7 +617,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
         await onGenerate(weekStart);
       } catch (error) {
         console.error('Error regenerating AI reflection:', error);
-        alert('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
+        toast('AI 성찰 생성 중 오류가 발생했습니다: ' + error.message);
         regenerateBtn.disabled = false;
         regenerateBtn.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px; stroke-width: 2.5;"></i> 다시 생성';
         

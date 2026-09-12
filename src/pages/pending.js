@@ -1,3 +1,4 @@
+import { toast } from '../utils/toast.js';
 import { signOut } from '../utils/auth.js';
 
 export async function renderPending(profile) {
@@ -8,7 +9,7 @@ export async function renderPending(profile) {
       // 로그아웃 후 라우터가 자동으로 로그인 화면으로 이동함
     } catch (error) {
       console.error('Logout error:', error);
-      alert('로그아웃 중 오류가 발생했습니다.');
+      toast('로그아웃 중 오류가 발생했습니다.');
     }
   };
 

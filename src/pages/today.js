@@ -1,4 +1,5 @@
 // 오늘 페이지 (루틴 + 할일)
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
@@ -33,13 +34,6 @@ export async function renderToday() {
             <i data-lucide="chevron-down" style="width: 20px; height: 20px; color: #0f766e;"></i>
           </button>
         </div>
-        <div id="routines-progress" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #0f766e; font-weight: 600;">
-          <span>✓ 0 / 0</span>
-          <div style="width: 60px; height: 8px; background: rgba(20, 184, 166, 0.2); border-radius: 4px; overflow: hidden;">
-            <div style="width: 0%; height: 100%; background: linear-gradient(90deg, #14b8a6, #10b981); transition: width 0.3s;"></div>
-          </div>
-          <span>0%</span>
-        </div>
       </div>
       <div id="routines-content" style="display: block;">
         <div style="display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 1rem; align-items: start;">
@@ -48,7 +42,6 @@ export async function renderToday() {
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
               <i data-lucide="sunrise" style="width: 20px; height: 20px; color: #f59e0b;"></i>
               <h4 style="color: #0f766e; font-weight: 600; margin: 0;">모닝루틴</h4>
-              <span id="morning-progress" style="font-size: 0.85rem; color: #6b7280;">0 / 0</span>
             </div>
             <div id="morning-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
             <div id="morning-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
@@ -64,7 +57,6 @@ export async function renderToday() {
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
               <i data-lucide="cloud-sun" style="width: 20px; height: 20px; color: #06b6d4;"></i>
               <h4 style="color: #0f766e; font-weight: 600; margin: 0;">데이타임 루틴</h4>
-              <span id="daytime-progress" style="font-size: 0.85rem; color: #6b7280;">0 / 0</span>
             </div>
             <div id="daytime-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
             <div id="daytime-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
@@ -80,7 +72,6 @@ export async function renderToday() {
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
               <i data-lucide="moon" style="width: 20px; height: 20px; color: #6366f1;"></i>
               <h4 style="color: #0f766e; font-weight: 600; margin: 0;">나이트루틴</h4>
-              <span id="night-progress" style="font-size: 0.85rem; color: #6b7280;">0 / 0</span>
             </div>
             <div id="night-routines-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
             <div id="night-empty" style="color: #9ca3af; font-size: 0.9rem; padding: 1rem 0; text-align: center; display: none;">
@@ -623,26 +614,7 @@ function renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checked
     noData.style.display = 'none';
   }
 
-  // 진행률 업데이트
-  const totalRoutines = sortedMorningRoutines.length + sortedDaytimeRoutines.length + sortedNightRoutines.length;
-  const checkedCount = checkedRoutineIds.size;
-  const progress = totalRoutines > 0 ? (checkedCount / totalRoutines * 100).toFixed(0) : 0;
-
-  document.getElementById('routines-progress').innerHTML = `
-    <span>✓ ${checkedCount} / ${totalRoutines}</span>
-    <div style="width: 60px; height: 8px; background: rgba(20, 184, 166, 0.2); border-radius: 4px; overflow: hidden; --t-progress: ${progress}%;">
-      <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #14b8a6, #10b981); transition: width 0.3s;"></div>
-    </div>
-    <span>${progress}%</span>
-  `;
-
-  const morningChecked = sortedMorningRoutines.filter(r => checkedRoutineIds.has(r.id)).length;
-  const daytimeChecked = sortedDaytimeRoutines.filter(r => checkedRoutineIds.has(r.id)).length;
-  const nightChecked = sortedNightRoutines.filter(r => checkedRoutineIds.has(r.id)).length;
-
-  document.getElementById('morning-progress').textContent = `${morningChecked} / ${sortedMorningRoutines.length}`;
-  document.getElementById('daytime-progress').textContent = `${daytimeChecked} / ${sortedDaytimeRoutines.length}`;
-  document.getElementById('night-progress').textContent = `${nightChecked} / ${sortedNightRoutines.length}`;
+  // 달성률(✓ n/m·바·%)은 표시하지 않는다 — 2026-09-12 소장님 결정(실패를 사건화하지 않음, 브랜딩폼 Q11 ④)
 
   // 체크박스 이벤트 바인딩
   document.querySelectorAll('.routine-item input[type="checkbox"]').forEach(checkbox => {
@@ -671,7 +643,7 @@ async function toggleRoutineCheck(routineId, date, profile, checked) {
     if (error) throw error;
   } catch (error) {
     console.error('Error toggling routine check:', error);
-    alert('루틴 체크 중 오류가 발생했습니다.');
+    toast('루틴 체크 중 오류가 발생했습니다.');
   }
 }
 
@@ -1224,7 +1196,7 @@ function setupEventHandlers(date, profile, timezone) {
 
       const title = newInput.value.trim();
       if (!title) {
-        alert('할일을 입력해주세요.');
+        toast('할일을 입력해주세요.');
         return;
       }
 
@@ -1258,7 +1230,7 @@ function setupEventHandlers(date, profile, timezone) {
         await loadTodos(currentDate, profile, timezone); // ✅ currentDate 사용
       } catch (error) {
         console.error('Error adding todo:', error);
-        alert('할일 추가 중 오류가 발생했습니다.');
+        toast('할일 추가 중 오류가 발생했습니다.');
       } finally {
         addingTodo = false;
         newAddBtn.disabled = false;
@@ -2187,7 +2159,7 @@ async function handleDragDropLegacy(draggedTodoId, targetTodoId, insertBefore, d
     await loadTodos(date, profile, timezone);
   } catch (error) {
     console.error('Error handling drag drop:', error);
-    alert('순서 변경 중 오류가 발생했습니다.');
+    toast('순서 변경 중 오류가 발생했습니다.');
   }
 }
 
@@ -2281,7 +2253,7 @@ async function handleDragDrop(draggedTodoId, targetTodoId, insertBefore, targetC
     await loadTodos(date, profile, timezone);
   } catch (error) {
     console.error('Error handling drag drop:', error);
-    alert('?쒖꽌 蹂寃?以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+    toast('?쒖꽌 蹂寃?以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
   }
 }
 
@@ -2350,7 +2322,7 @@ async function toggleTodoDone(todoId, isDone) {
     }
   } catch (error) {
     console.error('Error toggling todo:', error);
-    alert('할일 상태 변경 중 오류가 발생했습니다.');
+    toast('할일 상태 변경 중 오류가 발생했습니다.');
   } finally {
     syncingTodo = false;
   }
@@ -2366,13 +2338,13 @@ async function deleteTodo(todoId) {
     if (error) throw error;
   } catch (error) {
     console.error('Error deleting todo:', error);
-    alert('할일 삭제 중 오류가 발생했습니다.');
+    toast('할일 삭제 중 오류가 발생했습니다.');
   }
 }
 
 async function saveTodoEdit(todoId, newTitle, date, profile, timezone = 'Asia/Seoul') {
   if (!newTitle.trim()) {
-    alert('할일을 입력해주세요.');
+    toast('할일을 입력해주세요.');
     return;
   }
 
@@ -2405,7 +2377,7 @@ async function saveTodoEdit(todoId, newTitle, date, profile, timezone = 'Asia/Se
     await loadTodos(date, profile, timezone);
   } catch (error) {
     console.error('Error saving todo:', error);
-    alert('할일 수정 중 오류가 발생했습니다.');
+    toast('할일 수정 중 오류가 발생했습니다.');
   }
 }
 
@@ -2489,7 +2461,7 @@ async function moveTodoUp(todoId, date, profile, timezone = 'Asia/Seoul') {
     await loadTodos(date, profile, timezone);
   } catch (error) {
     console.error('Error moving todo up:', error);
-    alert('순서 변경 중 오류가 발생했습니다.');
+    toast('순서 변경 중 오류가 발생했습니다.');
   }
 }
 
@@ -2528,7 +2500,7 @@ async function moveTodoDown(todoId, date, profile, timezone = 'Asia/Seoul') {
     await loadTodos(date, profile, timezone);
   } catch (error) {
     console.error('Error moving todo down:', error);
-    alert('순서 변경 중 오류가 발생했습니다.');
+    toast('순서 변경 중 오류가 발생했습니다.');
   }
 }
 
@@ -2795,7 +2767,7 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
 
     if (fetchError) throw fetchError;
     if (!originalTodo) {
-      alert('할일을 찾을 수 없습니다.');
+      toast('할일을 찾을 수 없습니다.');
       return;
     }
 
@@ -3016,7 +2988,7 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
     }, 100);
   } catch (error) {
     console.error('Error carrying over todo:', error);
-    alert('할일 이어가기 중 오류가 발생했습니다.');
+    toast('할일 이어가기 중 오류가 발생했습니다.');
   }
 }
 
@@ -3051,7 +3023,7 @@ async function carryOverAllTodos(profile, timezone = 'Asia/Seoul') {
     await loadTodos(today, profile, timezone);
   } catch (error) {
     console.error('Error carrying over all todos:', error);
-    alert('모든 할일 이어가기 중 오류가 발생했습니다.');
+    toast('모든 할일 이어가기 중 오류가 발생했습니다.');
   }
 }
 
@@ -3106,7 +3078,7 @@ async function skipTodo(todoId, profile, timezone = 'Asia/Seoul') {
     }, 100);
   } catch (error) {
     console.error('Error skipping todo:', error);
-    alert('할일 포기 중 오류가 발생했습니다.');
+    toast('할일 포기 중 오류가 발생했습니다.');
   }
 }
 
@@ -3125,7 +3097,7 @@ async function saveReflection(date, profile) {
 
   // 4개 모두 공란이면 저장 불가
   if (!grateful && !wellDone && !regret && !tomorrowPromise) {
-    alert('최소 한 가지 항목은 입력해주세요.');
+    toast('최소 한 가지 항목은 입력해주세요.');
     return;
   }
 
@@ -3145,7 +3117,7 @@ async function saveReflection(date, profile) {
 
     if (error) throw error;
 
-    alert('성찰이 저장되었습니다.');
+    toast('성찰이 저장되었습니다.');
     
     // ✅ 저장 후 섹션 접기
     const content = document.getElementById('reflection-content');
@@ -3175,7 +3147,7 @@ async function saveReflection(date, profile) {
     await loadReflection(date, profile);
   } catch (error) {
     console.error('Error saving reflection:', error);
-    alert('성찰 저장 중 오류가 발생했습니다.');
+    toast('성찰 저장 중 오류가 발생했습니다.');
   }
 }
 
@@ -3526,7 +3498,7 @@ async function moveTodoDate(todoId, newDate, currentSelectedDate, profile, timez
     await loadTodos(currentSelectedDate, profile, timezone);
   } catch (error) {
     console.error('Error moving todo date:', error);
-    alert('할일 날짜 이동 중 오류가 발생했습니다.');
+    toast('할일 날짜 이동 중 오류가 발생했습니다.');
   }
 }
 
@@ -3544,7 +3516,7 @@ function openTodoDuplicatePicker(todoId, currentDate, selectedDate, profile, tim
   const todo = todos.find(t => t.id === todoId);
   if (!todo) {
     console.error('Todo not found for duplication', { todoId });
-    alert('할일을 찾을 수 없습니다.');
+    toast('할일을 찾을 수 없습니다.');
     return;
   }
   
@@ -3793,6 +3765,6 @@ async function duplicateTodo(todoId, newDate, currentSelectedDate, profile, time
     await loadTodos(currentSelectedDate, profile, timezone);
   } catch (error) {
     console.error('Error duplicating todo:', error);
-    alert('할일 복제 중 오류가 발생했습니다.');
+    toast('할일 복제 중 오류가 발생했습니다.');
   }
 }

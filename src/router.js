@@ -1,3 +1,4 @@
+import { toast } from './utils/toast.js';
 import { getCurrentProfile, isApprovedUser } from './utils/auth.js';
 import { renderToday } from './pages/today.js';
 import { renderReports } from './pages/reports.js';
@@ -383,7 +384,7 @@ class Router {
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = `로그인 실패: ${error.message || '알 수 없는 오류'}`;
               } else {
-                alert(`로그인 실패: ${error.message || '알 수 없는 오류'}`);
+                toast(`로그인 실패: ${error.message || '알 수 없는 오류'}`);
               }
               loginBtn.disabled = false;
               loginBtn.textContent = 'Google로 로그인';
@@ -399,8 +400,17 @@ class Router {
       }
 
     // 승인 상태별 처리
-    if (profile.status === 'pending' || profile.status === 'rejected') {
+    if (profile.status === 'pending') {
       app.innerHTML = await renderPending(profile);
+      this.renderIcons();
+      this.lastRenderedState = currentState;
+      this.isHandlingRoute = false;
+      return;
+    }
+
+    // 거절자는 대기 화면이 아니라 거절 화면(다시 승인 요청 버튼)으로 — 7/18 결함 B1
+    if (profile.status === 'rejected') {
+      app.innerHTML = await renderRejected(profile);
       this.renderIcons();
       // 렌더링 완료 후 상태 저장
       this.lastRenderedState = currentState;

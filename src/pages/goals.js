@@ -1,3 +1,4 @@
+import { toast } from '../utils/toast.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
@@ -661,7 +662,7 @@ export async function renderGoals() {
           }
         } catch (error) {
           console.error('[Load Failed]', error);
-          alert('루틴을 불러오는 중 오류가 발생했습니다.');
+          toast('루틴을 불러오는 중 오류가 발생했습니다.');
           switchToEditMode(); // 오류 시 편집 모드로
         } finally {
           document.getElementById('routines-loading').style.display = 'none';
@@ -796,7 +797,7 @@ export async function renderGoals() {
         const currentCount = container.children.length;
         
         if (currentCount >= 10) {
-          alert(`${type === 'morning' ? '모닝' : '나이트'}루틴은 최대 10개까지 가능합니다.`);
+          toast(`${type === 'morning' ? '모닝' : '나이트'}루틴은 최대 10개까지 가능합니다.`);
           return;
         }
 
@@ -871,7 +872,7 @@ export async function renderGoals() {
             } else if (!currentValue) {
               // 빈 값이면 아무것도 하지 않음
             } else if (container.children.length >= 10) {
-              alert(`${type === 'morning' ? '모닝' : '나이트'}루틴은 최대 10개까지 가능합니다.`);
+              toast(`${type === 'morning' ? '모닝' : '나이트'}루틴은 최대 10개까지 가능합니다.`);
             }
           }
         });
@@ -1058,7 +1059,7 @@ export async function renderGoals() {
 
         // 유효성 검사
         if (newMorningRoutines.length === 0 && newDaytimeRoutines.length === 0 && newNightRoutines.length === 0) {
-          alert('최소 1개의 루틴을 입력해주세요.');
+          toast('최소 1개의 루틴을 입력해주세요.');
           return;
         }
 
@@ -1122,12 +1123,12 @@ export async function renderGoals() {
           daytimeRoutines = newDaytimeRoutines;
           nightRoutines = newNightRoutines;
 
-          alert('저장되었습니다!');
+          toast('저장되었습니다!');
           displayRoutines();
 
         } catch (error) {
           console.error('[Save Failed]', error);
-          alert(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+          toast(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
         }
       }
 
@@ -1452,7 +1453,7 @@ export async function renderGoals() {
           const pastPlans = await fetchAllPastRoutineMonths(profile.id, currentMonth);
           
           if (pastPlans.length === 0) {
-            alert('과거 루틴이 없습니다.\n루틴을 최소 한 달 이상 사용해야 합니다.');
+            toast('과거 루틴이 없습니다.\n루틴을 최소 한 달 이상 사용해야 합니다.');
             return;
           }
           
@@ -1496,7 +1497,7 @@ export async function renderGoals() {
           
         } catch (err) {
           console.error('[Show Modal Error]', err);
-          alert('과거 루틴 조회 실패: ' + err.message);
+          toast('과거 루틴 조회 실패: ' + err.message);
         }
       }
 
@@ -1588,7 +1589,7 @@ export async function renderGoals() {
           const selected = window._selectedRoutinesToCopy;
           
           if (!selected) {
-            alert('선택한 루틴이 없습니다.');
+            toast('선택한 루틴이 없습니다.');
             return;
           }
           
@@ -1677,7 +1678,7 @@ export async function renderGoals() {
           daytimeRoutines = routines.daytime || [];
           nightRoutines = routines.night || [];
           
-          alert(`✅ ${selected.year}년 ${selected.month}월 루틴이 복사되었습니다!`);
+          toast(`✅ ${selected.year}년 ${selected.month}월 루틴이 복사되었습니다!`);
           
           displayRoutines();
           
@@ -1686,7 +1687,7 @@ export async function renderGoals() {
           
         } catch (err) {
           console.error('[Execute Copy Error]', err);
-          alert('루틴 복사 실패: ' + err.message);
+          toast('루틴 복사 실패: ' + err.message);
         }
       }
 
@@ -1995,7 +1996,7 @@ export async function renderGoals() {
           }
         } catch (error) {
           console.error('[Yearly Goals Load Failed]', error);
-          alert('연간 목표를 불러오는 중 오류가 발생했습니다.');
+          toast('연간 목표를 불러오는 중 오류가 발생했습니다.');
           switchToYearlyGoalsEditMode();
         } finally {
           document.getElementById('yearly-goals-loading').style.display = 'none';
@@ -2099,11 +2100,11 @@ export async function renderGoals() {
             work_finance: data.work_finance
           };
 
-          alert('저장되었습니다!');
+          toast('저장되었습니다!');
           displayYearlyGoals();
         } catch (error) {
           console.error('[Yearly Goals Save Failed]', error);
-          alert(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+          toast(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
         }
       }
 
@@ -2156,13 +2157,13 @@ export async function renderGoals() {
           const prevGoals = await fetchPreviousYearGoals(profile.id, selectedYear);
           
           if (!prevGoals) {
-            alert(`${selectedYear - 1}년 목표가 없습니다.`);
+            toast(`${selectedYear - 1}년 목표가 없습니다.`);
             return;
           }
           
           // 작년 목표가 모두 비어있는지 확인
           if (!prevGoals.self_dev && !prevGoals.relationship && !prevGoals.work_finance) {
-            alert(`${selectedYear - 1}년 목표가 비어있습니다.`);
+            toast(`${selectedYear - 1}년 목표가 비어있습니다.`);
             return;
           }
           
@@ -2217,7 +2218,7 @@ export async function renderGoals() {
             work_finance: data.work_finance
           };
           
-          alert(
+          toast(
             `✅ ${selectedYear - 1}년 목표가 ${selectedYear}년으로 복사되었습니다!\n\n` +
             `이제 수정할 수 있습니다.`
           );
@@ -2227,7 +2228,7 @@ export async function renderGoals() {
           
         } catch (error) {
           console.error('[Copy Failed]', error);
-          alert(`복사 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+          toast(`복사 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
         }
       }
       
@@ -2299,7 +2300,7 @@ export async function renderGoals() {
 
         // 최소 1개 영역에 내용이 있어야 함
         if (!selfDev && !relationship && !workFinance) {
-          alert('피드백을 받으려면 최소 1개 영역에 목표를 입력해주세요.');
+          toast('피드백을 받으려면 최소 1개 영역에 목표를 입력해주세요.');
           return;
         }
 
@@ -2329,7 +2330,7 @@ export async function renderGoals() {
           // Edge Function 호출
           const session = await supabase.auth.getSession();
           if (!session.data.session) {
-            alert('로그인이 필요합니다.');
+            toast('로그인이 필요합니다.');
             return;
           }
 
@@ -2355,9 +2356,9 @@ export async function renderGoals() {
 
           if (!response.ok) {
             if (response.status === 429) {
-              alert(`레이트리밋에 도달했습니다.\n\n${result.error}\n\n다음 달에 다시 시도해주세요.`);
+              toast(`레이트리밋에 도달했습니다.\n\n${result.error}\n\n다음 달에 다시 시도해주세요.`);
             } else {
-              alert(`피드백 생성 중 오류가 발생했습니다.\n\n${result.error || '알 수 없는 오류'}`);
+              toast(`피드백 생성 중 오류가 발생했습니다.\n\n${result.error || '알 수 없는 오류'}`);
             }
             return;
           }
@@ -2369,11 +2370,11 @@ export async function renderGoals() {
               improved: result.feedback,
             });
           } else {
-            alert('피드백 생성에 실패했습니다. 다시 시도해주세요.');
+            toast('피드백 생성에 실패했습니다. 다시 시도해주세요.');
           }
         } catch (error) {
           console.error('[AI Yearly Goal Feedback Generation Failed]', error);
-          alert(`피드백 생성 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+          toast(`피드백 생성 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
         } finally {
           // 버튼 복원 (DOM에서 다시 찾아서 안전하게 복원)
           const btn = document.getElementById('ai-feedback-yearly-goals-btn');
@@ -2437,7 +2438,7 @@ export async function renderGoals() {
           document.getElementById('yearly-goal-work-finance-input').value = improvedText;
         }
 
-        alert('피드백이 적용되었습니다.');
+        toast('피드백이 적용되었습니다.');
       }
 
       const handleAIFeedbackYearlyGoals = () => generateAIYearlyGoalFeedback();
@@ -2696,7 +2697,7 @@ export async function renderGoals() {
           }
         } catch (error) {
           console.error('[Monthly Plan Load Failed]', error);
-          alert('월간 실천계획을 불러오는 중 오류가 발생했습니다.');
+          toast('월간 실천계획을 불러오는 중 오류가 발생했습니다.');
           switchToMonthlyPlanEditMode();
         } finally {
           document.getElementById('monthly-plans-loading').style.display = 'none';
@@ -3158,7 +3159,7 @@ export async function renderGoals() {
           
           if (!prevPlanContent || 
               (!prevPlanContent.self_dev && !prevPlanContent.relationship && !prevPlanContent.work_finance)) {
-            alert('지난달 계획이 없습니다.');
+            toast('지난달 계획이 없습니다.');
             return;
           }
           
@@ -3205,11 +3206,11 @@ export async function renderGoals() {
           if (relationshipInput) relationshipInput.value = prevPlanContent.relationship || '';
           if (workFinanceInput) workFinanceInput.value = prevPlanContent.work_finance || '';
           
-          alert('지난달 계획을 복사했습니다. 수정 후 저장해주세요.');
+          toast('지난달 계획을 복사했습니다. 수정 후 저장해주세요.');
           
         } catch (error) {
           console.error('[Copy Previous Month Plan Failed]', error);
-          alert(`지난달 계획 복사 중 오류가 발생했습니다:\n\n${error.message}`);
+          toast(`지난달 계획 복사 중 오류가 발생했습니다:\n\n${error.message}`);
         }
       }
 
@@ -3283,12 +3284,12 @@ export async function renderGoals() {
           }
 
           // 편집 모드로 전환하여 AI 제안 결과 표시
-          alert('AI 제안이 생성되었습니다! 내용을 확인하고 편집한 후 저장해주세요.');
+          toast('AI 제안이 생성되었습니다! 내용을 확인하고 편집한 후 저장해주세요.');
           switchToMonthlyPlanEditMode();
 
         } catch (error) {
           console.error('[AI Monthly Plan Generation Failed]', error);
-          alert(`AI 제안 생성 중 오류가 발생했습니다:\n\n${error.message}\n\n다시 시도해주세요.`);
+          toast(`AI 제안 생성 중 오류가 발생했습니다:\n\n${error.message}\n\n다시 시도해주세요.`);
           document.getElementById('monthly-plans-loading').style.display = 'none';
         }
       }
@@ -3370,11 +3371,11 @@ export async function renderGoals() {
           // linked_year로 연간 목표 다시 로드
           await loadLinkedYearlyGoals(data.linked_year);
 
-          alert('저장되었습니다!');
+          toast('저장되었습니다!');
           displayMonthlyPlan();
         } catch (error) {
           console.error('[Monthly Plan Save Failed]', error);
-          alert(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
+          toast(`저장 중 오류가 발생했습니다.\n\n${error.message}\n\n다시 시도해주세요.`);
         }
       }
 
