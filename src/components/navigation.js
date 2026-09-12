@@ -1,5 +1,6 @@
 import { signOut } from '../utils/auth.js';
 import { formatSelectedDate } from '../state/dateState.js';
+import { themeSwitcherHtml } from '../theme.js';
 
 /**
  * 네비게이션 바 렌더링 (헤더 포함)
@@ -13,7 +14,6 @@ export async function renderNavigation(currentRoute, profile) {
     {
       id: 'plan',
       label: '계획',
-      color: { bg: '#f3e8ff', border: '#c4b5fd', active: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' },
       routes: [
         { path: '/goals', label: '목표관리', icon: 'target' },
         { path: '/projects', label: '프로젝트', icon: 'folder-kanban' },
@@ -23,7 +23,6 @@ export async function renderNavigation(currentRoute, profile) {
     {
       id: 'do',
       label: '실행',
-      color: { bg: '#e0f2fe', border: '#7dd3fc', active: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' },
       routes: [
         { path: '/today', label: '오늘', icon: 'sun' }
       ]
@@ -31,7 +30,6 @@ export async function renderNavigation(currentRoute, profile) {
     {
       id: 'see',
       label: '리뷰',
-      color: { bg: '#d1fae5', border: '#6ee7b7', active: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
       routes: [
         { path: '/weekly', label: '주간', icon: 'calendar-days' },
         { path: '/monthly', label: '월간', icon: 'calendar-range' },
@@ -46,7 +44,6 @@ export async function renderNavigation(currentRoute, profile) {
     navGroups.push({
       id: 'admin',
       label: '관리',
-      color: { bg: '#fef3c7', border: '#fcd34d', active: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
       routes: [
         { path: '/admin', label: '관리자', icon: 'shield-check', external: true, url: '/admin.html' }
       ]
@@ -77,10 +74,6 @@ export async function renderNavigation(currentRoute, profile) {
                        (route.path === '/weekly' && currentRoute === '/reports') ||
                        (route.path === '/monthly' && currentRoute === '/reports');
       
-      const activeStyle = isActive 
-        ? `background: ${group.color.active}; color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.15);`
-        : `background: white; color: #374151; border-color: ${group.color.border};`;
-      
       // 관리자 탭: 모바일에서는 같은 탭에서 열기 (target="_blank"는 모바일에서 제대로 작동하지 않을 수 있음)
       if (route.external) {
         // 모바일에서는 같은 탭에서 열고, PC에서는 새 탭에서 열기
@@ -88,7 +81,6 @@ export async function renderNavigation(currentRoute, profile) {
         return `
           <a href="${route.url}" target="_blank" rel="noopener noreferrer"
              class="nav-item-new nav-item-external ${isActive ? 'active' : ''}" 
-             style="${activeStyle}"
              data-route="${route.path}"
              data-external-url="${route.url}">
             <i data-lucide="${route.icon}"></i>
@@ -100,7 +92,6 @@ export async function renderNavigation(currentRoute, profile) {
       return `
         <a href="#${route.path}" 
            class="nav-item-new ${isActive ? 'active' : ''}" 
-           style="${activeStyle}"
            data-route="${route.path}">
           <i data-lucide="${route.icon}"></i>
           <span>${route.label}</span>
@@ -109,7 +100,7 @@ export async function renderNavigation(currentRoute, profile) {
     }).join('');
 
     return `
-      <div class="nav-group" data-group="${group.id}" style="background: ${group.color.bg}; border: 1px solid ${group.color.border};">
+      <div class="nav-group" data-group="${group.id}">
         ${group.label ? `<span class="nav-group-label">${group.label}</span>` : ''}
         <div class="nav-group-items">
           ${routesHtml}
@@ -117,6 +108,25 @@ export async function renderNavigation(currentRoute, profile) {
       </div>
     `;
   }).join('');
+
+  // 4안(흰 종이·하단 탭) 전용 네비: 상단 스텝퍼(PLAN→DO→SEE, 활성 그룹만 하위 탭) + 하단 탭바. 기본 테마에서는 CSS로 숨긴다
+  const mainGroups = navGroups.filter(g => g.id !== 'admin');
+  const groupHref = (g) => `#${g.routes[0].path}`;
+  const stepperHtml = `
+    <div class="nav-stepper">
+      ${mainGroups.map(g => {
+        const on = g.id === activeGroupId;
+        const sub = on
+          ? g.routes.map(r => `<a href="#${r.path}" class="nav-step-sub ${currentRoute === r.path || (r.path === '/weekly' && currentRoute === '/reports') ? 'active' : ''}">${r.label}</a>`).join('')
+          : g.routes.map(r => r.label).join(' · ');
+        return `<a href="${groupHref(g)}" class="nav-step nav-step-${g.id} ${on ? 'active' : ''}"><span class="nav-step-en">${g.id.toUpperCase()}</span><span class="nav-step-label">${g.label}</span><span class="nav-step-subs">${sub}</span></a>`;
+      }).join('<span class="nav-step-arrow"></span>')}
+    </div>`;
+  const tabbarHtml = `
+    <nav class="nav-tabbar">
+      ${mainGroups.map(g => `<a href="${groupHref(g)}" class="nav-tab nav-tab-${g.id} ${g.id === activeGroupId ? 'active' : ''}"><i data-lucide="${g.routes[0].icon}"></i><span class="nav-tab-label">${g.label}</span><span class="nav-tab-subs">${g.routes.map(r => r.label).join('·')}</span></a>`).join('')}
+      ${isUserAdmin ? `<a href="/admin.html" target="_blank" rel="noopener noreferrer" class="nav-tab nav-tab-admin"><i data-lucide="shield-check"></i><span class="nav-tab-label">관리</span></a>` : ''}
+    </nav>`;
 
   // 사용자 정보
   const userName = profile?.name || profile?.email?.split('@')[0] || '사용자';
@@ -207,6 +217,7 @@ export async function renderNavigation(currentRoute, profile) {
             }
             <span class="user-name">${userName}</span>
           </div>
+          ${themeSwitcherHtml()}
           <button id="logout-btn" class="btn btn-secondary" onclick="window.handleNavigationLogout && window.handleNavigationLogout()">
             로그아웃
           </button>
@@ -216,6 +227,8 @@ export async function renderNavigation(currentRoute, profile) {
       <nav class="top-navigation-grouped">
         ${navGroupsHtml}
       </nav>
+      ${stepperHtml}
+      ${tabbarHtml}
       <!-- 3줄: 날짜 바 (오늘 탭일 때만) -->
       ${dateBarHtml}
     </div>

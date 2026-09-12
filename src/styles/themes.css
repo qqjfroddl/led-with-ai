@@ -1,0 +1,246 @@
+/* ============================================================
+   디자인 테마 레이어 (2026-09-12, 장준식) — 소장님 라이브 테스트용
+   html[data-theme="paper"]  1안 종이 저널
+   html[data-theme="white"]  4안 흰 종이 · 하단 탭
+   html[data-theme="warm"]   5안 오늘의 링
+   시안 정본: AI-Team/_preview/인생관리AI_디자인방향_5안_2026-09-12/
+   원칙: 기능·마크업 무변경. JS 인라인 style은 !important로 덮는다(테스트 단계 한정 —
+         방향 확정 후 P2에서 인라인을 클래스로 옮기면 !important는 걷어낸다).
+   ============================================================ */
+
+/* ─────────────────────────── 공통(테마 적용 시) ─────────────────────────── */
+html[data-theme]:not([data-theme="default"]) body {
+  font-family: 'Paperlogy', 'Noto Sans KR', -apple-system, sans-serif;
+  font-weight: 500;
+  word-break: keep-all;
+  background: var(--t-bg);
+  color: var(--t-text);
+  -webkit-font-smoothing: antialiased;
+}
+html[data-theme]:not([data-theme="default"]) h1,
+html[data-theme]:not([data-theme="default"]) h2,
+html[data-theme]:not([data-theme="default"]) h3,
+html[data-theme]:not([data-theme="default"]) h4,
+html[data-theme]:not([data-theme="default"]) .card-title,
+html[data-theme]:not([data-theme="default"]) .brand-text { font-weight: 700; }
+html[data-theme]:not([data-theme="default"]) .card-title { white-space: normal; }
+
+/* 헤더 */
+html[data-theme]:not([data-theme="default"]) .brand-mark { color: var(--t-accent); }
+html[data-theme]:not([data-theme="default"]) .brand-text { color: var(--t-text); font-size: 1.25rem; }
+html[data-theme]:not([data-theme="default"]) .app-header-top { border-bottom: 0; }
+html[data-theme]:not([data-theme="default"]) .btn-secondary { background: var(--t-surface); color: var(--t-text2); border: 1px solid var(--t-line2); box-shadow: none; }
+html[data-theme]:not([data-theme="default"]) .btn-secondary:hover { background: var(--t-bg2); transform: none; box-shadow: none; }
+html[data-theme]:not([data-theme="default"]) .theme-switch { background: var(--t-surface); color: var(--t-text2); border-color: var(--t-line2); }
+
+/* 네비 3박스: 그룹 카드 + 사이 간격, 실행은 채움 */
+html[data-theme]:not([data-theme="default"]) .top-navigation-grouped { gap: 6px; padding: 0.5rem 0; align-items: stretch; }
+html[data-theme]:not([data-theme="default"]) .nav-group {
+  background: var(--t-surface); border: 1px solid var(--t-line); border-radius: 12px;
+  box-shadow: var(--t-shadow-sm); padding: 0.35rem 0.4rem; gap: 0;
+}
+html[data-theme]:not([data-theme="default"]) .nav-group-label { color: var(--t-muted); font-size: 0.68rem; letter-spacing: 0.06em; margin-bottom: 0.15rem; }
+html[data-theme]:not([data-theme="default"]) .nav-group-items { gap: 0; flex-direction: row; }
+html[data-theme]:not([data-theme="default"]) .nav-group[data-group="do"] .nav-item-new { flex: 1; width: auto; }
+html[data-theme]:not([data-theme="default"]) .nav-group[data-group="do"] { flex: 0 0 auto; min-width: 72px; }
+html[data-theme]:not([data-theme="default"]) .nav-item-new {
+  background: transparent; border: 0; color: var(--t-text2); font-weight: 500; box-shadow: none;
+  padding: 0.35rem 0.5rem;
+}
+html[data-theme]:not([data-theme="default"]) .nav-item-new:hover { transform: none; box-shadow: none; color: var(--t-accent); }
+html[data-theme]:not([data-theme="default"]) .nav-item-new.active { background: transparent; color: var(--t-accent); font-weight: 700; box-shadow: none; }
+html[data-theme]:not([data-theme="default"]) .nav-group:has(.nav-item-new.active) { background: var(--t-accent); border-color: var(--t-accent); }
+html[data-theme]:not([data-theme="default"]) .nav-group:has(.nav-item-new.active) .nav-group-label { color: rgba(255,255,255,0.75); }
+html[data-theme]:not([data-theme="default"]) .nav-group:has(.nav-item-new.active) .nav-item-new { color: rgba(255,255,255,0.7); }
+html[data-theme]:not([data-theme="default"]) .nav-group:has(.nav-item-new.active) .nav-item-new.active { color: #fff; }
+html[data-theme]:not([data-theme="default"]) .nav-group[data-group="admin"] { background: var(--t-bg2); }
+
+/* 날짜 바(헤더 3줄) */
+html[data-theme]:not([data-theme="default"]) .date-display-btn,
+html[data-theme]:not([data-theme="default"]) #todo-date-display { background: var(--t-accent-soft) !important; color: var(--t-accent) !important; box-shadow: none !important; }
+html[data-theme]:not([data-theme="default"]) .date-nav-btn { background: transparent !important; border: 0 !important; color: var(--t-muted) !important; box-shadow: none !important; }
+html[data-theme]:not([data-theme="default"]) .quick-nav-btn,
+html[data-theme]:not([data-theme="default"]) .date-today-btn,
+html[data-theme]:not([data-theme="default"]) .date-today-icon-btn { background: var(--t-surface) !important; border: 1px solid var(--t-line2) !important; color: var(--t-text2) !important; }
+
+/* 카드 3장(루틴·할일·성찰): 그라디언트·색 테두리 제거 */
+html[data-theme]:not([data-theme="default"]) .card,
+html[data-theme]:not([data-theme="default"]) #today-routines-section,
+html[data-theme]:not([data-theme="default"]) #today-todos-section,
+html[data-theme]:not([data-theme="default"]) #today-reflection-section {
+  background: var(--t-surface) !important; border: 1px solid var(--t-line) !important;
+  border-radius: 14px !important; box-shadow: var(--t-shadow) !important; padding: 1.25rem !important;
+}
+html[data-theme]:not([data-theme="default"]) .card:hover { box-shadow: var(--t-shadow) !important; }
+html[data-theme]:not([data-theme="default"]) .card-header { border-bottom-color: var(--t-line) !important; padding-bottom: 0.75rem !important; margin-bottom: 1rem !important; }
+html[data-theme]:not([data-theme="default"]) .card-title { color: var(--t-text) !important; font-size: 1.2rem !important; }
+/* 제목 앞 40px 그라디언트 아이콘 박스 → 작은 잉크색 아이콘 */
+html[data-theme]:not([data-theme="default"]) .card-header > div > div:first-child[style*="width: 40px"] {
+  width: 28px !important; height: 28px !important; background: var(--t-accent-soft) !important; box-shadow: none !important; border-radius: 8px !important;
+}
+html[data-theme]:not([data-theme="default"]) .card-header > div > div:first-child[style*="width: 40px"] i { color: var(--t-accent) !important; width: 16px !important; height: 16px !important; }
+html[data-theme]:not([data-theme="default"]) .card-header .btn-icon i { color: var(--t-muted) !important; }
+html[data-theme]:not([data-theme="default"]) #today-routines-section h4,
+html[data-theme]:not([data-theme="default"]) #today-todos-section h4,
+html[data-theme]:not([data-theme="default"]) .category-section h4 { color: var(--t-muted) !important; font-size: 0.8rem !important; font-weight: 600 !important; letter-spacing: 0.02em; }
+html[data-theme]:not([data-theme="default"]) #today-routines-section h4 + span { color: var(--t-muted2) !important; }
+html[data-theme]:not([data-theme="default"]) #morning-routines i,
+html[data-theme]:not([data-theme="default"]) #daytime-routines i,
+html[data-theme]:not([data-theme="default"]) #night-routines i { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
+html[data-theme]:not([data-theme="default"]) .category-section > div:first-child i { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
+/* 루틴 3열 사이 세로 그라디언트 구분선 */
+html[data-theme]:not([data-theme="default"]) #routines-content [style*="linear-gradient(180deg"] { background: var(--t-line) !important; width: 1px !important; }
+
+/* 진행률(루틴) — 단순 카운트만. 바는 테마별로 */
+html[data-theme]:not([data-theme="default"]) #routines-progress { color: var(--t-muted) !important; font-weight: 500 !important; font-variant-numeric: tabular-nums; }
+html[data-theme]:not([data-theme="default"]) #routines-progress > div { background: var(--t-line) !important; height: 6px !important; }
+html[data-theme]:not([data-theme="default"]) #routines-progress > div > div { background: var(--t-accent) !important; }
+
+/* 항목 행: 흰 카드 → 괘선 */
+html[data-theme]:not([data-theme="default"]) .routine-item,
+html[data-theme]:not([data-theme="default"]) .todo-item {
+  background: transparent !important; box-shadow: none !important; border-radius: 0 !important;
+  border-bottom: 1px solid var(--t-line); padding: 0.6rem 0.25rem !important; min-height: 48px;
+}
+html[data-theme]:not([data-theme="default"]) .todo-item:hover { box-shadow: none !important; background: var(--t-bg2) !important; }
+html[data-theme]:not([data-theme="default"]) [id$="-routines-list"],
+html[data-theme]:not([data-theme="default"]) [id^="todos-"][id$="-list"] { gap: 0 !important; }
+html[data-theme]:not([data-theme="default"]) .routine-item:last-child,
+html[data-theme]:not([data-theme="default"]) .todo-item:last-child { border-bottom: 0; }
+html[data-theme]:not([data-theme="default"]) input[type="checkbox"] { accent-color: var(--t-accent); width: 20px !important; height: 20px !important; border-radius: 6px; }
+html[data-theme]:not([data-theme="default"]) .todo-title { color: var(--t-text); }
+html[data-theme]:not([data-theme="default"]) .todo-drag-handle,
+html[data-theme]:not([data-theme="default"]) .move-todo-btn { color: var(--t-muted2) !important; }
+html[data-theme]:not([data-theme="default"]) .todo-item button[data-move-todo-date],
+html[data-theme]:not([data-theme="default"]) .todo-item button[data-duplicate-todo],
+html[data-theme]:not([data-theme="default"]) .todo-item button[data-delete-todo] { color: var(--t-muted2) !important; }
+html[data-theme]:not([data-theme="default"]) .todo-item button:hover { color: var(--t-accent) !important; }
+
+/* 카테고리 섹션 4장: 색 배경·색 테두리 제거, 한 장의 종이 위 소제목으로 */
+html[data-theme]:not([data-theme="default"]) .category-section {
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  padding: 0.25rem 0 0 !important; margin-bottom: 0.75rem !important; border-radius: 0 !important;
+}
+html[data-theme]:not([data-theme="default"]) .category-section > div:first-child { margin-bottom: 0.25rem !important; }
+
+/* 카테고리 탭 */
+html[data-theme]:not([data-theme="default"]) .category-tab {
+  background: transparent; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--t-muted); font-weight: 500; padding: 0.4rem 0.6rem;
+}
+html[data-theme]:not([data-theme="default"]) .category-tab:hover { background: transparent; transform: none; color: var(--t-text); }
+html[data-theme]:not([data-theme="default"]) .category-tab.active {
+  background: transparent !important; color: var(--t-text) !important; font-weight: 700; border-bottom-color: var(--t-text); box-shadow: none !important;
+}
+
+/* 입력·버튼 */
+html[data-theme]:not([data-theme="default"]) #todo-input { border: 1px solid var(--t-line2) !important; background: var(--t-surface) !important; color: var(--t-text); border-radius: 10px !important; min-height: 44px; }
+html[data-theme]:not([data-theme="default"]) #todo-input:focus { outline: 2px solid var(--t-accent-line); border-color: var(--t-accent) !important; }
+html[data-theme]:not([data-theme="default"]) #add-todo-btn,
+html[data-theme]:not([data-theme="default"]) #open-reflection-form,
+html[data-theme]:not([data-theme="default"]) .btn-primary {
+  background: var(--t-accent) !important; color: #fff !important; box-shadow: none !important; border-radius: 10px !important; min-height: 44px;
+}
+html[data-theme]:not([data-theme="default"]) .btn-primary:hover { transform: none; box-shadow: none !important; filter: brightness(1.06); }
+html[data-theme]:not([data-theme="default"]) .btn::before { display: none; }
+
+/* 성찰 폼 */
+html[data-theme]:not([data-theme="default"]) #reflection-content label { color: var(--t-text2) !important; }
+html[data-theme]:not([data-theme="default"]) #reflection-content label i { color: var(--t-muted) !important; }
+html[data-theme]:not([data-theme="default"]) #reflection-content textarea { border: 1px solid var(--t-line2) !important; background: var(--t-surface) !important; color: var(--t-text); border-radius: 10px !important; font-family: inherit; }
+
+/* 태그(P1~3·프로젝트·반복업무): 정보색만 */
+html[data-theme]:not([data-theme="default"]) .todo-item span[style*="background: #e0e7ff"] { background: var(--t-accent-soft) !important; color: var(--t-accent) !important; }
+html[data-theme]:not([data-theme="default"]) .todo-item span[style*="background: #f3e8ff"] { background: var(--t-bg2) !important; color: var(--t-muted) !important; }
+
+/* 다른 페이지 공통: 본문 텍스트·링크 */
+html[data-theme]:not([data-theme="default"]) a { color: var(--t-accent); }
+html[data-theme]:not([data-theme="default"]) .nav-item-new, html[data-theme]:not([data-theme="default"]) .nav-tab, html[data-theme]:not([data-theme="default"]) .nav-step { text-decoration: none; }
+
+/* ─────────────────────────── 1안 종이 저널 ─────────────────────────── */
+html[data-theme="paper"] {
+  --t-bg: #F8F4EC; --t-bg2: #F0EAE0; --t-surface: #FFFDF9;
+  --t-text: #2A2622; --t-text2: #574E45; --t-muted: #8A7F72; --t-muted2: #B5AA9B;
+  --t-line: #E4DCCF; --t-line2: #D3C8B6;
+  --t-accent: #23506B; --t-accent-soft: #E6EDF2; --t-accent-line: #C9D6E0;
+  --t-shadow: 0 1px 2px rgba(42,38,34,.05), 0 2px 8px rgba(42,38,34,.04);
+  --t-shadow-sm: 0 1px 2px rgba(42,38,34,.05);
+}
+html[data-theme="paper"] .top-navigation-grouped .nav-group { border-radius: 10px; }
+html[data-theme="paper"] #today-reflection-section { border-style: dashed !important; }
+
+/* ─────────────────────────── 5안 오늘의 링 (따뜻한 성취) ─────────────────────────── */
+html[data-theme="warm"] {
+  --t-bg: #FBF8F3; --t-bg2: #F1ECE4; --t-surface: #FFFFFF;
+  --t-text: #2B2622; --t-text2: #4E4640; --t-muted: #8C8178; --t-muted2: #BDB3A8;
+  --t-line: #EDE6DC; --t-line2: #D9CFC2;
+  --t-accent: #D97A4A; --t-accent-soft: #FBEADF; --t-accent-line: #F0C9B3;
+  --t-shadow: 0 1px 2px rgba(43,38,34,.04), 0 4px 14px rgba(43,38,34,.04);
+  --t-shadow-sm: 0 1px 2px rgba(43,38,34,.04);
+}
+html[data-theme="warm"] .top-navigation-grouped { gap: 2px; align-items: center; }
+html[data-theme="warm"] .nav-group { border-radius: 14px; }
+html[data-theme="warm"] .nav-group:has(.nav-item-new.active) { transform: scale(1.05); box-shadow: 0 6px 16px rgba(217,122,74,.28); }
+html[data-theme="warm"] input[type="checkbox"] { border-radius: 999px; }
+html[data-theme="warm"] .category-tab { border: 1px solid var(--t-line2); border-radius: 999px; padding: 0.35rem 0.8rem; margin-right: 0.25rem; }
+html[data-theme="warm"] .category-tab.active { background: var(--t-text) !important; color: #fff !important; border-color: var(--t-text); }
+html[data-theme="warm"] #add-todo-btn, html[data-theme="warm"] #open-reflection-form, html[data-theme="warm"] .btn-primary { border-radius: 999px !important; }
+html[data-theme="warm"] #today-reflection-section { background: linear-gradient(180deg, #FFF6EE 0%, #FFFFFF 100%) !important; border: 0 !important; }
+html[data-theme="warm"] #morning-routines i { color: #E0A040 !important; }
+html[data-theme="warm"] #daytime-routines i { color: var(--t-accent) !important; }
+html[data-theme="warm"] #night-routines i { color: #7B6BB5 !important; }
+/* 링: 진행 바 대신 원형 */
+html[data-theme="warm"] #routines-progress > div { width: 28px !important; height: 28px !important; border-radius: 50% !important; background: conic-gradient(var(--t-accent) var(--t-progress, 0%), var(--t-line) 0) !important; -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%); mask: radial-gradient(circle, transparent 55%, #000 56%); overflow: visible !important; }
+html[data-theme="warm"] #routines-progress > div > div { display: none !important; }
+
+/* ─────────────────────────── 4안 흰 종이 · 하단 탭 ─────────────────────────── */
+html[data-theme="white"] {
+  --t-bg: #FFFFFF; --t-bg2: #F4F3F0; --t-surface: #FFFFFF;
+  --t-text: #1C1C1E; --t-text2: #3A3A3C; --t-muted: #8E8E93; --t-muted2: #C7C7CC;
+  --t-line: #EDECE8; --t-line2: #D9D8D3;
+  --t-accent: #2F5BEA; --t-accent-soft: #EAF0FF; --t-accent-line: #C6D4FF;
+  --t-shadow: none; --t-shadow-sm: none;
+}
+html[data-theme="white"] body { padding-bottom: 84px; }
+html[data-theme="white"] .top-navigation-grouped { display: none; }
+/* 카드 없이 여백·굵은 제목 */
+html[data-theme="white"] .card,
+html[data-theme="white"] #today-routines-section,
+html[data-theme="white"] #today-todos-section,
+html[data-theme="white"] #today-reflection-section { border: 0 !important; padding: 0.5rem 0 !important; box-shadow: none !important; margin-bottom: 2rem !important; }
+html[data-theme="white"] .card-title { font-size: 1.45rem !important; letter-spacing: -0.02em; }
+html[data-theme="white"] .card-header { border-bottom: 0 !important; }
+html[data-theme="white"] .card-header > div > div:first-child[style*="width: 40px"] { display: none !important; }
+html[data-theme="white"] #today-routines-section h4,
+html[data-theme="white"] .category-section h4 { color: var(--t-text2) !important; font-size: 0.85rem !important; font-weight: 700 !important; }
+html[data-theme="white"] #todo-input { background: var(--t-bg2) !important; border: 0 !important; }
+html[data-theme="white"] #today-reflection-section > div:not(.card-header) { background: var(--t-bg2); border-radius: 14px; padding: 1rem; }
+html[data-theme="white"] input[type="checkbox"] { border-radius: 999px; }
+/* 상단 스텝퍼 */
+html[data-theme="white"] .nav-stepper { display: flex; align-items: stretch; padding: 0.25rem 0 0.75rem; }
+html[data-theme="white"] .nav-step { flex: 1; display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; border-radius: 10px; color: var(--t-muted); min-width: 0; }
+html[data-theme="white"] .nav-step-en { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; }
+html[data-theme="white"] .nav-step-label { font-size: 13px; font-weight: 700; color: var(--t-text2); }
+html[data-theme="white"] .nav-step-subs { font-size: 10.5px; color: var(--t-muted); display: flex; gap: 6px; flex-wrap: wrap; }
+html[data-theme="white"] .nav-step.active { background: var(--t-text); color: #fff; }
+html[data-theme="white"] .nav-step.active .nav-step-label { color: #fff; }
+html[data-theme="white"] .nav-step.active .nav-step-subs { color: rgba(255,255,255,0.7); }
+html[data-theme="white"] .nav-step-sub { color: rgba(255,255,255,0.7); text-decoration: none; padding: 1px 6px; border-radius: 6px; }
+html[data-theme="white"] .nav-step-sub.active { background: rgba(255,255,255,0.18); color: #fff; font-weight: 700; }
+html[data-theme="white"] .nav-step-arrow { width: 14px; align-self: center; height: 1px; background: var(--t-line2); flex: 0 0 14px; }
+/* 하단 탭바 */
+html[data-theme="white"] .nav-tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; display: flex;
+  height: 72px; padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--t-line);
+}
+html[data-theme="white"] .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--t-muted); border-radius: 12px; text-decoration: none; }
+html[data-theme="white"] .nav-tab i { width: 22px; height: 22px; }
+html[data-theme="white"] .nav-tab-label { font-size: 12px; font-weight: 700; }
+html[data-theme="white"] .nav-tab-subs { font-size: 9.5px; color: var(--t-muted2); }
+html[data-theme="white"] .nav-tab.active { color: var(--t-text); }
+html[data-theme="white"] .nav-tab.active .nav-tab-subs { color: var(--t-muted); }
+html[data-theme="white"] .nav-tab-plan.active, html[data-theme="white"] .nav-tab-see.active { color: var(--t-accent); }
+html[data-theme="white"] .nav-tab-admin { flex: 0 0 56px; }
+@media (min-width: 769px) {
+  html[data-theme="white"] .nav-tabbar { max-width: 480px; left: 50%; right: auto; transform: translateX(-50%); border-radius: 16px 16px 0 0; border: 1px solid var(--t-line); border-bottom: 0; }
+}

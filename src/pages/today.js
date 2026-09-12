@@ -630,7 +630,7 @@ function renderRoutines(morningRoutines, daytimeRoutines, nightRoutines, checked
 
   document.getElementById('routines-progress').innerHTML = `
     <span>✓ ${checkedCount} / ${totalRoutines}</span>
-    <div style="width: 60px; height: 8px; background: rgba(20, 184, 166, 0.2); border-radius: 4px; overflow: hidden;">
+    <div style="width: 60px; height: 8px; background: rgba(20, 184, 166, 0.2); border-radius: 4px; overflow: hidden; --t-progress: ${progress}%;">
       <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #14b8a6, #10b981); transition: width 0.3s;"></div>
     </div>
     <span>${progress}%</span>

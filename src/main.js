@@ -1,4 +1,6 @@
 import './vendor.js'; // 외부 라이브러리 전역(window.luxon 등)을 가장 먼저 세운다
+import { initTheme } from './theme.js';
+initTheme(); // 디자인 테마(?theme=)는 첫 렌더 전에 적용해야 깜빡임이 없다
 import { getSupabase } from './config/supabase.js';
 import { getCurrentProfile, signInWithGoogle, signOut } from './utils/auth.js';
 import { router } from './router.js';

@@ -1488,3 +1488,29 @@ input[type="date"]:focus {
   border-left-color: #6366f1;
   background: #eef2ff;
 }
+
+/* ── Plan-Do-See 그룹 색 (2026-09-12 navigation.js 인라인에서 이동, 기본 테마 외관 동일) ── */
+.nav-group[data-group="plan"] { background: #f3e8ff; border: 1px solid #c4b5fd; }
+.nav-group[data-group="do"] { background: #e0f2fe; border: 1px solid #7dd3fc; }
+.nav-group[data-group="see"] { background: #d1fae5; border: 1px solid #6ee7b7; }
+.nav-group[data-group="admin"] { background: #fef3c7; border: 1px solid #fcd34d; }
+.nav-item-new { background: #ffffff; color: #374151; }
+.nav-group[data-group="plan"] .nav-item-new { border-color: #c4b5fd; }
+.nav-group[data-group="do"] .nav-item-new { border-color: #7dd3fc; }
+.nav-group[data-group="see"] .nav-item-new { border-color: #6ee7b7; }
+.nav-group[data-group="admin"] .nav-item-new { border-color: #fcd34d; }
+.nav-item-new.active { color: #ffffff; border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.nav-group[data-group="plan"] .nav-item-new.active { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.nav-group[data-group="do"] .nav-item-new.active { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+.nav-group[data-group="see"] .nav-item-new.active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.nav-group[data-group="admin"] .nav-item-new.active { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+/* 4안 전용 네비(스텝퍼·하단 탭바)는 기본 테마에서 숨김 — themes.css [data-theme="white"]에서 켠다 */
+.nav-stepper, .nav-tabbar { display: none; }
+
+/* 디자인 테마 스위치 (테스트용) */
+.theme-switch {
+  font: inherit; font-size: 0.8rem; color: #374151;
+  border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
+  padding: 0.35rem 0.5rem; max-width: 150px;
+}
