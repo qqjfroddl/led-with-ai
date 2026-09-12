@@ -1514,3 +1514,6 @@ input[type="date"]:focus {
   border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
   padding: 0.35rem 0.5rem; max-width: 150px;
 }
+@media (max-width: 768px) {
+  .theme-switch { max-width: 96px; font-size: 0.72rem; padding: 0.3rem 0.25rem; }
+}

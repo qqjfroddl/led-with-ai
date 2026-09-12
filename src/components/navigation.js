@@ -119,7 +119,8 @@ export async function renderNavigation(currentRoute, profile) {
         const sub = on
           ? g.routes.map(r => `<a href="#${r.path}" class="nav-step-sub ${currentRoute === r.path || (r.path === '/weekly' && currentRoute === '/reports') ? 'active' : ''}">${r.label}</a>`).join('')
           : g.routes.map(r => r.label).join(' · ');
-        return `<a href="${groupHref(g)}" class="nav-step nav-step-${g.id} ${on ? 'active' : ''}"><span class="nav-step-en">${g.id.toUpperCase()}</span><span class="nav-step-label">${g.label}</span><span class="nav-step-subs">${sub}</span></a>`;
+        // a 안에 a를 넣을 수 없으므로 블록은 div, 그룹 이동은 라벨 링크로
+        return `<div class="nav-step nav-step-${g.id} ${on ? 'active' : ''}"><a href="${groupHref(g)}" class="nav-step-head"><span class="nav-step-en">${g.id.toUpperCase()}</span><span class="nav-step-label">${g.label}</span></a><span class="nav-step-subs">${sub}</span></div>`;
       }).join('<span class="nav-step-arrow"></span>')}
     </div>`;
   const tabbarHtml = `

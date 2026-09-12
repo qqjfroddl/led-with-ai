@@ -29,6 +29,8 @@ html[data-theme]:not([data-theme="default"]) .card-title { white-space: normal; 
 html[data-theme]:not([data-theme="default"]) .brand-mark { color: var(--t-accent); }
 html[data-theme]:not([data-theme="default"]) .brand-text { color: var(--t-text); font-size: 1.25rem; }
 html[data-theme]:not([data-theme="default"]) .app-header-top { border-bottom: 0; }
+html[data-theme]:not([data-theme="default"]) .app-header-container { background: var(--t-bg) !important; box-shadow: none !important; border: 0 !important; border-bottom: 1px solid var(--t-line) !important; border-radius: 0 !important; }
+html[data-theme]:not([data-theme="default"]) .date-bar-container { background: transparent !important; border: 0 !important; box-shadow: none !important; }
 html[data-theme]:not([data-theme="default"]) .btn-secondary { background: var(--t-surface); color: var(--t-text2); border: 1px solid var(--t-line2); box-shadow: none; }
 html[data-theme]:not([data-theme="default"]) .btn-secondary:hover { background: var(--t-bg2); transform: none; box-shadow: none; }
 html[data-theme]:not([data-theme="default"]) .theme-switch { background: var(--t-surface); color: var(--t-text2); border-color: var(--t-line2); }
@@ -78,16 +80,16 @@ html[data-theme]:not([data-theme="default"]) .card-title { color: var(--t-text) 
 html[data-theme]:not([data-theme="default"]) .card-header > div > div:first-child[style*="width: 40px"] {
   width: 28px !important; height: 28px !important; background: var(--t-accent-soft) !important; box-shadow: none !important; border-radius: 8px !important;
 }
-html[data-theme]:not([data-theme="default"]) .card-header > div > div:first-child[style*="width: 40px"] i { color: var(--t-accent) !important; width: 16px !important; height: 16px !important; }
-html[data-theme]:not([data-theme="default"]) .card-header .btn-icon i { color: var(--t-muted) !important; }
+html[data-theme]:not([data-theme="default"]) .card-header > div > div:first-child[style*="width: 40px"] :is(i, svg) { color: var(--t-accent) !important; width: 16px !important; height: 16px !important; }
+html[data-theme]:not([data-theme="default"]) .card-header .btn-icon :is(i, svg) { color: var(--t-muted) !important; }
 html[data-theme]:not([data-theme="default"]) #today-routines-section h4,
 html[data-theme]:not([data-theme="default"]) #today-todos-section h4,
 html[data-theme]:not([data-theme="default"]) .category-section h4 { color: var(--t-muted) !important; font-size: 0.8rem !important; font-weight: 600 !important; letter-spacing: 0.02em; }
 html[data-theme]:not([data-theme="default"]) #today-routines-section h4 + span { color: var(--t-muted2) !important; }
-html[data-theme]:not([data-theme="default"]) #morning-routines i,
-html[data-theme]:not([data-theme="default"]) #daytime-routines i,
-html[data-theme]:not([data-theme="default"]) #night-routines i { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
-html[data-theme]:not([data-theme="default"]) .category-section > div:first-child i { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
+html[data-theme]:not([data-theme="default"]) #morning-routines > div:first-child :is(i, svg),
+html[data-theme]:not([data-theme="default"]) #daytime-routines > div:first-child :is(i, svg),
+html[data-theme]:not([data-theme="default"]) #night-routines > div:first-child :is(i, svg) { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
+html[data-theme]:not([data-theme="default"]) .category-section > div:first-child :is(i, svg) { color: var(--t-muted) !important; width: 16px !important; height: 16px !important; }
 /* 루틴 3열 사이 세로 그라디언트 구분선 */
 html[data-theme]:not([data-theme="default"]) #routines-content [style*="linear-gradient(180deg"] { background: var(--t-line) !important; width: 1px !important; }
 
@@ -145,7 +147,7 @@ html[data-theme]:not([data-theme="default"]) .btn::before { display: none; }
 
 /* 성찰 폼 */
 html[data-theme]:not([data-theme="default"]) #reflection-content label { color: var(--t-text2) !important; }
-html[data-theme]:not([data-theme="default"]) #reflection-content label i { color: var(--t-muted) !important; }
+html[data-theme]:not([data-theme="default"]) #reflection-content label :is(i, svg) { color: var(--t-muted) !important; }
 html[data-theme]:not([data-theme="default"]) #reflection-content textarea { border: 1px solid var(--t-line2) !important; background: var(--t-surface) !important; color: var(--t-text); border-radius: 10px !important; font-family: inherit; }
 
 /* 태그(P1~3·프로젝트·반복업무): 정보색만 */
@@ -185,9 +187,9 @@ html[data-theme="warm"] .category-tab { border: 1px solid var(--t-line2); border
 html[data-theme="warm"] .category-tab.active { background: var(--t-text) !important; color: #fff !important; border-color: var(--t-text); }
 html[data-theme="warm"] #add-todo-btn, html[data-theme="warm"] #open-reflection-form, html[data-theme="warm"] .btn-primary { border-radius: 999px !important; }
 html[data-theme="warm"] #today-reflection-section { background: linear-gradient(180deg, #FFF6EE 0%, #FFFFFF 100%) !important; border: 0 !important; }
-html[data-theme="warm"] #morning-routines i { color: #E0A040 !important; }
-html[data-theme="warm"] #daytime-routines i { color: var(--t-accent) !important; }
-html[data-theme="warm"] #night-routines i { color: #7B6BB5 !important; }
+html[data-theme="warm"] #morning-routines > div:first-child :is(i, svg) { color: #E0A040 !important; }
+html[data-theme="warm"] #daytime-routines > div:first-child :is(i, svg) { color: var(--t-accent) !important; }
+html[data-theme="warm"] #night-routines > div:first-child :is(i, svg) { color: #7B6BB5 !important; }
 /* 링: 진행 바 대신 원형 */
 html[data-theme="warm"] #routines-progress > div { width: 28px !important; height: 28px !important; border-radius: 50% !important; background: conic-gradient(var(--t-accent) var(--t-progress, 0%), var(--t-line) 0) !important; -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%); mask: radial-gradient(circle, transparent 55%, #000 56%); overflow: visible !important; }
 html[data-theme="warm"] #routines-progress > div > div { display: none !important; }
@@ -218,6 +220,7 @@ html[data-theme="white"] input[type="checkbox"] { border-radius: 999px; }
 /* 상단 스텝퍼 */
 html[data-theme="white"] .nav-stepper { display: flex; align-items: stretch; padding: 0.25rem 0 0.75rem; }
 html[data-theme="white"] .nav-step { flex: 1; display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; border-radius: 10px; color: var(--t-muted); min-width: 0; }
+html[data-theme="white"] .nav-step-head { display: flex; flex-direction: column; gap: 1px; color: inherit; text-decoration: none; }
 html[data-theme="white"] .nav-step-en { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; }
 html[data-theme="white"] .nav-step-label { font-size: 13px; font-weight: 700; color: var(--t-text2); }
 html[data-theme="white"] .nav-step-subs { font-size: 10.5px; color: var(--t-muted); display: flex; gap: 6px; flex-wrap: wrap; }
@@ -234,7 +237,7 @@ html[data-theme="white"] .nav-tabbar {
   background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--t-line);
 }
 html[data-theme="white"] .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--t-muted); border-radius: 12px; text-decoration: none; }
-html[data-theme="white"] .nav-tab i { width: 22px; height: 22px; }
+html[data-theme="white"] .nav-tab :is(i, svg) { width: 22px; height: 22px; }
 html[data-theme="white"] .nav-tab-label { font-size: 12px; font-weight: 700; }
 html[data-theme="white"] .nav-tab-subs { font-size: 9.5px; color: var(--t-muted2); }
 html[data-theme="white"] .nav-tab.active { color: var(--t-text); }
