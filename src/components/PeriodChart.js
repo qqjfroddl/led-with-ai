@@ -20,7 +20,8 @@ export function buildBuckets(stats, period) {
       const t = todos.monthlyStats?.[m] || { total: 0, completed: 0 };
       const r = routines.monthlyStats?.[m] || { possible: 0, checked: 0 };
       out.push({
-        label: `${m}월`, sub: '',
+        // 축 라벨은 숫자만 — 폰 폭에서 "10월11월12월"이 붙어 읽혔다. 제목이 '월별'이라 단위는 거기서 읽힌다. 툴팁·표는 name(N월)
+        label: `${m}`, sub: '', name: `${m}월`,
         routine: { checked: r.checked || 0, possible: r.possible || 0, rate: rate(r.checked || 0, r.possible || 0) },
         todo: { completed: t.completed || 0, total: t.total || 0, rate: rate(t.completed || 0, t.total || 0) },
         reflections: reflections.monthlyStats?.[m] || 0,
@@ -70,8 +71,10 @@ export function buildBuckets(stats, period) {
 
 const fmt = (s, num, den) => (s.rate === null ? '없음' : `${s.rate}% (${num}/${den})`);
 
+const bucketName = (b) => b.name || (b.sub ? `${b.label} (${b.sub})` : b.label);
+
 function tooltip(b) {
-  const name = b.sub ? `${b.label} (${b.sub})` : b.label;
+  const name = bucketName(b);
   const refl = b.reflections > 0 ? `성찰 ${b.reflections}일` : '성찰 없음';
   return `${name} · 루틴 ${fmt(b.routine, b.routine.checked, b.routine.possible)} · 할일 ${fmt(b.todo, b.todo.completed, b.todo.total)} · ${refl}`;
 }
@@ -101,7 +104,7 @@ export function renderPeriodChart(stats, period) {
         </div>`).join('');
 
   const rows = buckets.map((b) => `
-          <tr><th scope="row">${b.sub ? `${b.label} (${b.sub})` : b.label}</th><td>${fmt(b.routine, b.routine.checked, b.routine.possible)}</td><td>${fmt(b.todo, b.todo.completed, b.todo.total)}</td><td>${b.reflections > 0 ? `${b.reflections}일` : '-'}</td></tr>`).join('');
+          <tr><th scope="row">${bucketName(b)}</th><td>${fmt(b.routine, b.routine.checked, b.routine.possible)}</td><td>${fmt(b.todo, b.todo.completed, b.todo.total)}</td><td>${b.reflections > 0 ? `${b.reflections}일` : '-'}</td></tr>`).join('');
 
   return `
 <!-- chart:start -->

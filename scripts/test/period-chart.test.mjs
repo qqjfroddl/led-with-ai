@@ -68,7 +68,9 @@ t('연간: 12구간, 월별 possible/checked·total/completed·성찰 수', () =
   };
   const b = buildBuckets(year, 'year');
   assert.equal(b.length, 12);
-  assert.equal(b[0].label, '1월');
+  assert.equal(b[0].label, '1');      // 축 라벨은 숫자만 (폰 폭에서 "10월11월12월"이 붙어 읽힘)
+  assert.equal(b[0].name, '1월');     // 툴팁·표는 N월
+  assert.ok(renderPeriodChart(year, 'year').includes('<th scope="row">10월</th>'));
   assert.equal(b[0].routine.rate, 90);
   assert.equal(b[0].todo.rate, 80);
   assert.equal(b[0].reflections, 20);
