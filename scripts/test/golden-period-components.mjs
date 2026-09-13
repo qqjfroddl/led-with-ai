@@ -55,9 +55,10 @@ const variants = {
 };
 
 let fail = 0, pass = 0, wsOnly = 0;
-const ws = (s) => s.replace(/[ \t]+\n/g, '\n'); // 줄 끝 공백만 무시 — 옛 파일은 빈 줄에 공백이 남아 있었다(블록 요소 사이라 렌더 무관)
+const stripChart = (s) => s.replace(/\n<!-- chart:start -->[\s\S]*?<!-- chart:end -->\n/g, ''); // 9/13 추가된 차트 블록은 옛 파일에 없다
+const ws = (s) => stripChart(s).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n'); // 줄 끝 공백·연속 빈 줄만 무시 — 블록 요소 사이라 렌더 무관 (차트가 빈 문자열이면 빈 줄이 하나 더 남는다)
 function compare(name, a, b) {
-  if (a === b) { pass++; return; }
+  if (a === stripChart(b)) { pass++; return; }
   if (ws(a) === ws(b)) { pass++; wsOnly++; return; }
   fail++;
   let i = 0; while (i < a.length && a[i] === b[i]) i++;

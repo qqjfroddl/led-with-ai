@@ -1,6 +1,6 @@
 import './vendor.js'; // 외부 라이브러리 전역(window.luxon 등)을 가장 먼저 세운다
 import { getSupabase } from './config/supabase.js';
-import { getCurrentProfile, signInWithGoogle, signOut } from './utils/auth.js';
+import { getCurrentProfile, invalidateProfileCache, signInWithGoogle, signOut } from './utils/auth.js';
 import { router } from './router.js';
 
 // 전역 상태
@@ -19,7 +19,8 @@ async function init() {
     // 인증 상태 변경 감지 (Supabase 초기화 후)
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
-        // 로그인 시에만 라우팅
+        // 로그인 시에만 라우팅. 다른 사용자일 수 있으니 프로필 캐시는 비운다
+        invalidateProfileCache();
         currentUser = session?.user || null;
         if (currentUser) {
           currentProfile = await getCurrentProfile();
@@ -34,6 +35,7 @@ async function init() {
         }
         // router.handleRoute() 호출 제거 - 페이지 재렌더링 방지
       } else if (event === 'SIGNED_OUT') {
+        invalidateProfileCache();
         currentUser = null;
         currentProfile = null;
         router.handleRoute();

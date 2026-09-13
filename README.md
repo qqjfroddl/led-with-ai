@@ -79,7 +79,9 @@ npm run build
 - **스크립트** (`scripts/design/`): `tokens.mjs` 매핑표 · `apply-tokens.mjs` JS 색 치환 · `apply-tokens-css.mjs` CSS 색 치환 · `extract-inline.mjs` 인라인 추출. 셋 다 재실행 가능(멱등).
 - **레이어 overrides**: 옛 `!important`(모바일 레이아웃이 인라인을 덮던 것)는 `@layer overrides`(inline 위·theme 아래)로 옮겨 없앴다(`scripts/design/lift-important.mjs`). **`!important`를 새로 쓰지 않는다.** 표시/숨김 같은 상태는 인라인 `display`가 아니라 클래스(`is-hidden`)로 토글한다 — 인라인은 모든 레이어를 이겨 반응형 규칙과 싸운다.
 - **리뷰 컴포넌트**: 주간·월간·연간 지표는 `components/PeriodStats.js`(`renderPeriodStats(stats, 'week'|'month'|'year')`), 주간·월간 분석은 `components/PeriodInsights.js`(`'week'|'month'`) 하나씩이다. 연간 분석(`YearlyInsights.js`)은 월별 요약 구조가 달라 따로 둔다. 바꿀 때는 `node scripts/test/golden-period-components.mjs`로 옛 산출물과 같은 HTML인지 확인한다(로그인 없이 리뷰 컴포넌트를 검증하는 방법).
-- **남은 것**: 상태값 인라인 63곳, 조건이 붙은 `onmouseover` 19곳(그대로 동작), Selector·AIReflection 3벌(날짜 로직이 달라 미병합), 리포트 차트.
+- **기간 리듬 차트** (`components/PeriodChart.js`, 2026-09-13): 리뷰 지표 카드 안에 주간 요일별·월간 주차별·연간 월별 달성률 막대(루틴 실천율·할일 완료율, 성찰 작성 점). 재료는 통계 유틸이 이미 계산하는 `dailyStats`·`dailyChecks`·`dailyPossible`·`writtenDates`·`monthlyStats`라 조회가 늘지 않는다. 막대색 `--t-chart-routine`/`--t-chart-todo`는 dataviz 검증기(색각 이상 분리·명도·채도)를 통과한 값 — 잉크 토큰을 막대에 쓰지 않는다. 테스트 `node scripts/test/period-chart.test.mjs`.
+- **프로필 세션 캐시** (`utils/auth.js`, 2026-09-13 P0-3): `getCurrentProfile()`은 60초 안에 다시 부르면 서버에 묻지 않는다. 로그인·로그아웃 이벤트와 `signOut()`에서 `invalidateProfileCache()`로 비운다. 강제 재조회는 `getCurrentProfile({ fresh: true })`. 오늘 화면 초기 로드(루틴·할일·성찰)는 `Promise.all`로 동시에 부른다.
+- **남은 것**: 상태값 인라인 63곳, 조건이 붙은 `onmouseover` 19곳(그대로 동작), Selector·AIReflection 3벌(날짜 로직이 달라 미병합).
 
 ## 기술 스택
 

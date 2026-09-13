@@ -1342,6 +1342,57 @@ input[type="date"]:focus {
 }
 
 /* ============================================================
+   기간 리듬 차트 (src/components/PeriodChart.js) — 리뷰 화면 달성률 막대 (2026-09-13)
+   막대 ≤ 24px·윗모서리 4px·막대 사이 2px 여백, 격자는 hairline, 글자는 잉크 토큰(마크 색을 글자에 쓰지 않는다)
+   ============================================================ */
+.pc { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--t-accent-line, #C9D6E0); }
+.pc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.pc-title { font-size: 1rem; font-weight: 600; color: var(--t-text, #2A2622); margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+.pc-title :is(i, svg) { width: 18px; height: 18px; color: var(--t-accent, #23506B); stroke-width: 2.5; }
+.pc-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; font-size: 0.75rem; color: var(--t-muted, #8A7F72); }
+.pc-legend li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.pc-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.pc-swatch--routine { background: var(--t-chart-routine, #2F79C4); }
+.pc-swatch--todo { background: var(--t-chart-todo, #C4744A); }
+.pc-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; background: transparent; }
+.pc-dot.is-on { background: var(--t-insight, #9A5B3C); }
+.pc-plot { display: grid; grid-template-columns: 2.4rem 1fr; gap: 0 0.5rem; }
+.pc-y { position: relative; height: 140px; font-size: 0.68rem; color: var(--t-muted2, #B5AA9B); font-variant-numeric: tabular-nums; }
+.pc-y span { position: absolute; right: 0; transform: translateY(-50%); }
+.pc-y span:nth-child(1) { top: 0; } .pc-y span:nth-child(2) { top: 50%; } .pc-y span:nth-child(3) { top: 100%; }
+.pc-cols { display: grid; grid-template-columns: repeat(var(--pc-n, 7), minmax(0, 1fr)); gap: 4px; align-items: end; }
+.pc-col { display: flex; flex-direction: column; align-items: center; min-width: 0; border-radius: 6px; outline: none; }
+.pc-col:hover .pc-bar, .pc-col:focus-visible .pc-bar { filter: brightness(1.12); }
+.pc-col:focus-visible { box-shadow: 0 0 0 2px var(--t-accent-line, #C9D6E0); }
+.pc-bars {
+  height: 140px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; box-sizing: border-box;
+  /* 0·50·100% 격자선: hairline */
+  background: linear-gradient(to bottom, var(--t-line, #E4DCCF) 0, var(--t-line, #E4DCCF) 1px, transparent 1px) top / 100% 1px no-repeat,
+              linear-gradient(to bottom, var(--t-line, #E4DCCF) 0, var(--t-line, #E4DCCF) 1px, transparent 1px) center / 100% 1px no-repeat,
+              linear-gradient(to bottom, var(--t-line2, #D3C8B6) 0, var(--t-line2, #D3C8B6) 1px, transparent 1px) bottom / 100% 1px no-repeat;
+}
+.pc-bar { display: block; width: 100%; max-width: 24px; min-height: 0; border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
+.pc-bar--routine { background: var(--t-chart-routine, #2F79C4); }
+.pc-bar--todo { background: var(--t-chart-todo, #C4744A); }
+.pc-bar--none { height: 0; background: transparent; }
+.pc-bar--zero { height: 2px; border-radius: 0; opacity: 0.6; } /* 0%: 쟀는데 0 (없음과 구분) */
+.pc-x { display: flex; flex-direction: column; align-items: center; gap: 1px; padding-top: 0.35rem; font-size: 0.72rem; color: var(--t-text2, #574E45); line-height: 1.2; }
+.pc-x b { font-weight: 600; }
+.pc-x small { font-size: 0.62rem; color: var(--t-muted2, #B5AA9B); }
+.pc-x .pc-dot { margin-top: 3px; }
+.pc-empty { padding: 1rem; text-align: center; color: var(--t-muted, #8A7F72); font-size: 0.9rem; background: var(--t-bg, #F8F4EC); border-radius: 12px; }
+.pc-table { margin-top: 0.75rem; font-size: 0.8rem; color: var(--t-text2, #574E45); }
+.pc-table summary { cursor: pointer; color: var(--t-muted, #8A7F72); }
+.pc-table table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-variant-numeric: tabular-nums; }
+.pc-table th, .pc-table td { text-align: left; padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--t-line, #E4DCCF); }
+.pc-table th[scope="col"] { color: var(--t-muted, #8A7F72); font-weight: 600; }
+@media (max-width: 480px) {
+  .pc-plot { grid-template-columns: 2rem 1fr; }
+  .pc-x { font-size: 0.66rem; }
+  .pc-cols { gap: 2px; }
+}
+
+/* ============================================================
    토스트 알림 (src/utils/toast.js) — alert() 137곳 대체 (2026-09-12)
    화면 하단 중앙, 최대 3개 쌓임, 클릭하면 닫힘. 색은 paper 토큰을 쓰되 없으면 기본값.
    ============================================================ */

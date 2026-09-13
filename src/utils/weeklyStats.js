@@ -393,6 +393,7 @@ export async function getRoutinesStats(userId, weekStart, weekEnd, supabaseClien
     morningRate: Math.round(morningRate * 10) / 10,
     nightRate: Math.round(nightRate * 10) / 10,
     dailyChecks,
+    dailyPossible: dailyActiveRoutines, // 날짜별 가능 체크 수 (차트 실천율 분모)
     routineRates
   };
 }
@@ -434,7 +435,8 @@ export async function getReflectionsStats(userId, weekStart, weekEnd, supabaseCl
   return {
     writtenDays,
     totalDays: daysCount,
-    writingRate: Math.round(writingRate * 10) / 10
+    writingRate: Math.round(writingRate * 10) / 10,
+    writtenDates: reflections.map(r => r.date) // 차트 성찰 점
   };
 }
 

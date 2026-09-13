@@ -368,10 +368,12 @@ export async function renderToday() {
       todoDatePickerInitialized = false;
       dragAndDropInitialized = false;
       
-      // 루틴과 할일 로드 및 이벤트 바인딩
-      await loadRoutines(selectedDate, profile);
-      await loadTodos(selectedDate, profile, timezone);
-      await loadReflection(selectedDate, profile);
+      // 루틴·할일·성찰은 서로 다른 영역에 그리므로 동시에 불러온다 (2026-09-13 P0-3: 직렬 대기 제거)
+      await Promise.all([
+        loadRoutines(selectedDate, profile),
+        loadTodos(selectedDate, profile, timezone),
+        loadReflection(selectedDate, profile),
+      ]);
       
       // ✅ Lucide 렌더링 완료 후 이벤트 리스너 등록 (타이밍 보장)
       setTimeout(() => {

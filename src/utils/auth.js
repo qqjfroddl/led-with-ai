@@ -1,6 +1,16 @@
 import { getSupabase } from '../config/supabase.js';
 
 const PROFILE_TIMEOUT_MS = 8000;
+// 프로필 세션 캐시 (2026-09-13 P0-3, 소장님 승인): 로그인 직후 메인·라우터·화면이 같은 프로필을 세 번 조회하던 것을 한 번으로.
+// 60초가 지나면 다시 조회하므로 관리자 승인 같은 상태 변경도 늦어도 1분 안에 반영된다. 로그인·로그아웃 때는 즉시 비운다.
+const PROFILE_CACHE_MS = 60 * 1000;
+let cachedAt = 0;
+
+/** 프로필 캐시를 비운다 — 로그인(다른 사용자일 수 있음)·로그아웃·본인 프로필 수정 뒤 호출 */
+export function invalidateProfileCache() {
+  cachedProfile = null;
+  cachedAt = 0;
+}
 let cachedProfile = null;
 let profileLoadPromise = null;
 
@@ -28,7 +38,7 @@ export async function signInWithGoogle() {
  */
 export async function signOut() {
   const supabase = await getSupabase();
-  cachedProfile = null;
+  invalidateProfileCache();
   profileLoadPromise = null;
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
@@ -107,7 +117,11 @@ async function createProfileIfMissing(user) {
  * 현재 사용자 프로필 조회 (승인 상태 포함)
  * 프로필이 없으면 자동 생성 시도
  */
-export async function getCurrentProfile() {
+export async function getCurrentProfile({ fresh = false } = {}) {
+  // 세션 캐시가 살아 있으면 서버에 묻지 않는다 (fresh: true 로 강제 재조회)
+  if (!fresh && cachedProfile && Date.now() - cachedAt < PROFILE_CACHE_MS) {
+    return cachedProfile;
+  }
   // Keep a longer timeout so brief Supabase delays do not look like logout.
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => reject(new Error('getCurrentProfile timeout')), PROFILE_TIMEOUT_MS);
@@ -181,6 +195,7 @@ export async function getCurrentProfile() {
     const profile = await Promise.race([profileLoadPromise, timeoutPromise]);
     if (profile) {
       cachedProfile = profile;
+      cachedAt = Date.now();
     }
     return profile;
   } catch (error) {

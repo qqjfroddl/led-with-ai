@@ -20,6 +20,8 @@
   /* 상태색: 종이 위 잉크 톤 */
   --t-success: #2F6B4F; --t-success-soft: #E4EFE8; --t-success-line: #BFD8C9;
   --t-danger: #8C3B32; --t-danger-soft: #F5E3E0; --t-danger-line: #E3BDB7;
+  /* 차트 막대색: 잉크 토큰은 마크로 쓰기엔 어둡고 탁해 dataviz 검증기(명도·채도·CVD)를 통과하는 단계로 따로 둔다 */
+  --t-chart-routine: #2F79C4; --t-chart-todo: #C4744A;
   --t-insight: #9A5B3C; --t-insight-soft: #F6E8E0; --t-insight-line: #E5C9B8; /* 리뷰 '분석' 섹션 정체성 */
   --t-warn: #8A6A1F; --t-warn-soft: #F5ECD9; --t-warn-line: #E4D3A8;
   /* 카테고리 4색(일·직업·성장·개인): 리뷰 차트에서 구분용. 성장은 accent2와 같다 */

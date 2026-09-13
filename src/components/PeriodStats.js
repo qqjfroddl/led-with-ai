@@ -2,6 +2,8 @@
 // 세 벌은 제목·기록 일수(주간은 7일 고정, 월·연은 stats.totalDays)·연간 제목의 연도만 달랐다.
 // 골든 테스트: scripts/test/golden-period-components.mjs (옛 3벌과 같은 입력에 같은 HTML)
 
+import { renderPeriodChart } from './PeriodChart.js'; // 기간 리듬 차트 (골든 테스트는 이 블록을 비교에서 뺀다)
+
 const CATEGORY_LABELS = {
   work: 'Work',
   job: 'Job',
@@ -57,6 +59,7 @@ export function renderPeriodStats(stats, period) {
         ${renderReflectionCard(reflections, comparison, totalDays)}
       </div>
 
+${renderPeriodChart(stats, period)}
       <!-- 카테고리별 완료율 -->
       ${renderCategoryBreakdown(todos)}
     </div>
