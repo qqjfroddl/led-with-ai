@@ -7,20 +7,24 @@
    폰트·keep-all·토스트는 main.css(기본 레이어)에 있다. admin.html도 그쪽을 쓴다.
    ============================================================ */
 @layer theme {
-/* ─────────────────────────── 토큰 ─────────────────────────── */
+/* ─────────────────────────── 토큰 ───────────────────────────
+   테마 = 이 토큰 값 묶음. <html data-theme="…">로 고른다 (src/theme.js). 아래 구조 규칙은 전 테마 공통.
+   on-accent/on-ink: 포인트색·잉크색 면 위의 글자색 — 밝은 테마는 흰색, 밤의 종이는 어두운 잉크.
+   차트 막대색은 테마마다 dataviz 검증기(명도·채도·색각·대비)를 통과한 값만 쓴다. */
 :root {
+  color-scheme: light;
   --t-bg: #F8F4EC; --t-bg2: #F0EAE0; --t-surface: #FFFDF9;
-  --t-text: #2A2622; --t-text2: #574E45; --t-muted: #8A7F72; --t-muted2: #B5AA9B;
+  --t-text: #2A2622; --t-text2: #574E45; --t-muted: #7A6F62; --t-muted2: #9C9184; /* muted 4.6:1, muted2 3.1:1 (2026-09-13 대비 검사로 한 단계 진하게) */
   --t-line: #E4DCCF; --t-line2: #D3C8B6;
   --t-accent: #23506B; --t-accent-soft: #E6EDF2; --t-accent-line: #C9D6E0;
+  --t-on-accent: #FFFFFF; --t-on-ink: #FFFDF9;
   --t-shadow: 0 1px 2px rgba(42,38,34,.05), 0 2px 8px rgba(42,38,34,.04);
   --t-shadow-sm: 0 1px 2px rgba(42,38,34,.05);
-  /* 보조 포인트(자두색): 성찰·성장 — 남색(행동)과 짝. P2 토큰화(2026-09-12)에서 옛 퍼플 계열이 여기로 온다 */
+  /* 보조 포인트(자두색): 성찰·성장 — 남색(행동)과 짝 */
   --t-accent2: #6B4E8C; --t-accent2-soft: #EDE7F3; --t-accent2-line: #D3C6E1;
   /* 상태색: 종이 위 잉크 톤 */
   --t-success: #2F6B4F; --t-success-soft: #E4EFE8; --t-success-line: #BFD8C9;
   --t-danger: #8C3B32; --t-danger-soft: #F5E3E0; --t-danger-line: #E3BDB7;
-  /* 차트 막대색: 잉크 토큰은 마크로 쓰기엔 어둡고 탁해 dataviz 검증기(명도·채도·CVD)를 통과하는 단계로 따로 둔다 */
   --t-chart-routine: #2F79C4; --t-chart-todo: #C4744A;
   --t-insight: #9A5B3C; --t-insight-soft: #F6E8E0; --t-insight-line: #E5C9B8; /* 리뷰 '분석' 섹션 정체성 */
   --t-warn: #8A6A1F; --t-warn-soft: #F5ECD9; --t-warn-line: #E4D3A8;
@@ -29,6 +33,47 @@
   --t-cat-job: #2F6F7E; --t-cat-job-soft: #E1EEF1; --t-cat-job-line: #B9D3DA;
   --t-cat-growth: var(--t-accent2); --t-cat-growth-soft: var(--t-accent2-soft); --t-cat-growth-line: var(--t-accent2-line);
   --t-cat-personal: #A04E66; --t-cat-personal-soft: #F5E3E8; --t-cat-personal-line: #E4BFCA;
+}
+
+/* 따뜻한 종이 (9/12 5안의 톤): 흰 종이 위 테라코타 포인트. 나머지는 종이저널 값 */
+html[data-theme="warm"] {
+  --t-bg: #FBF8F3; --t-bg2: #F1ECE4; --t-surface: #FFFFFF;
+  --t-text: #2B2622; --t-text2: #4E4640; --t-muted: #7B7067; --t-muted2: #9A8F82;
+  --t-line: #EDE6DC; --t-line2: #D9CFC2;
+  --t-accent: #B5582D; --t-accent-soft: #FBEADF; --t-accent-line: #F0C9B3; /* 흰 글자 4.7:1 */
+  --t-shadow: 0 1px 2px rgba(43,38,34,.04), 0 4px 14px rgba(43,38,34,.04);
+  --t-shadow-sm: 0 1px 2px rgba(43,38,34,.04);
+}
+
+/* 흰 종이 (9/12 4안의 색): 그림자 없이 괘선으로 구획, 파란 포인트 */
+html[data-theme="white"] {
+  --t-bg: #FFFFFF; --t-bg2: #F4F3F0; --t-surface: #FFFFFF;
+  --t-text: #1C1C1E; --t-text2: #3A3A3C; --t-muted: #6E6E73; --t-muted2: #8E8E93;
+  --t-line: #E6E5E1; --t-line2: #D1D0CB;
+  --t-accent: #2F5BEA; --t-accent-soft: #EAF0FF; --t-accent-line: #C6D4FF;
+  --t-shadow: none; --t-shadow-sm: none;
+}
+
+/* 밤의 종이: 어두운 책상 위 종이. 자동(auto)은 기기가 밤 모드일 때 theme.js가 is-dark를 건다 */
+html[data-theme="night"],
+html[data-theme="auto"].is-dark {
+  color-scheme: dark;
+  --t-bg: #1B1815; --t-bg2: #2F2A26; --t-surface: #262220;
+  --t-text: #F1EBE1; --t-text2: #D5CCBF; --t-muted: #A69B8C; --t-muted2: #7A7064;
+  --t-line: #3B352F; --t-line2: #4D453D;
+  --t-accent: #8FB5DB; --t-accent-soft: #2B3846; --t-accent-line: #43556A;
+  --t-on-accent: #14110F; --t-on-ink: #1E1B18;
+  --t-shadow: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.35);
+  --t-shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --t-accent2: #B49BD1; --t-accent2-soft: #34293F; --t-accent2-line: #4E4060;
+  --t-success: #7FBF9A; --t-success-soft: #26362D; --t-success-line: #3A5445;
+  --t-danger: #E4908A; --t-danger-soft: #3F2926; --t-danger-line: #5E3B37;
+  --t-chart-routine: #3F7FC0; --t-chart-todo: #C77A4A;
+  --t-insight: #D6A07E; --t-insight-soft: #3B2E27; --t-insight-line: #58453B;
+  --t-warn: #D8B564; --t-warn-soft: #3A3322; --t-warn-line: #58492B;
+  --t-cat-work: #D2A660; --t-cat-work-soft: #3A3223; --t-cat-work-line: #5A4A2D;
+  --t-cat-job: #7FB8C6; --t-cat-job-soft: #233439; --t-cat-job-line: #345057;
+  --t-cat-personal: #D992A6; --t-cat-personal-soft: #3B2A31; --t-cat-personal-line: #5C3F4A;
 }
 
 /* ─────────────────────────── 공통 ─────────────────────────── */
@@ -70,9 +115,9 @@
 :root .nav-item-new:hover { transform: none; box-shadow: none; color: var(--t-accent); }
 :root .nav-item-new.active { background: transparent; color: var(--t-accent); font-weight: 700; box-shadow: none; }
 :root .nav-group:has(.nav-item-new.active) { background: var(--t-accent); border-color: var(--t-accent); }
-:root .nav-group:has(.nav-item-new.active) .nav-group-label { color: rgba(255,255,255,0.75); }
-:root .nav-group:has(.nav-item-new.active) .nav-item-new { color: rgba(255,255,255,0.7); }
-:root .nav-group:has(.nav-item-new.active) .nav-item-new.active { color: #fff; }
+:root .nav-group:has(.nav-item-new.active) .nav-group-label { color: color-mix(in srgb, var(--t-on-accent) 75%, transparent); }
+:root .nav-group:has(.nav-item-new.active) .nav-item-new { color: color-mix(in srgb, var(--t-on-accent) 70%, transparent); }
+:root .nav-group:has(.nav-item-new.active) .nav-item-new.active { color: var(--t-on-accent); }
 :root .nav-group[data-group="admin"] { background: var(--t-bg2); }
 
 /* 폰 폭(≤768px): 시안(390px) 그대로 — 아이콘 없이 글자만, 항목은 줄어들 수 있게(min-width 0), 3박스가 한 줄.
@@ -171,7 +216,7 @@
 :root #add-todo-btn,
 :root #open-reflection-form,
 :root .btn-primary {
-  background: var(--t-accent); color: #fff; box-shadow: none; border-radius: 10px; min-height: 44px;
+  background: var(--t-accent); color: var(--t-on-accent); box-shadow: none; border-radius: 10px; min-height: 44px;
 }
 :root .btn-primary:hover { transform: none; box-shadow: none; filter: brightness(1.06); }
 :root .btn::before { display: none; }
@@ -188,6 +233,8 @@
 /* 다른 페이지 공통: 본문 텍스트·링크 */
 :root a { color: var(--t-accent); }
 :root .nav-item-new { text-decoration: none; }
+/* 인라인에서 온 흰 글자(포인트색 면 위 아이콘·글자)는 테마의 on-accent를 따른다 — 밤의 종이에서 흰 글자가 밝은 포인트색 위에 뜨지 않게 */
+:root .c-white { color: var(--t-on-accent); }
 
 :root .top-navigation-grouped .nav-group { border-radius: 10px; }
 :root #today-reflection-section { border-style: dashed; }

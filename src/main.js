@@ -1,4 +1,6 @@
 import './vendor.js'; // 외부 라이브러리 전역(window.luxon 등)을 가장 먼저 세운다
+import { initTheme } from './theme.js';
+initTheme(); // 저장된 화면 테마 적용 + 메뉴 이벤트 위임 (첫 렌더 전)
 import { getSupabase } from './config/supabase.js';
 import { getCurrentProfile, invalidateProfileCache, signInWithGoogle, signOut } from './utils/auth.js';
 import { router } from './router.js';

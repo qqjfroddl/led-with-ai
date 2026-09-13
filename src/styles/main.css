@@ -151,7 +151,7 @@ body {
 
 .btn-primary {
   background: var(--primary-gradient);
-  color: white;
+  color: var(--t-on-accent);
   box-shadow: 0 2px 4px rgba(42,38,34, 0.07),
     0 6px 12px rgba(91, 95, 199, 0.25); /* 레이어드 섀도우 */
 }
@@ -365,7 +365,7 @@ body {
 
 .nav-item.active {
   background: var(--primary-gradient);
-  color: white;
+  color: var(--t-on-accent);
   border: transparent;
   box-shadow: 0 2px 4px rgba(42,38,34, 0.1),
     0 4px 12px rgba(91, 95, 199, 0.25); /* 레이어드 섀도우 */
@@ -479,7 +479,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--t-on-accent);
   font-weight: bold;
   font-size: 1.1rem;
   border: 2px solid var(--t-line);
@@ -545,7 +545,7 @@ body {
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-md);
   background: var(--primary-blue);
-  color: white;
+  color: var(--t-on-accent);
   border: none;
   border-radius: 999px;
   cursor: pointer;
@@ -905,7 +905,7 @@ body {
 /* Work 활성 상태 */
 .category-tab[data-category="work"].active {
   background: linear-gradient(120deg, var(--work-primary) 0%, var(--work-secondary) 100%); /* 각도 변경 */
-  color: white;
+  color: var(--t-on-accent);
   border-color: transparent;
   box-shadow: 0 2px 4px rgba(42,38,34, 0.1),
     0 4px 12px rgba(245, 158, 66, 0.25); /* 레이어드 섀도우 */
@@ -914,7 +914,7 @@ body {
 /* Job 활성 상태 */
 .category-tab[data-category="job"].active {
   background: linear-gradient(120deg, var(--job-primary) 0%, var(--job-secondary) 100%); /* 각도 변경 */
-  color: white;
+  color: var(--t-on-accent);
   border-color: transparent;
   box-shadow: 0 2px 4px rgba(42,38,34, 0.1),
     0 4px 12px rgba(34, 199, 221, 0.25); /* 레이어드 섀도우 */
@@ -923,7 +923,7 @@ body {
 /* Growth 활성 상태 */
 .category-tab[data-category="self_dev"].active {
   background: linear-gradient(120deg, var(--growth-primary) 0%, var(--growth-secondary) 100%); /* 각도 변경 */
-  color: white;
+  color: var(--t-on-accent);
   border-color: transparent;
   box-shadow: 0 2px 4px rgba(42,38,34, 0.1),
     0 4px 12px rgba(155, 140, 217, 0.25); /* 레이어드 섀도우 */
@@ -932,7 +932,7 @@ body {
 /* Personal 활성 상태 */
 .category-tab[data-category="personal"].active {
   background: linear-gradient(120deg, var(--personal-primary) 0%, var(--personal-secondary) 100%); /* 각도 변경 */
-  color: white;
+  color: var(--t-on-accent);
   border-color: transparent;
   box-shadow: 0 2px 4px rgba(42,38,34, 0.1),
     0 4px 12px rgba(230, 107, 164, 0.25); /* 레이어드 섀도우 */
@@ -1393,6 +1393,37 @@ input[type="date"]:focus {
 }
 
 /* ============================================================
+   화면 테마 메뉴 (src/theme.js) — 헤더 팔레트 버튼 + 드롭다운 (2026-09-13)
+   ============================================================ */
+.theme-menu-wrap { position: relative; }
+.theme-btn {
+  width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--t-surface); color: var(--t-text2); border: 1px solid var(--t-line2); cursor: pointer; padding: 0;
+}
+.theme-btn:hover, .theme-btn[aria-expanded="true"] { background: var(--t-bg2); color: var(--t-accent); }
+.theme-btn :is(i, svg) { width: 20px; height: 20px; }
+.theme-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 950; min-width: 220px;
+  background: var(--t-surface); border: 1px solid var(--t-line); border-radius: 14px; box-shadow: var(--t-shadow), 0 12px 32px rgba(0,0,0,.12);
+  padding: 0.4rem;
+}
+.theme-menu-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; color: var(--t-muted); padding: 0.35rem 0.6rem 0.3rem; }
+.theme-item {
+  width: 100%; display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.6rem; border: 0; border-radius: 10px;
+  background: transparent; color: var(--t-text); cursor: pointer; text-align: left; font: inherit;
+}
+.theme-item:hover, .theme-item:focus-visible { background: var(--t-bg2); outline: none; }
+.theme-item[aria-checked="true"] { background: var(--t-accent-soft); }
+.theme-swatch { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--t-line2); flex: 0 0 22px; position: relative; }
+.theme-swatch::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--swatch-ink, transparent); }
+.theme-swatch--auto { background: linear-gradient(135deg, #F8F4EC 50%, #1B1815 50%); }
+.theme-item-text { display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0; }
+.theme-item-text b { font-weight: 600; font-size: 0.9rem; }
+.theme-item-text small { font-size: 0.72rem; color: var(--t-muted); }
+.theme-check { width: 16px; height: 16px; color: var(--t-accent); visibility: hidden; }
+.theme-item[aria-checked="true"] .theme-check { visibility: visible; }
+
+/* ============================================================
    토스트 알림 (src/utils/toast.js) — alert() 137곳 대체 (2026-09-12)
    화면 하단 중앙, 최대 3개 쌓임, 클릭하면 닫힘. 색은 paper 토큰을 쓰되 없으면 기본값.
    ============================================================ */
@@ -1406,7 +1437,7 @@ input[type="date"]:focus {
   display: flex; align-items: center; gap: 10px;
   width: 100%; min-height: 44px; padding: 10px 14px; box-sizing: border-box;
   border-radius: 12px; border: 1px solid transparent;
-  background: var(--t-text, #2A2622); color: var(--t-surface);
+  background: var(--t-text, #2A2622); color: var(--t-on-ink, #fff);
   font-size: 0.9rem; line-height: 1.45; word-break: keep-all;
   box-shadow: 0 6px 20px rgba(42,38,34,.18);
   animation: toast-in .22s ease-out;
@@ -1434,7 +1465,7 @@ input[type="date"]:focus {
 @layer overrides{
 .auth-login-btn{
   background: var(--t-text2);
-  color: white;
+  color: var(--t-on-ink);
   border: 1px solid var(--t-text2);
 
 }

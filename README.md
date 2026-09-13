@@ -74,6 +74,7 @@ npm run build
 ## 스타일 구조 (2026-09-12 P2, 종이저널 디자인)
 
 - **토큰**: 색은 전부 `src/styles/paper.css`의 `--t-*` 변수다 (accent 남색 · accent2 자두색 · success/danger/warn/insight · cat-work/job/growth/personal · text/muted/line/bg/surface). **JS나 CSS에 hex를 새로 쓰지 않는다.** 테마 교체 = paper.css 교체.
+- **테마 4벌 + 기기 설정 따르기** (`src/theme.js`, 2026-09-13 소장님 결정): 종이저널(기본)·따뜻한 종이·흰 종이·밤의 종이. `<html data-theme="…">` 속성 하나로 paper.css의 토큰 블록이 바뀐다. 헤더 팔레트 버튼으로 고르고 `localStorage 'led-theme'`에 기기별 저장, `index.html` 머리의 인라인 스크립트가 CSS보다 먼저 속성을 걸어 첫 화면 깜빡임을 막는다. `auto`는 기기가 밤 모드일 때 `is-dark` 클래스로 밤의 종이를 켠다. 포인트색·잉크색 면 위 글자는 `--t-on-accent`/`--t-on-ink`를 쓴다(밤에는 어두운 글자). 검사: `node scripts/design/check-theme-contrast.mjs`(테마별 글자 대비), 차트색은 dataviz 검증기. 용량: gzip 기준 CSS +0.9KB, JS +1.3KB.
 - **레이어**: `@layer base, inline, theme` — base(main.css·admin.css) < inline(utilities.css) < theme(paper.css). 옛 인라인 style이 base를 이기던 관계를 레이어로 보존했고, 테마는 `!important` 없이 그 위에 선다.
 - **utilities.css는 생성 파일이다.** `scripts/design/extract-inline.mjs`가 JS 템플릿의 `style="…"`을 선언 하나 = 클래스 하나(`d-flex`, `gap-0_5rem`, `c-accent`)로 뽑아 만든다. 손으로 고치지 않는다. 새 화면을 만들 때는 유틸리티 클래스나 main.css의 컴포넌트 클래스를 쓰고, 상태값(진행률 width, 토글 display)만 인라인에 남긴다.
 - **스크립트** (`scripts/design/`): `tokens.mjs` 매핑표 · `apply-tokens.mjs` JS 색 치환 · `apply-tokens-css.mjs` CSS 색 치환 · `extract-inline.mjs` 인라인 추출. 셋 다 재실행 가능(멱등).

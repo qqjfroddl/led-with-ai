@@ -1,6 +1,7 @@
 import { toast } from '../utils/toast.js';
 import { signOut } from '../utils/auth.js';
 import { formatSelectedDate } from '../state/dateState.js';
+import { themeMenuHtml } from '../theme.js';
 
 /**
  * 네비게이션 바 렌더링 (헤더 포함)
@@ -198,6 +199,7 @@ export async function renderNavigation(currentRoute, profile) {
             }
             <span class="user-name">${userName}</span>
           </div>
+          ${themeMenuHtml()}
           <button id="logout-btn" class="btn btn-secondary" onclick="window.handleNavigationLogout && window.handleNavigationLogout()">
             로그아웃
           </button>
