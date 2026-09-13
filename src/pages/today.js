@@ -115,12 +115,12 @@ export async function renderToday() {
             <i class="w-18px h-18px" data-lucide="chevron-right"></i>
           </button>
           <!-- 오늘로 이동 버튼 (PC만 표시) -->
-          <button id="todo-date-today" class="date-today-btn date-today-btn-pc ai-center gap-0_375rem p-0_375rem-0_875rem fz-0_875rem bg-accent-soft c-text bd-1px-solid-accent-line br-999px cur-pointer tr-all-0_2s ws-nowrap fs-0" style="display: ${selectedDate === today ? 'none' : 'inline-flex'};">
+          <button id="todo-date-today" class="date-today-btn date-today-btn-pc ${selectedDate === today ? 'is-hidden' : ''} ai-center gap-0_375rem p-0_375rem-0_875rem fz-0_875rem bg-accent-soft c-text bd-1px-solid-accent-line br-999px cur-pointer tr-all-0_2s ws-nowrap fs-0">
             <i class="w-16px h-16px" data-lucide="sun"></i>
             오늘로 이동
           </button>
           <!-- 오늘로 이동 아이콘 (모바일만 표시) -->
-          <button id="todo-date-today-mobile" class="date-today-icon-btn date-today-btn-mobile ai-center jc-center p-0_4rem bg-accent-soft c-text bd-1px-solid-accent-line br-8px cur-pointer tr-all-0_2s w-32px h-32px fs-0" title="오늘로 이동" style="display: ${selectedDate === today ? 'none' : 'inline-flex'};">
+          <button id="todo-date-today-mobile" class="date-today-icon-btn date-today-btn-mobile ${selectedDate === today ? 'is-hidden' : ''} ai-center jc-center p-0_4rem bg-accent-soft c-text bd-1px-solid-accent-line br-8px cur-pointer tr-all-0_2s w-32px h-32px fs-0" title="오늘로 이동">
             <i class="w-18px h-18px" data-lucide="sun"></i>
           </button>
         </div>
@@ -1001,11 +1001,11 @@ function setupEventHandlers(date, profile, timezone) {
       }
       // PC용 "오늘로 이동" 버튼 표시/숨김
       if (todoDateTodayBtn) {
-        todoDateTodayBtn.style.display = isToday ? 'none' : 'inline-flex';
+        todoDateTodayBtn.classList.toggle('is-hidden', isToday); // 표시 여부는 클래스로 — PC/모바일 구분은 CSS(overrides)가 맡는다
       }
       // 모바일용 "오늘로 이동" 아이콘 버튼 표시/숨김
       if (todoDateTodayMobileBtn) {
-        todoDateTodayMobileBtn.style.display = isToday ? 'none' : 'inline-flex';
+        todoDateTodayMobileBtn.classList.toggle('is-hidden', isToday);
       }
     };
     
