@@ -73,6 +73,23 @@
 :root .nav-group:has(.nav-item-new.active) .nav-item-new.active { color: #fff; }
 :root .nav-group[data-group="admin"] { background: var(--t-bg2); }
 
+/* 폰 폭(≤768px): 시안(390px) 그대로 — 아이콘 없이 글자만, 항목은 줄어들 수 있게(min-width 0), 3박스가 한 줄.
+   2026-09-13 소장님 지적: 계획·리뷰의 하위 메뉴가 박스 밖으로 나갔다. 테마가 가로 배치만 강제하고
+   기본 CSS의 폰 규칙(항목 최소폭 50px·아이콘 12px·그룹 최소폭 80px)을 그대로 둔 탓. */
+@media (max-width: 768px) {
+  :root .top-navigation-grouped { flex-wrap: wrap; gap: 6px; padding: 0.4rem 0; }
+  :root .nav-group { flex: 0 0 calc(43% - 5px); min-width: 0; padding: 0.3rem 0.15rem 0.35rem; }
+  :root .nav-group[data-group="do"] { flex: 0 0 calc(14% - 5px); min-width: 0; }
+  :root .nav-group-label { font-size: 0.66rem; margin-bottom: 0.1rem; }
+  :root .nav-group-items { flex-direction: row; gap: 2px; width: 100%; }
+  :root .nav-item-new { flex: 1 1 0; min-width: 0; padding: 3px 0 4px; gap: 0; font-size: clamp(10.5px, 3vw, 11.5px); letter-spacing: -0.01em; white-space: nowrap; }
+  :root .nav-item-new :is(i, svg) { display: none; }
+  /* 관리자 박스는 둘째 줄 오른쪽에 작은 칩으로 — 첫 줄 3박스가 폭을 다 쓰므로 자연히 내려온다 */
+  :root .nav-group[data-group="admin"] { flex: 0 0 auto; margin-left: auto; flex-direction: row; align-items: center; gap: 0.35rem; padding: 0.2rem 0.6rem; }
+  :root .nav-group[data-group="admin"] .nav-group-label { margin: 0; }
+  :root .nav-group[data-group="admin"] .nav-item-new { padding: 2px 0; }
+}
+
 /* 날짜 바(헤더 3줄) */
 :root .date-display-btn,
 :root #todo-date-display { background: var(--t-accent-soft); color: var(--t-accent); box-shadow: none; }
