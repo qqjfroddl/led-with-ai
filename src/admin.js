@@ -1,4 +1,5 @@
 import { toast } from './utils/toast.js';
+import { confirmDialog } from './utils/confirm.js';
 import './vendor.js'; // 외부 라이브러리 전역(window.luxon 등)을 가장 먼저 세운다
 import { supabase, getSupabase } from './config/supabase.js';
 import { getCurrentProfile, isAdmin, signOut } from './utils/auth.js';
@@ -694,7 +695,7 @@ window.showTab = function(tab) {
 window.updateUserStatus = async function(userId, newStatus) {
   // '취소' 버튼 클릭 시 profiles에서 완전 삭제
   if (newStatus === 'rejected') {
-    if (!confirm('정말로 이 사용자를 삭제하시겠습니까? 다시 신청하면 새로 생성됩니다.')) {
+    if (!(await confirmDialog('정말로 이 사용자를 삭제하시겠습니까? 다시 신청하면 새로 생성됩니다.', { confirmText: '삭제', danger: true }))) {
       return;
     }
 
@@ -776,7 +777,7 @@ window.updateUserStatus = async function(userId, newStatus) {
     'blocked': '차단'
   }[newStatus] || newStatus;
 
-  if (!confirm(`정말로 이 사용자의 상태를 "${statusText}"으로 변경하시겠습니까?`)) {
+  if (!(await confirmDialog(`정말로 이 사용자의 상태를 "${statusText}"으로 변경하시겠습니까?`, { confirmText: statusText, danger: newStatus === 'blocked' }))) {
     return;
   }
 
@@ -801,7 +802,7 @@ async function updateUserStatusBulk(ids, newStatus) {
   
   // '취소' 버튼 클릭 시 profiles에서 완전 삭제
   if (newStatus === 'rejected') {
-    if (!confirm(`선택한 ${ids.length}명을 삭제하시겠습니까? 다시 신청하면 새로 생성됩니다.`)) {
+    if (!(await confirmDialog(`선택한 ${ids.length}명을 삭제하시겠습니까? 다시 신청하면 새로 생성됩니다.`, { confirmText: '삭제', danger: true }))) {
       return;
     }
 
@@ -855,7 +856,7 @@ async function updateUserStatusBulk(ids, newStatus) {
     'blocked': '차단'
   }[newStatus] || newStatus;
 
-  if (!confirm(`선택한 ${ids.length}명을 "${statusText}" 처리하시겠습니까?`)) return;
+  if (!(await confirmDialog(`선택한 ${ids.length}명을 "${statusText}" 처리하시겠습니까?`, { confirmText: statusText, danger: newStatus === 'blocked' }))) return;
 
   const { error } = await supabase
     .from('profiles')
@@ -1232,7 +1233,7 @@ window.saveBulkExpiryDate = async function() {
   }
 
   const dateText = expiryDate ? new Date(expiryDate).toLocaleDateString('ko-KR') : '무제한';
-  if (!confirm(`선택한 ${selectedIds.length}명의 사용 기한을 ${dateText}으로 설정하시겠습니까?`)) {
+  if (!(await confirmDialog(`선택한 ${selectedIds.length}명의 사용 기한을 ${dateText}으로 설정하시겠습니까?`, { confirmText: '설정' }))) {
     return;
   }
 
@@ -1444,7 +1445,7 @@ async function loadUserStats(users, weekOffset = 0, sectionId = null) {
 async function addToChallenge(userIds) {
   if (!userIds || userIds.length === 0) return;
   
-  if (!confirm(`선택한 ${userIds.length}명을 챌린지 참가자로 추가하시겠습니까?`)) {
+  if (!(await confirmDialog(`선택한 ${userIds.length}명을 챌린지 참가자로 추가하시겠습니까?`, { confirmText: '추가' }))) {
     return;
   }
   
@@ -1477,7 +1478,7 @@ async function addToChallenge(userIds) {
 
 // 챌린지에서 제외 (개별)
 window.removeFromChallenge = async function(userId) {
-  if (!confirm('이 사용자를 챌린지에서 제외하시겠습니까?')) {
+  if (!(await confirmDialog('이 사용자를 챌린지에서 제외하시겠습니까?', { confirmText: '제외', danger: true }))) {
     return;
   }
   
@@ -1510,7 +1511,7 @@ window.removeFromChallenge = async function(userId) {
 async function removeFromChallengeBulk(userIds) {
   if (!userIds || userIds.length === 0) return;
   
-  if (!confirm(`선택한 ${userIds.length}명을 챌린지에서 제외하시겠습니까?`)) {
+  if (!(await confirmDialog(`선택한 ${userIds.length}명을 챌린지에서 제외하시겠습니까?`, { confirmText: '제외', danger: true }))) {
     return;
   }
   

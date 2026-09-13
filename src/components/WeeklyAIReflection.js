@@ -1,5 +1,6 @@
 // 주간 AI 성찰 UI 컴포넌트
 import { toast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getWeekStart } from '../utils/date.js';
 
@@ -558,7 +559,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
   if (generateBtn) {
     generateBtn.addEventListener('click', async () => {
       // 확인 메시지
-      if (!confirm('AI가 이번 주 활동을 분석하여 성찰을 생성합니다.\n\n계속하시겠습니까?')) {
+      if (!(await confirmDialog('AI가 이번 주 활동을 분석하여 성찰을 생성합니다.\n\n계속하시겠습니까?', { confirmText: '생성' }))) {
         return;
       }
       
@@ -590,7 +591,7 @@ export function initWeeklyAIReflection(onGenerate, weekStart) {
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', async () => {
       // 확인 메시지
-      if (!confirm('AI 성찰을 다시 생성하시겠습니까?\n\n기존 성찰은 덮어씌워집니다.')) {
+      if (!(await confirmDialog('AI 성찰을 다시 생성하시겠습니까?\n\n기존 성찰은 덮어씌워집니다.', { confirmText: '다시 생성', danger: true }))) {
         return;
       }
       

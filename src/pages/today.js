@@ -1,5 +1,6 @@
 // 오늘 페이지 (루틴 + 할일)
 import { toast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
@@ -1385,7 +1386,7 @@ function bindTodoEvents(date, profile, timezone) {
       e.stopPropagation();
       
       // 삭제 확인 팝업 추가
-      if (confirm('이 할일을 삭제하시겠습니까?')) {
+      if (await confirmDialog('이 할일을 삭제하시겠습니까?', { confirmText: '삭제', danger: true })) {
         await deleteTodo(todoId);
         await loadTodos(date, profile, timezone);
       }

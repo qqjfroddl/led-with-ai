@@ -1,4 +1,5 @@
 import { toast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
@@ -392,7 +393,7 @@ function setupEventHandlers(profile) {
     if (e.target.closest('.delete-recurring-btn')) {
       const btn = e.target.closest('.delete-recurring-btn');
       const taskId = btn.dataset.taskId;
-      if (confirm('이 반복업무를 삭제하시겠습니까? 연결된 할일도 함께 삭제됩니다.')) {
+      if (await confirmDialog('이 반복업무를 삭제하시겠습니까? 연결된 할일도 함께 삭제됩니다.', { confirmText: '삭제', danger: true })) {
         await deleteRecurringTask(taskId, profile);
       }
     }

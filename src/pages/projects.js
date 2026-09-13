@@ -1,4 +1,5 @@
 import { toast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
@@ -625,7 +626,7 @@ function setupEventHandlers(profile) {
     if (e.target.closest('.project-task-delete-btn')) {
       const btn = e.target.closest('.project-task-delete-btn');
       const taskId = btn.dataset.taskId;
-      if (confirm('이 할일을 삭제하시겠습니까?')) {
+      if (await confirmDialog('이 할일을 삭제하시겠습니까?', { confirmText: '삭제', danger: true })) {
         await deleteProjectTask(taskId, profile);
       }
     }
@@ -641,7 +642,7 @@ function setupEventHandlers(profile) {
     if (e.target.closest('.delete-project-btn')) {
       const btn = e.target.closest('.delete-project-btn');
       const projectId = btn.dataset.projectId;
-      if (confirm('이 프로젝트를 삭제하시겠습니까? 연결된 할일도 함께 삭제됩니다.')) {
+      if (await confirmDialog('이 프로젝트를 삭제하시겠습니까? 연결된 할일도 함께 삭제됩니다.', { confirmText: '삭제', danger: true })) {
         await deleteProject(projectId, profile);
       }
     }
@@ -1103,7 +1104,7 @@ function openProjectTaskDateRangePicker(taskId, profile) {
     const newBtn = clearBtn.cloneNode(true);
     clearBtn.parentNode.replaceChild(newBtn, clearBtn);
     newBtn.onclick = async () => {
-      if (confirm('시작일/종료일을 지우시겠습니까?')) {
+      if (await confirmDialog('시작일/종료일을 지우시겠습니까?', { confirmText: '지우기', danger: true })) {
         await updateProjectTaskDateRange(currentTaskId, null, null, profile);
         closeOverlay();
       }

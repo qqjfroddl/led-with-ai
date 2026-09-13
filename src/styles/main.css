@@ -1456,6 +1456,53 @@ input[type="date"]:focus {
 .todo-edit-input,
 .project-task-edit-input { flex: 1; min-width: 0; padding: 0.5rem; border: 2px solid var(--t-accent); border-radius: 4px; font-size: 1rem; }
 
+
+/* ============================================================
+   확인창 (src/utils/confirm.js) — confirm() 27곳 대체 (2026-09-13)
+   <dialog> 상자. 색·모서리는 테마 토큰(관리자 화면처럼 paper.css가 없으면 종이저널 기본값).
+   폰(≤480px)에서는 아래쪽에 붙고 버튼이 세로로 쌓인다(확인이 위). danger는 확인 버튼이 붉다.
+   ============================================================ */
+.confirm {
+  border: 0; padding: 0; background: transparent; color: inherit;
+  width: min(400px, calc(100vw - 2rem)); max-width: none; margin: auto; overflow: visible;
+}
+.confirm::backdrop { background: rgba(42,38,34,.38); backdrop-filter: blur(6px); }
+html[data-theme="night"] .confirm::backdrop,
+html.is-dark .confirm::backdrop { background: rgba(0,0,0,.6); }
+.confirm-box {
+  margin: 0; display: grid; gap: 0.6rem;
+  background: var(--t-surface, #FFFDF9); color: var(--t-text, #2A2622);
+  border: 1px solid var(--t-line, #E4DCCF); border-radius: var(--t-radius-lg, 14px);
+  box-shadow: 0 8px 16px rgba(42,38,34,.1), 0 20px 48px rgba(0,0,0,.18);
+  padding: 1.5rem 1.5rem 1.25rem; word-break: keep-all;
+}
+.confirm-icon {
+  width: 40px; height: 40px; border-radius: 12px; display: grid; place-content: center;
+  background: var(--t-accent-soft, #E6EDF2); color: var(--t-accent, #23506B);
+}
+.confirm-icon[data-kind="danger"] { background: var(--t-danger-soft, #F5E3E0); color: var(--t-danger, #8C3B32); }
+.confirm-icon svg { width: 22px; height: 22px; }
+.confirm-title { margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 700; line-height: 1.45; white-space: pre-line; }
+.confirm-msg { margin: 0; color: var(--t-text2, #574E45); font-size: 0.95rem; line-height: 1.55; white-space: pre-line; }
+.confirm-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.75rem; }
+.confirm-actions button {
+  min-height: 44px; padding: 0 1.1rem; border-radius: var(--t-radius-btn, 10px);
+  font: inherit; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: filter 0.15s, background-color 0.15s;
+}
+.confirm-cancel { background: var(--t-surface, #FFFDF9); color: var(--t-text2, #574E45); border: 1px solid var(--t-line2, #D3C8B6); }
+.confirm-cancel:hover { background: var(--t-bg2, #F0EAE0); }
+.confirm-ok { background: var(--t-accent, #23506B); color: var(--t-on-accent, #fff); border: 1px solid transparent; }
+.confirm-ok[data-kind="danger"] { background: var(--t-danger, #8C3B32); }
+.confirm-ok:hover { filter: brightness(1.06); }
+.confirm-actions button:focus-visible { outline: 2px solid var(--t-accent-line, #C9D6E0); outline-offset: 2px; }
+.confirm[open] { animation: confirm-in 0.18s ease-out; }
+@keyframes confirm-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@media (max-width: 480px) {
+  .confirm { margin: auto 1rem calc(1rem + env(safe-area-inset-bottom)); width: calc(100vw - 2rem); }
+  .confirm-actions { flex-direction: column-reverse; }
+  .confirm-actions button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .confirm[open] { animation: none; } }
 } /* @layer base */
 
 /* ============================================================

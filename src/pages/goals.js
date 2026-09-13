@@ -1,4 +1,5 @@
 import { toast } from '../utils/toast.js';
+import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
@@ -1588,10 +1589,11 @@ export async function renderGoals() {
           if (morningRoutines.length > 0 || daytimeRoutines.length > 0 || nightRoutines.length > 0) {
             const totalCurrent = morningRoutines.length + daytimeRoutines.length + nightRoutines.length;
             
-            const confirmed = confirm(
-              `⚠️ 이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
+            const confirmed = await confirmDialog(
+              `이미 이번 달 루틴이 ${totalCurrent}개 있습니다.\n\n` +
               `기존 루틴을 삭제하고 ${selected.year}년 ${selected.month}월 루틴 ${totalRoutines}개를 복사하시겠습니까?\n\n` +
-              `(오늘부터 적용됩니다)`
+              `(오늘부터 적용됩니다)`,
+              { confirmText: '삭제하고 복사', danger: true }
             );
             
             if (!confirmed) {
@@ -1600,9 +1602,10 @@ export async function renderGoals() {
               return;
             }
           } else {
-            const confirmed = confirm(
+            const confirmed = await confirmDialog(
               `${selected.year}년 ${selected.month}월 루틴 ${totalRoutines}개를 현재 월에 복사하시겠습니까?\n\n` +
-              `⚠️ 오늘부터 적용됩니다.`
+              `오늘부터 적용됩니다.`,
+              { confirmText: '복사' }
             );
             
             if (!confirmed) {
@@ -2149,19 +2152,21 @@ export async function renderGoals() {
           if (hasCurrentGoals) {
             const goalCount = [prevGoals.self_dev, prevGoals.relationship, prevGoals.work_finance].filter(Boolean).length;
             
-            const confirmed = confirm(
-              `⚠️ ${selectedYear}년 목표가 이미 있습니다.\n\n` +
+            const confirmed = await confirmDialog(
+              `${selectedYear}년 목표가 이미 있습니다.\n\n` +
               `${selectedYear - 1}년 목표 ${goalCount}개 영역으로 덮어쓰시겠습니까?\n\n` +
-              `⚠️ 기존 목표는 복구할 수 없습니다.`
+              `기존 목표는 복구할 수 없습니다.`,
+              { confirmText: '덮어쓰기', danger: true }
             );
             
             if (!confirmed) return;
           } else {
             const goalCount = [prevGoals.self_dev, prevGoals.relationship, prevGoals.work_finance].filter(Boolean).length;
             
-            const confirmed = confirm(
+            const confirmed = await confirmDialog(
               `${selectedYear - 1}년 목표 ${goalCount}개 영역을 ${selectedYear}년으로 복사하시겠습니까?\n\n` +
-              `복사 후 바로 수정할 수 있습니다.`
+              `복사 후 바로 수정할 수 있습니다.`,
+              { confirmText: '복사' }
             );
             
             if (!confirmed) return;
@@ -2281,7 +2286,7 @@ export async function renderGoals() {
         }
 
         // 확인 메시지
-        const confirmGenerate = confirm(`AI가 ${selectedYear}년 연간 목표에 대한 SMART 기준 피드백을 제공합니다.\n\n입력하신 목표를 더 구체적이고 측정 가능하게 개선하는 제안을 드립니다.\n\n계속하시겠습니까?`);
+        const confirmGenerate = await confirmDialog(`AI가 ${selectedYear}년 연간 목표에 대한 SMART 기준 피드백을 제공합니다.\n\n입력하신 목표를 더 구체적이고 측정 가능하게 개선하는 제안을 드립니다.\n\n계속하시겠습니까?`, { confirmText: '피드백 받기' });
         if (!confirmGenerate) return;
 
         // 버튼 참조 및 원본 HTML 저장
@@ -3144,7 +3149,7 @@ export async function renderGoals() {
           }
           
           // 복사 확인
-          if (!confirm(`${prevYear}년 ${prevMonth}월 계획을 ${currYear}년 ${currMonth}월로 복사하시겠습니까?`)) {
+          if (!(await confirmDialog(`${prevYear}년 ${prevMonth}월 계획을 ${currYear}년 ${currMonth}월로 복사하시겠습니까?`, { confirmText: '복사' }))) {
             return;
           }
           
@@ -3162,7 +3167,7 @@ export async function renderGoals() {
           const currentWorkFinance = document.getElementById('plan-content-work-finance-input')?.value.trim() || '';
           
           if (currentSelfDev || currentRelationship || currentWorkFinance) {
-            if (!confirm('현재 입력된 계획이 있습니다. 덮어쓰시겠습니까?')) {
+            if (!(await confirmDialog('현재 입력된 계획이 있습니다. 덮어쓰시겠습니까?', { confirmText: '덮어쓰기', danger: true }))) {
               return;
             }
           }
@@ -3198,7 +3203,7 @@ export async function renderGoals() {
           }
 
           // 확인 메시지
-          const confirmGenerate = confirm(`AI가 ${selectedMonthStart.substring(0, 4)}년 ${parseInt(selectedMonthStart.substring(5, 7))}월의 월간 실천계획을 제안해드립니다.\n\n연간목표와 최근 활동을 분석하여 구체적인 실천계획을 생성합니다.\n\n계속하시겠습니까?`);
+          const confirmGenerate = await confirmDialog(`AI가 ${selectedMonthStart.substring(0, 4)}년 ${parseInt(selectedMonthStart.substring(5, 7))}월의 월간 실천계획을 제안해드립니다.\n\n연간목표와 최근 활동을 분석하여 구체적인 실천계획을 생성합니다.\n\n계속하시겠습니까?`, { confirmText: '제안 받기' });
           if (!confirmGenerate) return;
 
           // 로딩 표시
