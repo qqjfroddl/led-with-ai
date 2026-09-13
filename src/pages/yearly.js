@@ -5,7 +5,7 @@ import { getCurrentProfile } from '../utils/auth.js';
 import { getToday } from '../utils/date.js';
 import { getYearlyStats } from '../utils/yearlyStats.js';
 import { renderYearSelector, initYearSelector } from '../components/YearSelector.js';
-import { renderYearlyStats } from '../components/YearlyStats.js';
+import { renderPeriodStats } from '../components/PeriodStats.js';
 import { renderYearlyInsights } from '../components/YearlyInsights.js';
 import { renderYearlyAIReflection, initYearlyAIReflection } from '../components/YearlyAIReflection.js';
 
@@ -116,7 +116,7 @@ export async function renderYearly() {
                `
               : `
                  <!-- 정량 지표 -->
-                 ${renderYearlyStats(stats)}
+                 ${renderPeriodStats(stats, 'year')}
                  
                  <!-- 정성 분석 -->
                  ${renderYearlyInsights(stats)}

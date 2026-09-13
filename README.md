@@ -77,7 +77,9 @@ npm run build
 - **레이어**: `@layer base, inline, theme` — base(main.css·admin.css) < inline(utilities.css) < theme(paper.css). 옛 인라인 style이 base를 이기던 관계를 레이어로 보존했고, 테마는 `!important` 없이 그 위에 선다.
 - **utilities.css는 생성 파일이다.** `scripts/design/extract-inline.mjs`가 JS 템플릿의 `style="…"`을 선언 하나 = 클래스 하나(`d-flex`, `gap-0_5rem`, `c-accent`)로 뽑아 만든다. 손으로 고치지 않는다. 새 화면을 만들 때는 유틸리티 클래스나 main.css의 컴포넌트 클래스를 쓰고, 상태값(진행률 width, 토글 display)만 인라인에 남긴다.
 - **스크립트** (`scripts/design/`): `tokens.mjs` 매핑표 · `apply-tokens.mjs` JS 색 치환 · `apply-tokens-css.mjs` CSS 색 치환 · `extract-inline.mjs` 인라인 추출. 셋 다 재실행 가능(멱등).
-- **남은 것**: 상태값 인라인 63곳, 조건이 붙은 `onmouseover` 19곳(그대로 동작), main.css의 `!important` 98곳(모바일 레이아웃 덮어쓰기 — 테마가 못 바꾸는 값이니 늘리지 않는다), 주간·월간·연간 컴포넌트 3벌 중복.
+- **레이어 overrides**: 옛 `!important`(모바일 레이아웃이 인라인을 덮던 것)는 `@layer overrides`(inline 위·theme 아래)로 옮겨 없앴다(`scripts/design/lift-important.mjs`). **`!important`를 새로 쓰지 않는다.** 표시/숨김 같은 상태는 인라인 `display`가 아니라 클래스(`is-hidden`)로 토글한다 — 인라인은 모든 레이어를 이겨 반응형 규칙과 싸운다.
+- **리뷰 컴포넌트**: 주간·월간·연간 지표는 `components/PeriodStats.js`(`renderPeriodStats(stats, 'week'|'month'|'year')`), 주간·월간 분석은 `components/PeriodInsights.js`(`'week'|'month'`) 하나씩이다. 연간 분석(`YearlyInsights.js`)은 월별 요약 구조가 달라 따로 둔다. 바꿀 때는 `node scripts/test/golden-period-components.mjs`로 옛 산출물과 같은 HTML인지 확인한다(로그인 없이 리뷰 컴포넌트를 검증하는 방법).
+- **남은 것**: 상태값 인라인 63곳, 조건이 붙은 `onmouseover` 19곳(그대로 동작), Selector·AIReflection 3벌(날짜 로직이 달라 미병합), 리포트 차트.
 
 ## 기술 스택
 

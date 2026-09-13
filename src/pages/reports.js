@@ -5,8 +5,8 @@ import { getCurrentProfile } from '../utils/auth.js';
 import { getWeekStart, getToday } from '../utils/date.js';
 import { getWeeklyStats } from '../utils/weeklyStats.js';
 import { renderWeekSelector, initWeekSelector } from '../components/WeekSelector.js';
-import { renderWeeklyStats } from '../components/WeeklyStats.js';
-import { renderWeeklyInsights } from '../components/WeeklyInsights.js';
+import { renderPeriodStats } from '../components/PeriodStats.js';
+import { renderPeriodInsights } from '../components/PeriodInsights.js';
 import { renderWeeklyAIReflection, initWeeklyAIReflection } from '../components/WeeklyAIReflection.js';
 
 // 주차 상태 관리 (localStorage)
@@ -117,10 +117,10 @@ export async function renderReports() {
                `
               : `
                  <!-- 정량 지표 -->
-                 ${renderWeeklyStats(stats)}
+                 ${renderPeriodStats(stats, 'week')}
                  
                  <!-- 정성 분석 -->
-                 ${renderWeeklyInsights(stats)}
+                 ${renderPeriodInsights(stats, 'week')}
                  
                  <!-- AI 주간 성찰 -->
                  ${aiReflectionHtml}

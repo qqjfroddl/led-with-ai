@@ -5,8 +5,8 @@ import { getCurrentProfile } from '../utils/auth.js';
 import { getMonthStart, getToday } from '../utils/date.js';
 import { getMonthlyStats } from '../utils/monthlyStats.js';
 import { renderMonthSelector, initMonthSelector } from '../components/MonthSelector.js';
-import { renderMonthlyStats } from '../components/MonthlyStats.js';
-import { renderMonthlyInsights } from '../components/MonthlyInsights.js';
+import { renderPeriodStats } from '../components/PeriodStats.js';
+import { renderPeriodInsights } from '../components/PeriodInsights.js';
 import { renderMonthlyAIReflection, initMonthlyAIReflection } from '../components/MonthlyAIReflection.js';
 
 // 월 선택 상태 관리 (localStorage)
@@ -117,10 +117,10 @@ export async function renderMonthly() {
                `
               : `
                  <!-- 정량 지표 -->
-                 ${renderMonthlyStats(stats)}
+                 ${renderPeriodStats(stats, 'month')}
                  
                  <!-- 정성 분석 -->
-                 ${renderMonthlyInsights(stats)}
+                 ${renderPeriodInsights(stats, 'month')}
                  
                  <!-- AI 월간 성찰 -->
                  ${aiReflectionHtml}

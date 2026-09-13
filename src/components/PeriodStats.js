@@ -1,4 +1,6 @@
-// 연간 정량 지표 UI 컴포넌트
+// 기간 정량 지표 UI 컴포넌트 — 주간·월간·연간 공용 (2026-09-13, WeeklyStats/MonthlyStats/YearlyStats 3벌을 합침)
+// 세 벌은 제목·기록 일수(주간은 7일 고정, 월·연은 stats.totalDays)·연간 제목의 연도만 달랐다.
+// 골든 테스트: scripts/test/golden-period-components.mjs (옛 3벌과 같은 입력에 같은 HTML)
 
 const CATEGORY_LABELS = {
   work: 'Work',
@@ -14,14 +16,25 @@ const CATEGORY_COLORS = {
   personal: { bg: 'var(--t-cat-personal-soft)', border: 'var(--t-cat-personal-line)', gradient: 'var(--t-cat-personal)' }
 };
 
+/** 기간별로 다른 것: 카드 제목, 성찰 카드의 "N일 중" */
+const PERIOD = {
+  week: { title: () => '주간 지표', totalDays: () => 7 },
+  month: { title: () => '월간 지표', totalDays: (stats) => stats.totalDays },
+  year: { title: (stats) => `${stats.year}년 연간 지표`, totalDays: (stats) => stats.totalDays },
+};
+
 /**
- * 연간 정량 지표 UI 렌더링
- * @param {Object} stats - 연간 통계 객체
+ * 기간 정량 지표 UI 렌더링
+ * @param {Object} stats - 통계 객체 (todos, routines, reflections, comparison, totalDays, year)
+ * @param {'week'|'month'|'year'} period
  * @returns {string} HTML 문자열
  */
-export function renderYearlyStats(stats) {
-  const { todos, routines, reflections, comparison, totalDays, year } = stats;
-  
+export function renderPeriodStats(stats, period) {
+  const cfg = PERIOD[period];
+  if (!cfg) throw new Error(`알 수 없는 기간: ${period}`);
+  const { todos, routines, reflections, comparison } = stats;
+  const totalDays = cfg.totalDays(stats);
+
   const html = `
     <div class="card bg-accent-soft bd-2px-solid-accent sh-0-8px-24px-rgba42_38_34_0_07 mb-1_5rem">
       <div class="card-header bdb-2px-solid-accent-line pb-1rem mb-1_25rem">
@@ -29,26 +42,26 @@ export function renderYearlyStats(stats) {
           <div class="w-40px h-40px bg-accent br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
             <i class="w-24px h-24px c-white sw-2_5" data-lucide="bar-chart-3"></i>
           </div>
-          <div class="card-title c-accent fz-1_5rem m-0">${year}년 연간 지표</div>
+          <div class="card-title c-accent fz-1_5rem m-0">${cfg.title(stats)}</div>
         </div>
       </div>
-      
+
       <div class="d-grid gtc-repeatauto-fit_minmax280px_1fr gap-1_5rem">
         <!-- 루틴 실천율 -->
         ${renderRoutinePracticeCard(routines, comparison)}
-        
+
         <!-- 할일 완료율 -->
         ${renderTodoCompletionCard(todos, comparison)}
-        
+
         <!-- 성찰 작성일 -->
         ${renderReflectionCard(reflections, comparison, totalDays)}
       </div>
-      
+
       <!-- 카테고리별 완료율 -->
       ${renderCategoryBreakdown(todos)}
     </div>
   `;
-  
+
   return html;
 }
 
@@ -56,10 +69,10 @@ export function renderYearlyStats(stats) {
  * 할일 완료율 카드
  */
 function renderTodoCompletionCard(todos, comparison) {
-  const changeIndicator = comparison?.todos?.completionRate 
+  const changeIndicator = comparison?.todos?.completionRate
     ? renderChangeIndicator(comparison.todos.completionRate, '%p')
     : '';
-  
+
   return `
     <div class="bg-surface br-12px p-1_25rem sh-0-2px-8px-rgba42_38_34_0_08">
       <div class="d-flex ai-center jc-space-between mb-1rem">
@@ -87,10 +100,10 @@ function renderTodoCompletionCard(todos, comparison) {
  * 루틴 실천율 카드
  */
 function renderRoutinePracticeCard(routines, comparison) {
-  const changeIndicator = comparison?.routines?.practiceRate 
+  const changeIndicator = comparison?.routines?.practiceRate
     ? renderChangeIndicator(comparison.routines.practiceRate, '%p')
     : '';
-  
+
   return `
     <div class="bg-surface br-12px p-1_25rem sh-0-2px-8px-rgba42_38_34_0_08">
       <div class="d-flex ai-center jc-space-between mb-1rem">
@@ -119,10 +132,10 @@ function renderRoutinePracticeCard(routines, comparison) {
  * 성찰 작성일 카드
  */
 function renderReflectionCard(reflections, comparison, totalDays) {
-  const changeIndicator = comparison?.reflections?.writingRate 
+  const changeIndicator = comparison?.reflections?.writingRate
     ? renderChangeIndicator(comparison.reflections.writingRate, '%p')
     : '';
-  
+
   return `
     <div class="bg-surface br-12px p-1_25rem sh-0-2px-8px-rgba42_38_34_0_08">
       <div class="d-flex ai-center jc-space-between mb-1rem">
@@ -151,7 +164,7 @@ function renderReflectionCard(reflections, comparison, totalDays) {
  */
 function renderCategoryBreakdown(todos) {
   const categories = Object.entries(todos.byCategory);
-  
+
   return `
     <div class="mt-1_5rem pt-1_5rem bdt-2px-solid-accent-line">
       <h3 class="fz-1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
@@ -171,7 +184,7 @@ function renderCategoryBreakdown(todos) {
 function renderCategoryCard(category, stats) {
   const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS.work;
   const label = CATEGORY_LABELS[category] || category;
-  
+
   return `
     <div class="br-12px p-1rem" style="background: ${colors.bg}; border: 2px solid ${colors.border};">
       <div class="d-flex ai-center jc-space-between mb-0_75rem">
@@ -191,7 +204,7 @@ function renderCategoryCard(category, stats) {
  */
 function renderProgressBar(percentage, color, height = 8) {
   const clampedPercentage = Math.min(100, Math.max(0, percentage));
-  
+
   return `
     <div class="w-100pct bg-line br-999px ov-hidden pos-relative" style="height: ${height}px;">
       <div class="h-100pct br-999px tr-width-0_3s-ease" style="width: ${clampedPercentage}%; background: ${color};"></div>
@@ -208,7 +221,7 @@ function renderChangeIndicator(change, unit = '') {
   const color = isPositive ? 'var(--t-success)' : isNegative ? 'var(--t-danger)' : 'var(--t-muted)';
   const icon = isPositive ? 'trending-up' : isNegative ? 'trending-down' : 'minus';
   const sign = change > 0 ? '+' : '';
-  
+
   return `
     <div class="d-flex ai-center gap-0_25rem fz-0_875rem fwt-600" style="color: ${color};">
       <i class="w-16px h-16px sw-2_5" data-lucide="${icon}"></i>
@@ -216,28 +229,3 @@ function renderChangeIndicator(change, unit = '') {
     </div>
   `;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

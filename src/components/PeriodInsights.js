@@ -1,11 +1,22 @@
-// 주간 정성 분석 UI 컴포넌트
+// 기간 정성 분석 UI 컴포넌트 — 주간·월간 공용 (2026-09-13, WeeklyInsights/MonthlyInsights 2벌을 합침)
+// 두 벌은 문구(주간/월간, 전주/전월)만 달랐다. 연간(YearlyInsights)은 월별 요약 구조가 달라 따로 둔다.
+// 골든 테스트: scripts/test/golden-period-components.mjs
+
+/** 기간별 문구 */
+const PERIOD = {
+  week: { name: '주간', prev: '전주' },
+  month: { name: '월간', prev: '전월' },
+};
 
 /**
- * 주간 정성 분석 UI 렌더링
- * @param {Object} stats - 주간 통계 객체
+ * 기간 정성 분석 UI 렌더링
+ * @param {Object} stats - 통계 객체
+ * @param {'week'|'month'} period
  * @returns {string} HTML 문자열
  */
-export function renderWeeklyInsights(stats) {
+export function renderPeriodInsights(stats, period) {
+  const L = PERIOD[period];
+  if (!L) throw new Error(`알 수 없는 기간: ${period}`);
   const { insights, todos, routines, reflections, comparison } = stats;
   
   // 인사이트를 카테고리별로 분류
@@ -21,18 +32,18 @@ export function renderWeeklyInsights(stats) {
           <div class="w-40px h-40px bg-insight br-12px d-flex ai-center jc-center sh-0-4px-12px-rgba42_38_34_0_15">
             <i class="w-24px h-24px c-white sw-2_5" data-lucide="lightbulb"></i>
           </div>
-          <div class="card-title c-insight fz-1_5rem m-0">주간 분석</div>
+          <div class="card-title c-insight fz-1_5rem m-0">${L.name} 분석</div>
         </div>
       </div>
       
       <!-- 1. 실천율 -->
       ${renderPracticeRateSection(routineInsights, todoInsights, reflectionInsights, todos, routines, reflections)}
       
-      <!-- 2. 전주 대비 변화 -->
-      ${renderComparisonSection(comparison, improvementInsights)}
+      <!-- 2. ${L.prev} 대비 변화 -->
+      ${renderComparisonSection(comparison, improvementInsights, L)}
       
-      <!-- 3. 주간 패턴 분석 -->
-      ${renderPatternAnalysis(todos, routines)}
+      <!-- 3. ${L.name} 패턴 분석 -->
+      ${renderPatternAnalysis(todos, routines, L)}
     </div>
   `;
   
@@ -59,18 +70,18 @@ function renderPracticeRateSection(routineInsights, todoInsights, reflectionInsi
 }
 
 /**
- * 전주 대비 변화 섹션 렌더링
+ * 전 기간 대비 변화 섹션 렌더링
  */
-function renderComparisonSection(comparison, improvementInsights) {
+function renderComparisonSection(comparison, improvementInsights, L) {
   if (!comparison) {
     return `
       <div class="mb-2rem pt-1_5rem bdt-2px-solid-insight-line">
         <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
           <i class="w-20px h-20px c-insight sw-2_5" data-lucide="trending-up"></i>
-          전주 대비 변화
+          ${L.prev} 대비 변화
         </h3>
         <div class="bg-bg bd-1px-solid-line br-12px p-1rem ta-center c-muted fz-0_95rem">
-          전주 데이터가 없어 비교할 수 없습니다.
+          ${L.prev} 데이터가 없어 비교할 수 없습니다.
         </div>
       </div>
     `;
@@ -119,10 +130,10 @@ function renderComparisonSection(comparison, improvementInsights) {
       <div class="mb-2rem pt-1_5rem bdt-2px-solid-insight-line">
         <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
           <i class="w-20px h-20px c-insight sw-2_5" data-lucide="trending-up"></i>
-          전주 대비 변화
+          ${L.prev} 대비 변화
         </h3>
         <div class="bg-bg bd-1px-solid-line br-12px p-1rem ta-center c-muted fz-0_95rem">
-          전주 대비 큰 변화가 없습니다.
+          ${L.prev} 대비 큰 변화가 없습니다.
         </div>
       </div>
     `;
@@ -132,7 +143,7 @@ function renderComparisonSection(comparison, improvementInsights) {
     <div class="mb-2rem pt-1_5rem bdt-2px-solid-insight-line">
       <h3 class="fz-1_1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
         <i class="w-20px h-20px c-insight sw-2_5" data-lucide="trending-up"></i>
-        전주 대비 변화
+        ${L.prev} 대비 변화
       </h3>
       <div class="d-grid gtc-repeatauto-fit_minmax200px_1fr gap-1rem">
         ${changes.map(change => renderComparisonCard(change)).join('')}
@@ -214,9 +225,9 @@ function renderInsightItem(insight) {
 }
 
 /**
- * 주간 패턴 분석 렌더링
+ * 기간 패턴 분석 렌더링
  */
-function renderPatternAnalysis(todos, routines) {
+function renderPatternAnalysis(todos, routines, L) {
   // 가장 활발한 요일 찾기
   const mostActiveDay = findMostActiveDay(todos.dailyStats, routines.dailyChecks);
   
@@ -263,7 +274,7 @@ function renderPatternAnalysis(todos, routines) {
     <div class="mt-1_5rem pt-1_5rem bdt-2px-solid-insight-line">
       <h3 class="fz-1rem fwt-600 c-text mb-1rem d-flex ai-center gap-0_5rem">
         <i class="w-18px h-18px c-insight sw-2_5" data-lucide="activity"></i>
-        주간 패턴
+        ${L.name} 패턴
       </h3>
       <div class="d-grid gtc-repeatauto-fit_minmax200px_1fr gap-1rem">
         ${mostActiveDay ? renderPatternCard('calendar', '가장 활발한 요일', mostActiveDay.day, mostActiveDay.description) : ''}
