@@ -55,9 +55,7 @@ const variants = {
 };
 
 let fail = 0, pass = 0, wsOnly = 0;
-const ws = (s) => s.replace(/[ 	]+
-/g, '
-'); // 줄 끝 공백만 무시 — 옛 파일은 빈 줄에 공백이 남아 있었다(블록 요소 사이라 렌더 무관)
+const ws = (s) => s.replace(/[ \t]+\n/g, '\n'); // 줄 끝 공백만 무시 — 옛 파일은 빈 줄에 공백이 남아 있었다(블록 요소 사이라 렌더 무관)
 function compare(name, a, b) {
   if (a === b) { pass++; return; }
   if (ws(a) === ws(b)) { pass++; wsOnly++; return; }
