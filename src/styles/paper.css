@@ -20,6 +20,12 @@
   --t-on-accent: #FFFFFF; --t-on-ink: #FFFDF9;
   --t-shadow: 0 1px 2px rgba(42,38,34,.05), 0 2px 8px rgba(42,38,34,.04);
   --t-shadow-sm: 0 1px 2px rgba(42,38,34,.05);
+  /* 형태 토큰 (2026-09-13 소장님 결정 ㄴ): 모서리·체크·버튼·탭 형태는 테마마다 다르다. 구조(마크업·규칙)는 한 벌, 값만 바뀐다.
+     1안 종이저널 = 둥근 사각 체크·10px 버튼·밑줄 탭 / 5안 따뜻한 종이 = 원형 체크·알약 버튼·알약 탭 / 4안 흰 종이 = 원형 체크·12px 버튼·납작한 입력칸 */
+  --t-radius-lg: 14px; --t-radius-nav: 10px; --t-radius-btn: 10px; --t-radius-input: 10px; --t-radius-check: 6px;
+  --t-input-border: 1px solid var(--t-line2); --t-input-bg: var(--t-surface);
+  --t-tab-radius: 0; --t-tab-border: 0; --t-tab-pad: 0.4rem 0.6rem; --t-tab-gap: 0.5rem;
+  --t-tab-on-bg: transparent; --t-tab-on-color: var(--t-text); --t-tab-on-border: transparent; --t-tab-on-line: var(--t-text);
   /* 보조 포인트(자두색): 성찰·성장 — 남색(행동)과 짝 */
   --t-accent2: #6B4E8C; --t-accent2-soft: #EDE7F3; --t-accent2-line: #D3C6E1;
   /* 상태색: 종이 위 잉크 톤 */
@@ -43,6 +49,9 @@ html[data-theme="warm"] {
   --t-accent: #B5582D; --t-accent-soft: #FBEADF; --t-accent-line: #F0C9B3; /* 흰 글자 4.7:1 */
   --t-shadow: 0 1px 2px rgba(43,38,34,.04), 0 4px 14px rgba(43,38,34,.04);
   --t-shadow-sm: 0 1px 2px rgba(43,38,34,.04);
+  --t-radius-lg: 16px; --t-radius-nav: 14px; --t-radius-btn: 999px; --t-radius-input: 999px; --t-radius-check: 999px;
+  --t-tab-radius: 999px; --t-tab-border: 1px solid var(--t-line2); --t-tab-pad: 0.35rem 0.85rem; --t-tab-gap: 6px;
+  --t-tab-on-bg: var(--t-text); --t-tab-on-color: var(--t-on-ink); --t-tab-on-border: var(--t-text); --t-tab-on-line: transparent;
 }
 
 /* 흰 종이 (9/12 4안의 색): 그림자 없이 괘선으로 구획, 파란 포인트 */
@@ -52,6 +61,8 @@ html[data-theme="white"] {
   --t-line: #E6E5E1; --t-line2: #D1D0CB;
   --t-accent: #2F5BEA; --t-accent-soft: #EAF0FF; --t-accent-line: #C6D4FF;
   --t-shadow: none; --t-shadow-sm: none;
+  --t-radius-lg: 12px; --t-radius-btn: 12px; --t-radius-check: 999px;
+  --t-input-border: 1px solid transparent; --t-input-bg: var(--t-bg2);
 }
 
 /* 밤의 종이: 어두운 책상 위 종이. 자동(auto)은 기기가 밤 모드일 때 theme.js가 is-dark를 건다 */
@@ -101,7 +112,7 @@ html[data-theme="auto"].is-dark {
 /* 네비 3박스: 그룹 카드 + 사이 간격, 실행은 채움 */
 :root .top-navigation-grouped { gap: 6px; padding: 0.5rem 0; align-items: stretch; }
 :root .nav-group {
-  background: var(--t-surface); border: 1px solid var(--t-line); border-radius: 12px;
+  background: var(--t-surface); border: 1px solid var(--t-line); border-radius: var(--t-radius-nav);
   box-shadow: var(--t-shadow-sm); padding: 0.35rem 0.4rem; gap: 0;
 }
 :root .nav-group-label { color: var(--t-muted); font-size: 0.68rem; letter-spacing: 0.06em; margin-bottom: 0.15rem; }
@@ -151,7 +162,7 @@ html[data-theme="auto"].is-dark {
 :root #today-todos-section,
 :root #today-reflection-section {
   background: var(--t-surface); border: 1px solid var(--t-line);
-  border-radius: 14px; box-shadow: var(--t-shadow); padding: 1.25rem;
+  border-radius: var(--t-radius-lg); box-shadow: var(--t-shadow); padding: 1.25rem;
 }
 :root .card:hover { box-shadow: var(--t-shadow); }
 :root .card-header { border-bottom-color: var(--t-line); padding-bottom: 0.75rem; margin-bottom: 1rem; }
@@ -185,7 +196,21 @@ html[data-theme="auto"].is-dark {
 :root [id^="todos-"][id$="-list"] { gap: 0; }
 :root .routine-item:last-child,
 :root .todo-item:last-child { border-bottom: 0; }
-:root input[type="checkbox"] { accent-color: var(--t-accent); width: 20px; height: 20px; border-radius: 6px; }
+:root input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; margin: 0; flex: 0 0 auto; vertical-align: middle;
+  width: 20px; height: 20px; border: 1.5px solid var(--t-line2); border-radius: var(--t-radius-check);
+  background: var(--t-surface); display: inline-grid; place-content: center; cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+:root input[type="checkbox"]::before {
+  content: ''; width: 12px; height: 12px; background: var(--t-on-accent); transform: scale(0); transition: transform 0.12s;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 5' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 5' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+:root input[type="checkbox"]:checked { background: var(--t-accent); border-color: var(--t-accent); }
+:root input[type="checkbox"]:checked::before { transform: scale(1); }
+:root input[type="checkbox"]:focus-visible { outline: 2px solid var(--t-accent-line); outline-offset: 2px; }
+:root input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
 :root .todo-title { color: var(--t-text); }
 :root .todo-drag-handle,
 :root .move-todo-btn { color: var(--t-muted2); }
@@ -202,29 +227,40 @@ html[data-theme="auto"].is-dark {
 :root .category-section > div:first-child { margin-bottom: 0.25rem; }
 
 /* 카테고리 탭 */
+:root #category-tabs { gap: var(--t-tab-gap); }
 :root .category-tab {
-  background: transparent; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--t-muted); font-weight: 500; padding: 0.4rem 0.6rem;
+  background: transparent; border: var(--t-tab-border); border-radius: var(--t-tab-radius); color: var(--t-muted); font-weight: 500; padding: var(--t-tab-pad);
+  box-shadow: inset 0 -2px 0 transparent;
 }
 :root .category-tab:hover { background: transparent; transform: none; color: var(--t-text); }
 :root .category-tab.active {
-  background: transparent; color: var(--t-text); font-weight: 700; border-bottom-color: var(--t-text); box-shadow: none;
+  background: var(--t-tab-on-bg); color: var(--t-tab-on-color); font-weight: 700; border-color: var(--t-tab-on-border); box-shadow: inset 0 -2px 0 var(--t-tab-on-line);
 }
 
 /* 입력·버튼 */
-:root #todo-input { border: 1px solid var(--t-line2); background: var(--t-surface); color: var(--t-text); border-radius: 10px; min-height: 44px; }
+:root #todo-input { border: var(--t-input-border); background: var(--t-input-bg); color: var(--t-text); border-radius: var(--t-radius-input); min-height: 44px; }
 :root #todo-input:focus { outline: 2px solid var(--t-accent-line); border-color: var(--t-accent); }
 :root #add-todo-btn,
 :root #open-reflection-form,
 :root .btn-primary {
-  background: var(--t-accent); color: var(--t-on-accent); box-shadow: none; border-radius: 10px; min-height: 44px;
+  background: var(--t-accent); color: var(--t-on-accent); box-shadow: none; border-radius: var(--t-radius-btn); min-height: 44px;
 }
 :root .btn-primary:hover { transform: none; box-shadow: none; filter: brightness(1.06); }
 :root .btn::before { display: none; }
+/* 유틸리티(br-8px·br-10px)로 온 모서리도 테마 형태를 따른다 — button/input/select 요소만. 알약 입력칸은 좌우 여백을 조금 더 준다 */
+:root .btn,
+:root .btn-secondary,
+:root button.br-8px,
+:root button.br-10px { border-radius: var(--t-radius-btn); }
+:root input.br-10px,
+:root select.br-10px { border-radius: var(--t-radius-input); border: var(--t-input-border); background: var(--t-input-bg); }
+:root #todo-input { padding-inline: max(0.75rem, min(var(--t-radius-input), 1.1rem)); }
+:root input.br-10px { padding-inline: max(1rem, min(var(--t-radius-input), 1.25rem)); }
 
 /* 성찰 폼 */
 :root #reflection-content label { color: var(--t-text2); }
 :root #reflection-content label :is(i, svg) { color: var(--t-muted); }
-:root #reflection-content textarea { border: 1px solid var(--t-line2); background: var(--t-surface); color: var(--t-text); border-radius: 10px; font-family: inherit; }
+:root #reflection-content textarea { border: var(--t-input-border); background: var(--t-input-bg); color: var(--t-text); border-radius: min(var(--t-radius-input), 14px); font-family: inherit; }
 
 /* 태그(P1~3·프로젝트·반복업무): 정보색만 */
 :root .todo-item span.bg-accent-soft { background: var(--t-accent-soft); color: var(--t-accent); }
@@ -236,11 +272,13 @@ html[data-theme="auto"].is-dark {
 /* 인라인에서 온 흰 글자(포인트색 면 위 아이콘·글자)는 테마의 on-accent를 따른다 — 밤의 종이에서 흰 글자가 밝은 포인트색 위에 뜨지 않게 */
 :root .c-white { color: var(--t-on-accent); }
 
-:root .top-navigation-grouped .nav-group { border-radius: 10px; }
 :root #today-reflection-section { border-style: dashed; }
+:root .date-modal,
+:root .modal-content,
+:root .theme-menu { border-radius: var(--t-radius-lg); }
 
 
 /* 로그인 화면 로고: 이미지 자체가 흰 바탕이라 종이 위에 각진 흰 판으로 떴다 → 종이 카드로 감싼다 */
-:root .auth-logo { border-radius: 14px; border: 1px solid var(--t-line); box-shadow: var(--t-shadow); background: #fff; }
+:root .auth-logo { border-radius: var(--t-radius-lg); border: 1px solid var(--t-line); box-shadow: var(--t-shadow); background: #fff; }
 
 } /* @layer theme */
