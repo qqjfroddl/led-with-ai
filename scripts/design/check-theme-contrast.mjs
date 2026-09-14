@@ -35,6 +35,9 @@ const CHECKS = [
   ['on-accent', 'accent', 4.5], ['on-ink', 'text', 4.5], ['accent', 'surface', 3], ['accent2', 'surface', 3],
   ['success', 'surface', 3], ['danger', 'surface', 3], ['warn', 'surface', 3], ['insight', 'surface', 3],
   ['chart-routine', 'surface', 3], ['chart-todo', 'surface', 3],
+  // 카테고리 4색: 오늘 화면 영역 소제목 글자·색띠 (2026-09-14 B안)
+  ['cat-work', 'surface', 3], ['cat-job', 'surface', 3], ['cat-growth', 'surface', 3], ['cat-personal', 'surface', 3],
+  ['cat-work', 'bg', 3], ['cat-job', 'bg', 3], ['cat-growth', 'bg', 3], ['cat-personal', 'bg', 3],
   ['accent', 'accent-soft', 3], ['danger', 'danger-soft', 3], ['success', 'success-soft', 3], ['warn', 'warn-soft', 3], ['insight', 'insight-soft', 3],
 ];
 let fail = 0;

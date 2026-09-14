@@ -753,7 +753,7 @@ function renderTodos(todosList, date, profile, timezone) {
       const canMove = !todo.is_done && !isReadOnly && !isEditing;
 
       return `
-        <div class="todo-item br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false" style="background: ${isExistingTodo ? 'var(--t-bg2)' : 'white'};">
+        <div class="todo-item br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05${isExistingTodo ? ' is-carried' : ''}" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false">
           ${canMove ? `
             <div class="todo-drag-handle d-flex ai-center p-0_25rem-0_5rem cur-grab c-muted2 br-4px tr-all-0_2s-ease us-none" draggable="true" title="드래그하여 순서 변경">
               <i class="w-18px h-18px pe-none" data-lucide="grip-vertical"></i>
@@ -943,7 +943,7 @@ function setupEventHandlers(date, profile, timezone) {
         t.style.borderColor = 'var(--t-line)';
       });
       tab.style.background = 'var(--t-accent)';
-      tab.style.color = 'white';
+      tab.style.color = 'var(--t-on-accent)';
       tab.style.borderColor = 'var(--t-accent)';
       currentFilter = tab.dataset.filter;
       await loadTodos(date, profile, timezone);
