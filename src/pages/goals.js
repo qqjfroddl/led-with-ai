@@ -257,7 +257,7 @@ export async function renderGoals() {
             <button id="yearly-goal-prev-btn" class="btn-icon bg-surface bd-1px-solid-accent c-accent p-0_25rem-0_5rem br-6px cur-pointer">
               <i class="w-18px h-18px" data-lucide="chevron-left"></i>
             </button>
-            <span class="fz-1rem fwt-600 c-accent minw-60px ta-center cur-pointer p-0_25rem-0_5rem br-6px tr-background-color-0_2s" id="yearly-goal-year-label" onmouseover="this.style.backgroundColor='var(--t-bg2)'" onmouseout="this.style.backgroundColor='transparent'">2025년</span>
+            <span class="fz-1rem fwt-600 c-accent minw-60px ta-center cur-pointer p-0_25rem-0_5rem br-6px tr-background-color-0_2s hover-bg" id="yearly-goal-year-label">2025년</span>
             <button id="yearly-goal-next-btn" class="btn-icon bg-surface bd-1px-solid-accent c-accent p-0_25rem-0_5rem br-6px cur-pointer">
               <i class="w-18px h-18px" data-lucide="chevron-right"></i>
             </button>
@@ -462,7 +462,7 @@ export async function renderGoals() {
             <button id="monthly-plan-prev-btn" class="btn-icon bg-surface bd-1px-solid-accent c-accent p-0_25rem-0_5rem br-6px cur-pointer">
               <i class="w-18px h-18px" data-lucide="chevron-left"></i>
             </button>
-            <span class="fz-1rem fwt-600 c-accent minw-80px ta-center cur-pointer p-0_25rem-0_5rem br-6px tr-background-color-0_2s" id="monthly-plan-month-label" onmouseover="this.style.backgroundColor='var(--t-bg2)'" onmouseout="this.style.backgroundColor='transparent'">2025년 12월</span>
+            <span class="fz-1rem fwt-600 c-accent minw-80px ta-center cur-pointer p-0_25rem-0_5rem br-6px tr-background-color-0_2s hover-bg" id="monthly-plan-month-label">2025년 12월</span>
             <button id="monthly-plan-next-btn" class="btn-icon bg-surface bd-1px-solid-accent c-accent p-0_25rem-0_5rem br-6px cur-pointer">
               <i class="w-18px h-18px" data-lucide="chevron-right"></i>
             </button>
@@ -1910,9 +1910,9 @@ export async function renderGoals() {
         const optionsHtml = sortedYears.map(year => {
           const isSelected = year === selectedYear;
           const isCurrentYear = year === currentYear;
-          const selectedStyle = isSelected 
-            ? 'background: var(--t-accent); color: white;'
-            : 'background: var(--t-surface); color: var(--t-text);';
+          const selectedClass = isSelected 
+            ? 'is-selected'
+            : '';
           
           let label = `${year}년`;
           if (isCurrentYear) {
@@ -1920,7 +1920,7 @@ export async function renderGoals() {
           }
           
           return `
-            <button class="yearly-goal-year-option-btn br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct d-flex ai-center jc-space-between" data-year="${year}" style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; font-weight: ${isSelected ? '600' : '500'};" onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }" onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'var(--t-accent)' : 'white'}'; this.style.borderColor='${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}'; }"
+            <button class="yearly-goal-year-option-btn period-option ${selectedClass} br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct d-flex ai-center jc-space-between" data-year="${year}"
               ${isSelected ? 'data-selected="true"' : ''}>
               <span>${label}</span>
               ${isSelected ? '<i class="w-16px h-16px sw-2_5" data-lucide="check"></i>' : ''}
@@ -2706,9 +2706,9 @@ export async function renderGoals() {
           const isSelected = monthStart === selectedMonthStart;
           const isCurrentMonth = isCurrentYear && monthNum === currentMonthNum;
           
-          const selectedStyle = isSelected 
-            ? 'background: var(--t-accent); color: white;'
-            : 'background: var(--t-surface); color: var(--t-text);';
+          const selectedClass = isSelected 
+            ? 'is-selected'
+            : '';
           
           let label = `${targetYear}년 ${monthName}`;
           if (isCurrentMonth) {
@@ -2716,7 +2716,7 @@ export async function renderGoals() {
           }
           
           return `
-            <button class="monthly-plan-month-option-btn br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct d-flex ai-center jc-space-between" data-month-start="${monthStart}" style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; font-weight: ${isSelected ? '600' : '500'};" onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }" onmouseout="if (!this.dataset.selected) { this.style.background='${isSelected ? 'var(--t-accent)' : 'white'}'; this.style.borderColor='${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}'; }"
+            <button class="monthly-plan-month-option-btn period-option ${selectedClass} br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct d-flex ai-center jc-space-between" data-month-start="${monthStart}"
               ${isSelected ? 'data-selected="true"' : ''}>
               <span>${label}</span>
               ${isSelected ? '<i class="w-16px h-16px sw-2_5" data-lucide="check"></i>' : ''}

@@ -110,31 +110,31 @@ export async function renderRecurring() {
           <div class="d-none" id="recurring-custom-weekly-config">
             <label class="d-block mb-0_75rem fwt-600 c-text">요일 선택 (여러 개 가능)</label>
             <div class="d-grid gtc-repeat4_1fr gap-0_5rem">
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="1">
                 <span class="fz-0_9rem fwt-500">월</span>
               </label>
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="2">
                 <span class="fz-0_9rem fwt-500">화</span>
               </label>
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="3">
                 <span class="fz-0_9rem fwt-500">수</span>
               </label>
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="4">
                 <span class="fz-0_9rem fwt-500">목</span>
               </label>
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="5">
                 <span class="fz-0_9rem fwt-500">금</span>
               </label>
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="6">
                 <span class="fz-0_9rem fwt-500">토</span>
               </label>
-              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s" onmouseover="this.style.borderColor='var(--t-accent)'; this.style.background='var(--t-accent2-soft)'" onmouseout="this.style.borderColor='var(--t-line)'; this.style.background='white'">
+              <label class="day-checkbox-label d-flex ai-center gap-0_5rem p-0_75rem bd-2px-solid-line br-8px cur-pointer tr-all-0_2s">
                 <input type="checkbox" class="recurring-day-checkbox w-18px h-18px cur-pointer" value="0">
                 <span class="fz-0_9rem fwt-500">일</span>
               </label>
@@ -164,7 +164,7 @@ export async function renderRecurring() {
 
           <!-- 저장 버튼 -->
           <div class="d-flex gap-0_75rem mt-0_5rem">
-            <button class="fx-1 p-0_75rem-1_5rem bg-accent c-white bd-none br-10px fz-1rem fwt-600 cur-pointer sh-0-4px-12px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s" id="recurring-modal-save" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)'">
+            <button class="fx-1 p-0_75rem-1_5rem bg-accent c-white bd-none br-10px fz-1rem fwt-600 cur-pointer sh-0-4px-12px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s hover-lift" id="recurring-modal-save">
               <i class="w-18px h-18px mr-0_25rem va--3px" data-lucide="check"></i>
               저장
             </button>
@@ -305,7 +305,7 @@ function renderRecurringTaskCard(task) {
             <span>${dateRange}</span>
           </div>
         </div>
-        <button class="register-recurring-todos-btn w-100pct p-0_75rem bg-accent c-white bd-none br-8px fwt-600 cur-pointer sh-0-2px-8px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s" data-task-id="${task.id}" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(42,38,34, 0.15)'">
+        <button class="register-recurring-todos-btn w-100pct p-0_75rem bg-accent c-white bd-none br-8px fwt-600 cur-pointer sh-0-2px-8px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s hover-lift-sm" data-task-id="${task.id}">
           <i class="w-18px h-18px mr-0_5rem" data-lucide="calendar-check"></i>
           오늘 할일 등록하기
         </button>

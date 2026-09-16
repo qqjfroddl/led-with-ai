@@ -115,12 +115,12 @@ function generateMonthOptions(currentMonthStart, timezone, selectedMonthStart, m
       : `${year}년 ${month}월 (${startDate} ~ ${endDate})`;
     
     const isSelected = monthStart === selectedMonthStart;
-    const selectedStyle = isSelected 
-      ? 'background: var(--t-accent); color: white;'
-      : 'background: var(--t-surface); color: var(--t-text);';
+    const selectedClass = isSelected 
+      ? 'is-selected'
+      : '';
     
     options.push(`
-      <button class="month-option-btn br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct" data-month-start="${monthStart}" style="${selectedStyle} padding: 0.75rem 1rem; border: 1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-line)'}; font-weight: ${isSelected ? '600' : '500'};" onmouseover="if (!this.dataset.selected) { this.style.background='var(--t-bg2)'; this.style.borderColor='var(--t-line2)'; }" onmouseout="if (!this.dataset.selected) { this.style.background='white'; this.style.borderColor='var(--t-line)'; }"
+      <button class="month-option-btn period-option ${selectedClass} br-8px cur-pointer ta-left fz-0_875rem tr-all-0_2s w-100pct" data-month-start="${monthStart}"
         ${isSelected ? 'data-selected="true"' : ''}>
         ${label}
         ${isSelected ? '<i class="w-16px h-16px fl-right sw-2_5" data-lucide="check"></i>' : ''}

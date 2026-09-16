@@ -290,4 +290,22 @@ html[data-theme="auto"].is-dark {
 /* 로그인 화면 로고: 이미지 자체가 흰 바탕이라 종이 위에 각진 흰 판으로 떴다 → 종이 카드로 감싼다 */
 :root .auth-logo { border-radius: var(--t-radius-lg); border: 1px solid var(--t-line); box-shadow: var(--t-shadow); background: #fff; }
 
+/* 기간 선택 목록(주·월·연 선택기, 목표 연도·월 선택): 옛 인라인 색 + onmouseover를 옮겼다.
+   옛 onmouseout이 배경을 'white'로 되돌려 밤의 종이에서 흰 판이 뜨던 문제도 같이 없어진다 */
+:root .period-option { background: var(--t-surface); color: var(--t-text); border: 1px solid var(--t-line); font-weight: 500; padding: 0.75rem 1rem; }
+:root .period-option:hover:not(.is-selected) { background: var(--t-bg2); border-color: var(--t-line2); }
+:root .period-option.is-selected { background: var(--t-accent); color: var(--t-on-accent); border-color: var(--t-accent); font-weight: 600; }
+
+/* 반복업무 요일 선택 칸 */
+:root .day-checkbox-label:hover { border-color: var(--t-accent); background: var(--t-accent2-soft); }
+
+/* 마우스를 올리면 반응하는 버튼·라벨 (옛 onmouseover 19곳) */
+:root .hover-bg:hover { background-color: var(--t-bg2); }
+:root .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(42,38,34, 0.18); }
+:root .hover-lift-sm:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(42,38,34, 0.18); }
+:root .hover-nudge:hover { transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) {
+  :root :is(.hover-lift, .hover-lift-sm, .hover-nudge):hover { transform: none; }
+}
+
 } /* @layer theme */

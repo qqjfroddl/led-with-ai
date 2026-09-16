@@ -206,12 +206,12 @@ class Router {
               // 활성 스타일 적용
               if (targetId === 'today-todos-section') {
                 btn.style.background = 'var(--t-accent)';
-                btn.style.color = 'white';
+                btn.style.color = 'var(--t-on-accent)';
                 btn.style.borderColor = 'transparent';
                 btn.style.boxShadow = '0 2px 4px rgba(42,38,34, 0.1), 0 4px 12px rgba(42,38,34, 0.13)';
               } else if (targetId === 'today-reflection-section') {
                 btn.style.background = 'var(--t-accent2)';
-                btn.style.color = 'white';
+                btn.style.color = 'var(--t-on-accent)';
                 btn.style.borderColor = 'transparent';
                 btn.style.boxShadow = '0 2px 4px rgba(42,38,34, 0.1), 0 4px 12px rgba(42,38,34, 0.13)';
               }

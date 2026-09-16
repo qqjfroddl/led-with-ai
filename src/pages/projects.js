@@ -93,7 +93,7 @@ export async function renderProjects() {
             <option value="relationship">가족/관계</option>
             <option value="work_finance">업무/재정</option>
           </select>
-          <button class="p-0_75rem-1_5rem bg-accent c-white bd-none br-10px fz-1rem fwt-600 cur-pointer ws-nowrap sh-0-4px-12px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s" id="project-modal-save" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(42,38,34, 0.18)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(42,38,34, 0.15)'">
+          <button class="p-0_75rem-1_5rem bg-accent c-white bd-none br-10px fz-1rem fwt-600 cur-pointer ws-nowrap sh-0-4px-12px-rgba42_38_34_0_15 tr-transform-0_2s_box-shadow-0_2s hover-lift" id="project-modal-save">
             <i class="w-18px h-18px mr-0_25rem va--3px" data-lucide="check"></i>
             저장
           </button>
@@ -1470,7 +1470,7 @@ function updateTabStyles() {
     if (activeProjectTab === 'in_progress') {
       tabInProgress.style.background = 'var(--t-accent)';
       tabInProgress.style.borderColor = 'var(--t-accent)';
-      tabInProgress.style.color = 'white';
+      tabInProgress.style.color = 'var(--t-on-accent)';
     } else {
       tabInProgress.style.background = 'var(--t-bg2)';
       tabInProgress.style.borderColor = 'var(--t-line2)';
@@ -1482,7 +1482,7 @@ function updateTabStyles() {
     if (activeProjectTab === 'completed') {
       tabCompleted.style.background = 'var(--t-success)';
       tabCompleted.style.borderColor = 'var(--t-success)';
-      tabCompleted.style.color = 'white';
+      tabCompleted.style.color = 'var(--t-on-accent)';
     } else {
       tabCompleted.style.background = 'var(--t-bg2)';
       tabCompleted.style.borderColor = 'var(--t-line2)';

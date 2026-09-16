@@ -279,7 +279,7 @@ export async function renderToday() {
           지난 날짜에 미완료된 할일이 있습니다. 오늘로 이어가거나 포기할 수 있습니다.
         </p>
         <div class="d-flex mb-1_5rem">
-          <button class="w-100pct p-0_75rem-1_5rem bg-success c-white bd-none br-8px fwt-600 cur-pointer tr-transform-0_2s" id="carryover-carry-all-btn" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+          <button class="w-100pct p-0_75rem-1_5rem bg-success c-white bd-none br-8px fwt-600 cur-pointer tr-transform-0_2s hover-nudge" id="carryover-carry-all-btn">
             모두 이어가기
           </button>
         </div>
@@ -2665,7 +2665,7 @@ async function showCarryoverModal(profile, timezone = 'Asia/Seoul') {
             <div class="fwt-500 c-text">${todo.title}</div>
           </div>
           <div class="d-flex gap-0_5rem">
-            <button class="carryover-carry-btn p-0_5rem-1rem bg-success c-white bd-none br-8px fwt-600 cur-pointer fz-0_875rem tr-transform-0_2s" data-carry-todo="${todo.id}" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+            <button class="carryover-carry-btn p-0_5rem-1rem bg-success c-white bd-none br-8px fwt-600 cur-pointer fz-0_875rem tr-transform-0_2s hover-nudge" data-carry-todo="${todo.id}">
               이어가기
             </button>
             <button class="carryover-skip-btn p-0_5rem-1rem bg-bg2 c-muted bd-none br-8px fwt-600 cur-pointer fz-0_875rem tr-background-0_2s hov-bg-line" data-skip-todo="${todo.id}">
