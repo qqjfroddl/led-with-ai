@@ -1,4 +1,5 @@
 // 연도 선택 컴포넌트
+import { bindPeriodSelector } from './periodSelectorBinding.js';
 function getDateTimeLib() {
   if (typeof window !== 'undefined' && window.luxon) return window.luxon.DateTime;
   if (typeof globalThis !== 'undefined' && globalThis.luxon) return globalThis.luxon.DateTime;
@@ -123,144 +124,13 @@ export function initYearSelector(onYearChange, selectedYear, timezone = 'Asia/Se
   const prevYear = selectedYear - 1;
   const nextYear = selectedYear + 1;
   
-  // 이전 연도 버튼
-  const prevBtn = document.getElementById('year-prev-btn');
-  if (prevBtn) {
-    const newPrevBtn = prevBtn.cloneNode(true);
-    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
-    newPrevBtn.addEventListener('click', () => {
-      if (onYearChange) onYearChange(prevYear);
-    });
-  }
-  
-  // 다음 연도 버튼
-  const nextBtn = document.getElementById('year-next-btn');
-  if (nextBtn) {
-    const newNextBtn = nextBtn.cloneNode(true);
-    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
-    newNextBtn.addEventListener('click', () => {
-      if (onYearChange) onYearChange(nextYear);
-    });
-  }
-  
-  // 올해 버튼
-  const currentBtn = document.getElementById('year-current-btn');
-  if (currentBtn) {
-    const newCurrentBtn = currentBtn.cloneNode(true);
-    currentBtn.parentNode.replaceChild(newCurrentBtn, currentBtn);
-    newCurrentBtn.addEventListener('click', () => {
-      if (onYearChange) onYearChange(currentYear);
-    });
-  }
-  
-  // 연도 선택 버튼 (모달 열기)
-  const yearSelectorBtn = document.getElementById('year-selector-btn');
-  const yearSelectorOverlay = document.getElementById('year-selector-overlay');
-  const yearSelectorModal = document.getElementById('year-selector-modal');
-  const yearSelectorClose = document.getElementById('year-selector-close');
-  const yearSelectorChevron = document.getElementById('year-selector-chevron');
-  
-  if (yearSelectorBtn && yearSelectorOverlay) {
-    // 모달이 기본적으로 닫혀있도록 보장
-    yearSelectorOverlay.classList.add('hidden');
-    yearSelectorOverlay.style.display = 'none';
-    
-    // 모달 열기
-    const openModal = () => {
-      yearSelectorOverlay.classList.remove('hidden');
-      yearSelectorOverlay.style.display = 'flex';
-      if (yearSelectorChevron) {
-        yearSelectorChevron.style.transform = 'rotate(180deg)';
-      }
-    };
-    
-    // 모달 닫기
-    const closeModal = () => {
-      yearSelectorOverlay.classList.add('hidden');
-      yearSelectorOverlay.style.display = 'none';
-      if (yearSelectorChevron) {
-        yearSelectorChevron.style.transform = 'rotate(0deg)';
-      }
-    };
-    
-    // 버튼 클릭으로 모달 열기
-    const newBtn = yearSelectorBtn.cloneNode(true);
-    yearSelectorBtn.parentNode.replaceChild(newBtn, yearSelectorBtn);
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openModal();
-    });
-    
-    // 닫기 버튼
-    if (yearSelectorClose) {
-      const newCloseBtn = yearSelectorClose.cloneNode(true);
-      yearSelectorClose.parentNode.replaceChild(newCloseBtn, yearSelectorClose);
-      newCloseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeModal();
-      });
-    }
-    
-    // 오버레이 클릭으로 모달 닫기
-    yearSelectorOverlay.addEventListener('click', (e) => {
-      if (e.target === yearSelectorOverlay) {
-        closeModal();
-      }
-    });
-    
-    // 모달 내부 클릭은 전파 방지
-    if (yearSelectorModal) {
-      yearSelectorModal.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
-    
-    // 연도 옵션 버튼들 (이벤트 위임 사용)
-    const optionsContainer = document.getElementById('year-selector-options');
-    if (optionsContainer) {
-      optionsContainer.addEventListener('click', (e) => {
-        const btn = e.target.closest('.year-option-btn');
-        if (btn) {
-          e.stopPropagation();
-          const year = parseInt(btn.dataset.year);
-          if (year && onYearChange) {
-            closeModal();
-            onYearChange(year);
-          }
-        }
-      });
-    }
-  }
-  
-  // Lucide 아이콘 렌더링
-  if (window.lucide) {
-    setTimeout(() => {
-      window.lucide.createIcons();
-    }, 100);
-  }
+  bindPeriodSelector({
+    prefix: 'year',
+    optionClass: 'year-option-btn',
+    readOption: (btn) => parseInt(btn.dataset.year),
+    prev: prevYear,
+    next: nextYear,
+    current: currentYear,
+    onChange: onYearChange,
+  });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

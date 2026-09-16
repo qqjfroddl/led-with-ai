@@ -1,0 +1,50 @@
+<!doctype html><meta charset="utf-8">
+<script src="/node_modules/luxon/build/global/luxon.js"></script>
+<body><pre id="out">pending</pre><div id="stage"></div>
+<script type="module">
+// 선택기 연결 골든: 옛(fff65d8)과 새 코드에 같은 클릭 시나리오를 돌려 콜백 값·모달 상태를 비교한다
+const kinds = [
+  ['Week', '2026-08-31', 'week', 'weekStart'],
+  ['Month', '2026-07-01', 'month', 'monthStart'],
+  ['Year', 2024, 'year', 'year'],
+];
+async function scenario(mod, kind, sel, prefix) {
+  const stage = document.getElementById('stage');
+  const log = [];
+  const cb = (v) => log.push(['cb', v]);
+  stage.innerHTML = mod[`render${kind}Selector`](sel, cb, 'Asia/Seoul');
+  mod[`init${kind}Selector`](cb, sel, 'Asia/Seoul');
+  // 두 번 init — 리스너 중복 여부 확인
+  mod[`init${kind}Selector`](cb, sel, 'Asia/Seoul');
+  const $ = (s) => document.getElementById(`${prefix}-${s}`);
+  const ov = () => [$('selector-overlay').style.display, $('selector-overlay').classList.contains('hidden'), $('selector-chevron')?.style.transform];
+  log.push(['init', ov()]);
+  $('prev-btn').click(); $('next-btn').click(); $('current-btn')?.click();
+  $('selector-btn').click(); log.push(['open', ov()]);
+  $('selector-modal').click(); log.push(['modal-click', ov()]);
+  $('selector-overlay').dispatchEvent(new MouseEvent('click', { bubbles: true })); log.push(['overlay', ov()]);
+  $('selector-btn').click(); $('selector-close').click(); log.push(['close', ov()]);
+  $('selector-btn').click();
+  const opts = [...document.querySelectorAll(`.${prefix}-option-btn`)];
+  opts[0].click(); log.push(['opt0', ov()]);
+  $('selector-btn').click(); opts.at(-1).querySelector('*')?.click?.() ?? opts.at(-1).click(); log.push(['optLastChild', ov()]);
+  log.push(['handler', typeof window[`handle${kind}Change`]]);
+  return log;
+}
+const lines = []; let fail = 0;
+for (const [kind, sel, prefix] of kinds) {
+  const oldMod = await import(`./${kind}Selector.js`);
+  const newMod = await import(`../${kind}Selector.js`);
+  const oldLog = await scenario(oldMod, kind, sel, prefix);
+  const newLog = await scenario(newMod, kind, sel, prefix);
+  // 의도한 차이: 화살표 회전(옛 코드는 복제 전 요소를 돌려 화면에서 안 돌았다) — 비교에서 빼고 따로 확인한다
+  const strip = (log) => JSON.stringify(log.map(([k, v]) => [k, Array.isArray(v) ? v.slice(0, 2) : v]));
+  const a = strip(oldLog), b = strip(newLog);
+  const rot = Object.fromEntries(newLog.filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v[2]]));
+  const rotOk = rot.open === 'rotate(180deg)' && rot.close === 'rotate(0deg)' && rot.overlay === 'rotate(0deg)';
+  const ok = a === b && rotOk; if (!ok) fail++;
+  lines.push(`chevron ${JSON.stringify(rot)}`);
+  lines.push(`${ok ? 'OK ' : 'DIFF'} ${kind}\n old ${a}\n new ${b}`);
+}
+document.getElementById('out').textContent = `RESULT fail=${fail}\n` + lines.join('\n');
+</script>

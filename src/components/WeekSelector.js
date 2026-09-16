@@ -1,5 +1,6 @@
 // 주차 선택 컴포넌트
 import { getWeekStart, getWeekEnd, getToday } from '../utils/date.js';
+import { bindPeriodSelector } from './periodSelectorBinding.js';
 
 function getDateTimeLib() {
   if (typeof window !== 'undefined' && window.luxon) return window.luxon.DateTime;
@@ -152,121 +153,14 @@ export function initWeekSelector(onWeekChange, selectedWeekStart, timezone = 'As
   const prevWeekStart = weekStartDt.minus({ weeks: 1 }).toISODate();
   const nextWeekStart = weekStartDt.plus({ weeks: 1 }).toISODate();
   
-  // 이전 주 버튼
-  const prevBtn = document.getElementById('week-prev-btn');
-  if (prevBtn) {
-    // 기존 이벤트 리스너 제거 후 새로 추가 (중복 방지)
-    const newPrevBtn = prevBtn.cloneNode(true);
-    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
-    newPrevBtn.addEventListener('click', () => {
-      if (onWeekChange) onWeekChange(prevWeekStart);
-    });
-  }
-  
-  // 다음 주 버튼
-  const nextBtn = document.getElementById('week-next-btn');
-  if (nextBtn) {
-    const newNextBtn = nextBtn.cloneNode(true);
-    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
-    newNextBtn.addEventListener('click', () => {
-      if (onWeekChange) onWeekChange(nextWeekStart);
-    });
-  }
-  
-  // 이번 주 버튼
-  const currentBtn = document.getElementById('week-current-btn');
-  if (currentBtn) {
-    const newCurrentBtn = currentBtn.cloneNode(true);
-    currentBtn.parentNode.replaceChild(newCurrentBtn, currentBtn);
-    newCurrentBtn.addEventListener('click', () => {
-      if (onWeekChange) onWeekChange(currentWeekStart);
-    });
-  }
-  
-  // 주차 선택 버튼 (모달 열기)
-  const weekSelectorBtn = document.getElementById('week-selector-btn');
-  const weekSelectorOverlay = document.getElementById('week-selector-overlay');
-  const weekSelectorModal = document.getElementById('week-selector-modal');
-  const weekSelectorClose = document.getElementById('week-selector-close');
-  const weekSelectorChevron = document.getElementById('week-selector-chevron');
-  
-  if (weekSelectorBtn && weekSelectorOverlay) {
-    // 모달이 기본적으로 닫혀있도록 보장
-    weekSelectorOverlay.classList.add('hidden');
-    weekSelectorOverlay.style.display = 'none';
-    
-    // 모달 열기
-    const openModal = () => {
-      weekSelectorOverlay.classList.remove('hidden');
-      weekSelectorOverlay.style.display = 'flex';
-      if (weekSelectorChevron) {
-        weekSelectorChevron.style.transform = 'rotate(180deg)';
-      }
-    };
-    
-    // 모달 닫기
-    const closeModal = () => {
-      weekSelectorOverlay.classList.add('hidden');
-      weekSelectorOverlay.style.display = 'none';
-      if (weekSelectorChevron) {
-        weekSelectorChevron.style.transform = 'rotate(0deg)';
-      }
-    };
-    
-    // 버튼 클릭으로 모달 열기
-    const newBtn = weekSelectorBtn.cloneNode(true);
-    weekSelectorBtn.parentNode.replaceChild(newBtn, weekSelectorBtn);
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openModal();
-    });
-    
-    // 닫기 버튼
-    if (weekSelectorClose) {
-      const newCloseBtn = weekSelectorClose.cloneNode(true);
-      weekSelectorClose.parentNode.replaceChild(newCloseBtn, weekSelectorClose);
-      newCloseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeModal();
-      });
-    }
-    
-    // 오버레이 클릭으로 모달 닫기 (직접 바인딩, cloneNode 사용 안 함)
-    weekSelectorOverlay.addEventListener('click', (e) => {
-      if (e.target === weekSelectorOverlay) {
-        closeModal();
-      }
-    });
-    
-    // 모달 내부 클릭은 전파 방지
-    if (weekSelectorModal) {
-      weekSelectorModal.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
-    
-    // 주차 옵션 버튼들 (이벤트 위임 사용)
-    const optionsContainer = document.getElementById('week-selector-options');
-    if (optionsContainer) {
-      optionsContainer.addEventListener('click', (e) => {
-        const btn = e.target.closest('.week-option-btn');
-        if (btn) {
-          e.stopPropagation();
-          const weekStart = btn.dataset.weekStart;
-          if (weekStart && onWeekChange) {
-            closeModal();
-            onWeekChange(weekStart);
-          }
-        }
-      });
-    }
-  }
-  
-  // Lucide 아이콘 렌더링
-  if (window.lucide) {
-    setTimeout(() => {
-      window.lucide.createIcons();
-    }, 100);
-  }
+  bindPeriodSelector({
+    prefix: 'week',
+    optionClass: 'week-option-btn',
+    readOption: (btn) => btn.dataset.weekStart,
+    prev: prevWeekStart,
+    next: nextWeekStart,
+    current: currentWeekStart,
+    onChange: onWeekChange,
+  });
 }
 

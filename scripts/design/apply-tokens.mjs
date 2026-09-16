@@ -31,7 +31,8 @@ function mapJsText(text) {
     const prop = /shadow/i.test(line) ? 'box-shadow' : /border/i.test(line) ? 'border' : /background|bg\b|bg:/i.test(line) ? 'background' : '';
     let l = line.replace(/linear-gradient\([^()]*(?:\([^()]*\)[^()]*)*\)/g, (g) => mapGradient(g) ?? g);
     l = l.replace(/rgba?\([^)]*\)/g, (r) => mapRgba(r, prop));
-    l = l.replace(/(?<![\w-])#[0-9a-fA-F]{3,6}(?![\w-])/g, (h) => mapHex(h) ?? h);
+    // & 뒤의 #은 HTML 문자 참조(&#039;)다 — 2026-09-12에 이걸 색으로 바꿔 escapeHtml을 망가뜨렸다
+    l = l.replace(/(?<![\w&-])#[0-9a-fA-F]{3,6}(?![\w-])/g, (h) => mapHex(h) ?? h);
     return l;
   }).join('\n');
 }

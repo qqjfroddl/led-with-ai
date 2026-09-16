@@ -84,7 +84,11 @@ npm run build
 - **리뷰 컴포넌트**: 주간·월간·연간 지표는 `components/PeriodStats.js`(`renderPeriodStats(stats, 'week'|'month'|'year')`), 주간·월간 분석은 `components/PeriodInsights.js`(`'week'|'month'`) 하나씩이다. 연간 분석(`YearlyInsights.js`)은 월별 요약 구조가 달라 따로 둔다. 바꿀 때는 `node scripts/test/golden-period-components.mjs`로 옛 산출물과 같은 HTML인지 확인한다(로그인 없이 리뷰 컴포넌트를 검증하는 방법).
 - **기간 리듬 차트** (`components/PeriodChart.js`, 2026-09-13): 리뷰 지표 카드 안에 주간 요일별·월간 주차별·연간 월별 달성률 막대(루틴 실천율·할일 완료율, 성찰 작성 점). 재료는 통계 유틸이 이미 계산하는 `dailyStats`·`dailyChecks`·`dailyPossible`·`writtenDates`·`monthlyStats`라 조회가 늘지 않는다. 막대색 `--t-chart-routine`/`--t-chart-todo`는 dataviz 검증기(색각 이상 분리·명도·채도)를 통과한 값 — 잉크 토큰을 막대에 쓰지 않는다. 테스트 `node scripts/test/period-chart.test.mjs`.
 - **프로필 세션 캐시** (`utils/auth.js`, 2026-09-13 P0-3): `getCurrentProfile()`은 60초 안에 다시 부르면 서버에 묻지 않는다. 로그인·로그아웃 이벤트와 `signOut()`에서 `invalidateProfileCache()`로 비운다. 강제 재조회는 `getCurrentProfile({ fresh: true })`. 오늘 화면 초기 로드(루틴·할일·성찰)는 `Promise.all`로 동시에 부른다.
-- **남은 것**: 상태값 인라인 63곳, 조건이 붙은 `onmouseover` 19곳(그대로 동작), Selector·AIReflection 3벌(날짜 로직이 달라 미병합).
+- **마우스 올림(hover)** (2026-09-17): `onmouseover`/`onmouseout`은 0곳이다 — 인라인으로 색을 되돌리면 테마를 못 따른다(밤의 종이에서 흰 판이 떴다). paper.css의 클래스를 쓴다: 기간 선택 목록 `period-option` + 선택 `is-selected`, 배경 `hover-bg`, 떠오름 `hover-lift`/`hover-lift-sm`/`hover-nudge`(움직임 줄이기 설정이면 멈춤), 요일 칸 `day-checkbox-label`. JS에서 글자색을 넣을 때도 `'white'`가 아니라 `var(--t-on-accent)`.
+- **기간 선택기** (`WeekSelector`·`MonthSelector`·`YearSelector`): 날짜 계산(주차 번호·이전/다음 값)은 파일마다 다르므로 각자 두고, 버튼·모달·옵션 연결은 `components/periodSelectorBinding.js` 하나다. 검증 `node scripts/test/golden-selector-binding.mjs`(헤드리스 Edge로 옛 코드와 같은 클릭 시나리오 비교).
+- **AI 성찰 공용** (`utils/reflectionMarkdown.js`): 주간·월간·연간 AI 성찰의 마크다운→HTML·이스케이프·생성일 포맷. 검증 `node scripts/test/golden-reflection-markdown.mjs`. 조회·생성 버튼 연결은 기간마다 테이블·문구가 달라 각 컴포넌트에 남겼다.
+- **테스트는 하나씩, 종료코드로 판단한다** — `| tail`로 묶으면 실패가 묻힌다: `confirm.test` · `period-chart.test` · `golden-period-components` · `golden-reflection-markdown` · `golden-selector-binding`.
+- **남은 것**: 상태값 인라인 63곳.
 
 ## 기술 스택
 

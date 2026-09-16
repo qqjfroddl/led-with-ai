@@ -45,3 +45,7 @@ coverage/
 
 # Backup copies of env/secret files (2026-07-16: .env.local.bak이 gitignore를 우회해 커밋됐던 사례 방지)
 *.bak
+
+# 골든 테스트 임시 파일
+.golden-tmp/
+src/components/__golden/

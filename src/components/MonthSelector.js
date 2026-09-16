@@ -1,5 +1,6 @@
 // 월 선택 컴포넌트
 import { getMonthStart, getToday } from '../utils/date.js';
+import { bindPeriodSelector } from './periodSelectorBinding.js';
 
 function getDateTimeLib() {
   if (typeof window !== 'undefined' && window.luxon) return window.luxon.DateTime;
@@ -145,147 +146,13 @@ export function initMonthSelector(onMonthChange, selectedMonthStart, timezone = 
   const prevMonthStart = monthStartDt.minus({ months: 1 }).startOf('month').toISODate();
   const nextMonthStart = monthStartDt.plus({ months: 1 }).startOf('month').toISODate();
   
-  // 이전 월 버튼
-  const prevBtn = document.getElementById('month-prev-btn');
-  if (prevBtn) {
-    // 기존 이벤트 리스너 제거 후 새로 추가 (중복 방지)
-    const newPrevBtn = prevBtn.cloneNode(true);
-    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
-    newPrevBtn.addEventListener('click', () => {
-      if (onMonthChange) onMonthChange(prevMonthStart);
-    });
-  }
-  
-  // 다음 월 버튼
-  const nextBtn = document.getElementById('month-next-btn');
-  if (nextBtn) {
-    const newNextBtn = nextBtn.cloneNode(true);
-    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
-    newNextBtn.addEventListener('click', () => {
-      if (onMonthChange) onMonthChange(nextMonthStart);
-    });
-  }
-  
-  // 이번 달 버튼
-  const currentBtn = document.getElementById('month-current-btn');
-  if (currentBtn) {
-    const newCurrentBtn = currentBtn.cloneNode(true);
-    currentBtn.parentNode.replaceChild(newCurrentBtn, currentBtn);
-    newCurrentBtn.addEventListener('click', () => {
-      if (onMonthChange) onMonthChange(currentMonthStart);
-    });
-  }
-  
-  // 월 선택 버튼 (모달 열기)
-  const monthSelectorBtn = document.getElementById('month-selector-btn');
-  const monthSelectorOverlay = document.getElementById('month-selector-overlay');
-  const monthSelectorModal = document.getElementById('month-selector-modal');
-  const monthSelectorClose = document.getElementById('month-selector-close');
-  const monthSelectorChevron = document.getElementById('month-selector-chevron');
-  
-  if (monthSelectorBtn && monthSelectorOverlay) {
-    // 모달이 기본적으로 닫혀있도록 보장
-    monthSelectorOverlay.classList.add('hidden');
-    monthSelectorOverlay.style.display = 'none';
-    
-    // 모달 열기
-    const openModal = () => {
-      monthSelectorOverlay.classList.remove('hidden');
-      monthSelectorOverlay.style.display = 'flex';
-      if (monthSelectorChevron) {
-        monthSelectorChevron.style.transform = 'rotate(180deg)';
-      }
-    };
-    
-    // 모달 닫기
-    const closeModal = () => {
-      monthSelectorOverlay.classList.add('hidden');
-      monthSelectorOverlay.style.display = 'none';
-      if (monthSelectorChevron) {
-        monthSelectorChevron.style.transform = 'rotate(0deg)';
-      }
-    };
-    
-    // 버튼 클릭으로 모달 열기
-    const newBtn = monthSelectorBtn.cloneNode(true);
-    monthSelectorBtn.parentNode.replaceChild(newBtn, monthSelectorBtn);
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openModal();
-    });
-    
-    // 닫기 버튼
-    if (monthSelectorClose) {
-      const newCloseBtn = monthSelectorClose.cloneNode(true);
-      monthSelectorClose.parentNode.replaceChild(newCloseBtn, monthSelectorClose);
-      newCloseBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeModal();
-      });
-    }
-    
-    // 오버레이 클릭으로 모달 닫기 (직접 바인딩, cloneNode 사용 안 함)
-    monthSelectorOverlay.addEventListener('click', (e) => {
-      if (e.target === monthSelectorOverlay) {
-        closeModal();
-      }
-    });
-    
-    // 모달 내부 클릭은 전파 방지
-    if (monthSelectorModal) {
-      monthSelectorModal.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
-    
-    // 월 옵션 버튼들 (이벤트 위임 사용)
-    const optionsContainer = document.getElementById('month-selector-options');
-    if (optionsContainer) {
-      optionsContainer.addEventListener('click', (e) => {
-        const btn = e.target.closest('.month-option-btn');
-        if (btn) {
-          e.stopPropagation();
-          const monthStart = btn.dataset.monthStart;
-          if (monthStart && onMonthChange) {
-            closeModal();
-            onMonthChange(monthStart);
-          }
-        }
-      });
-    }
-  }
-  
-  // Lucide 아이콘 렌더링
-  if (window.lucide) {
-    setTimeout(() => {
-      window.lucide.createIcons();
-    }, 100);
-  }
+  bindPeriodSelector({
+    prefix: 'month',
+    optionClass: 'month-option-btn',
+    readOption: (btn) => btn.dataset.monthStart,
+    prev: prevMonthStart,
+    next: nextMonthStart,
+    current: currentMonthStart,
+    onChange: onMonthChange,
+  });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
