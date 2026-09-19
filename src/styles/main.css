@@ -1079,6 +1079,12 @@ input[type="date"]:focus {
   box-shadow: 0 4px 8px rgba(42,38,34, 0.08);
 }
 
+/* 할일 줄 이동 컨트롤: 드래그 핸들·위·아래를 한 덩어리로 붙인다.
+   (2026-09-19 소장님 지시 — 셋 사이가 24px씩 벌어져 가로 공간을 먹었다.
+   폭을 슬롯으로 고정해 이동 버튼이 없는 줄도 제목 시작선이 같아진다) */
+.todo-move-controls { display: flex; align-items: center; gap: 0; }
+.todo-move-slot { flex: 0 0 74px; }
+
 /* 드래그 핸들 스타일 */
 .todo-drag-handle {
   transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
@@ -1617,6 +1623,10 @@ html.is-dark .confirm::backdrop { background: rgba(0,0,0,.6); }
 }
 .todo-drag-handle{
   display: none;
+
+}
+.todo-move-slot{
+  flex-basis: 24px;
 
 }
 #monthly-plans-view-mode > div:first-child{

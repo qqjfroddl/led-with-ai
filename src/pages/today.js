@@ -755,18 +755,20 @@ function renderTodos(todosList, date, profile, timezone) {
       return `
         <div class="todo-item br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05${isExistingTodo ? ' is-carried' : ''}" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false">
           ${canMove ? `
-            <div class="todo-drag-handle d-flex ai-center p-0_25rem-0_5rem cur-grab c-muted2 br-4px tr-all-0_2s-ease us-none" draggable="true" title="드래그하여 순서 변경">
-              <i class="w-18px h-18px pe-none" data-lucide="grip-vertical"></i>
+            <div class="todo-move-controls todo-move-slot">
+              <div class="todo-drag-handle d-flex ai-center p-0_25rem cur-grab c-muted2 br-4px tr-all-0_2s-ease us-none" draggable="true" title="드래그하여 순서 변경">
+                <i class="w-18px h-18px pe-none" data-lucide="grip-vertical"></i>
+              </div>
+              <div class="move-todo-buttons d-flex fd-row gap-0 ai-center">
+                <button class="move-todo-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-move-up="${todo.id}" title="위로 이동">
+                  <i class="w-16px h-16px" data-lucide="chevron-up"></i>
+                </button>
+                <button class="move-todo-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-move-down="${todo.id}" title="아래로 이동">
+                  <i class="w-16px h-16px" data-lucide="chevron-down"></i>
+                </button>
+              </div>
             </div>
-            <div class="move-todo-buttons d-flex fd-row gap-0 ai-center">
-              <button class="move-todo-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-move-up="${todo.id}" title="위로 이동">
-                <i class="w-16px h-16px" data-lucide="chevron-up"></i>
-              </button>
-              <button class="move-todo-btn bg-transparent bd-none c-muted cur-pointer p-0_25rem" data-move-down="${todo.id}" title="아래로 이동">
-                <i class="w-16px h-16px" data-lucide="chevron-down"></i>
-              </button>
-            </div>
-          ` : '<div class="w-36px"></div>'}
+          ` : '<div class="todo-move-slot"></div>'}
           <input class="w-20px h-20px" type="checkbox" ${todo.is_done ? 'checked' : ''} ${isReadOnly ? 'disabled' : ''} style="cursor: ${isReadOnly ? 'not-allowed' : 'pointer'}; opacity: ${isReadOnly ? 0.5 : 1};">
           ${isEditing ? `
             <input type="text" class="todo-edit-input" value="${todo.title.replace(/"/g, '&quot;')}">
