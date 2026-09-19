@@ -1083,7 +1083,10 @@ input[type="date"]:focus {
    (2026-09-19 소장님 지시 — 셋 사이가 24px씩 벌어져 가로 공간을 먹었다.
    폭을 슬롯으로 고정해 이동 버튼이 없는 줄도 제목 시작선이 같아진다) */
 .todo-move-controls { display: flex; align-items: center; gap: 0; }
-.todo-move-slot { flex: 0 0 74px; }
+/* 가로 여백은 1px만 남긴다 — 세로 여백(4px)은 그대로라 버튼 높이·터치 영역은 줄지 않는다 */
+.todo-move-controls .todo-drag-handle { padding: 4px 1px; }
+.todo-move-controls .move-todo-btn { padding: 4px 1px; }
+.todo-move-slot { flex: 0 0 56px; }
 
 /* 드래그 핸들 스타일 */
 .todo-drag-handle {
@@ -1627,6 +1630,10 @@ html.is-dark .confirm::backdrop { background: rgba(0,0,0,.6); }
 }
 .todo-move-slot{
   flex-basis: 24px;
+
+}
+.todo-move-controls .move-todo-btn{
+  padding: 6px 4px;
 
 }
 #monthly-plans-view-mode > div:first-child{
