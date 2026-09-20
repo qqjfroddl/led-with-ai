@@ -4,7 +4,7 @@ import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
-import { getToday } from '../utils/date.js';
+import { getToday, getDDay } from '../utils/date.js';
 import { router } from '../router.js';
 
 export async function renderToday() {
@@ -664,6 +664,9 @@ async function loadTodos(date, profile, timezone = 'Asia/Seoul') {
         *,
         project_task:project_tasks(
           id,
+          start_date,
+          end_date,
+          due_date,
           project:projects(
             id,
             name
@@ -752,6 +755,24 @@ function renderTodos(todosList, date, profile, timezone) {
       const isEditing = editingTodoId === todo.id;
       const canMove = !todo.is_done && !isReadOnly && !isEditing;
 
+      /*
+       * 마감일 — 이 할일이 「언제까지인가」.
+       *
+       * ⭐ 프로젝트에서 넘어온 할일은 마감일이 프로젝트 할일 쪽에 있다.
+       *    종전에는 그 값을 조회조차 하지 않아, 오늘 화면에서는 프로젝트 배지만 보이고
+       *    정작 언제까지인지는 어디에도 안 나왔다.
+       * 우선순위: 이 할일에 직접 박은 날짜 > 프로젝트 할일의 마감일 > 구 due_date
+       */
+      const todoDeadline =
+        todo.due_date || todo.project_task?.end_date || todo.project_task?.due_date || null;
+      // 끝났거나 이미 처리된(이월·포기) 줄에 D+ 경고를 띄우지 않는다
+      const todoDDay = todo.is_done || isProcessed ? null : getDDay(todoDeadline);
+      const deadlineBadge = todoDDay
+        ? `<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0 ws-nowrap ${
+            todoDDay.overdue ? 'bg-danger-soft c-danger' : 'bg-accent-soft c-accent'
+          }">${todoDDay.label}</span>`
+        : '';
+
       return `
         <div class="todo-item br-8px p-0_75rem d-flex ai-center gap-0_75rem sh-0-2px-4px-rgba42_38_34_0_05${isExistingTodo ? ' is-carried' : ''}" data-todo-id="${todo.id}" data-category="${todo.category}" draggable="false">
           ${canMove ? `
@@ -779,7 +800,8 @@ function renderTodos(todosList, date, profile, timezone) {
               ${todo.project_task_id ? `<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0 bg-accent-soft c-accent d-inline-flex ai-center gap-0_25rem"><i class="w-12px h-12px" data-lucide="folder-kanban"></i>프로젝트${todo.project_task?.project?.name ? `: ${todo.project_task.project.name}` : ''}</span>` : ''}
               ${todo.recurring_task_id ? '<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0 bg-accent2-soft c-accent2 d-inline-flex ai-center gap-0_25rem"><i class="w-12px h-12px" data-lucide="repeat"></i>반복업무</span>' : ''}
               <span class="todo-title" data-todo-title="${todo.id}" style="${todo.is_done ? 'text-decoration: line-through; color: var(--t-muted2);' : ''} ${!isReadOnly && !todo.is_done ? 'cursor: pointer;' : ''}">${todo.title}</span>
-              ${todo.due_date ? `<span class="fz-0_7rem c-muted fs-0">📅 ${todo.due_date}</span>` : ''}
+              ${todoDeadline ? `<span class="fz-0_7rem c-muted fs-0 ws-nowrap">📅 ${todo.due_date ? todoDeadline : `~${todoDeadline}`}</span>` : ''}
+              ${deadlineBadge}
             </div>
           `}
           ${isExistingTodo ? '<span class="fz-0_75rem c-muted p-0_25rem-0_5rem bg-line br-4px">지난 날짜</span>' : ''}
@@ -2579,6 +2601,9 @@ async function fetchCarryoverTodos(profile, timezone = 'Asia/Seoul') {
         *,
         project_task:project_tasks(
           id,
+          start_date,
+          end_date,
+          due_date,
           project:projects(
             id,
             name
