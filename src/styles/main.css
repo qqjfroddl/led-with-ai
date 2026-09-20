@@ -1718,6 +1718,11 @@ html.is-dark .confirm::backdrop { background: rgba(0,0,0,.6); }
   display: none;
 
 }
+/* D-day 배지도 날짜와 같이 움직인다 — 모바일에서는 두 번째 줄에만 나온다 */
+.project-task-dday-pc{
+  display: none;
+
+}
 .project-task-date-mobile{
   display: block;
 
@@ -1794,6 +1799,10 @@ html.is-dark .confirm::backdrop { background: rgba(0,0,0,.6); }
 
 }
 .project-task-date-pc{
+  display: inline-block;
+
+}
+.project-task-dday-pc{
   display: inline-block;
 
 }

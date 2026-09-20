@@ -26,6 +26,34 @@ export function getYesterday(timezone = 'Asia/Seoul') {
 }
 
 /**
+ * 마감일까지 남은 일수(D-day) 계산
+ *
+ * ⚠️ 날짜만 비교한다. 시각이 섞이면 "오늘 마감"이 타임존·시분초 때문에
+ *    D-DAY와 D+1 사이를 오가므로 양쪽 모두 startOf('day')로 자른다.
+ *
+ * @param {string} deadline - 마감 날짜 (YYYY-MM-DD)
+ * @param {string} timezone
+ * @returns {{days: number, label: string, overdue: boolean}|null}
+ *          값이 없거나 형식이 틀리면 null (호출부에서 표시를 건너뛴다)
+ */
+export function getDDay(deadline, timezone = 'Asia/Seoul') {
+  if (!deadline) return null;
+
+  const end = DateTime.fromISO(deadline, { zone: timezone });
+  if (!end.isValid) return null;
+
+  const days = Math.round(
+    end.startOf('day').diff(DateTime.now().setZone(timezone).startOf('day'), 'days').days
+  );
+
+  return {
+    days,
+    label: days > 0 ? `D-${days}` : days === 0 ? 'D-DAY' : `D+${Math.abs(days)}`,
+    overdue: days < 0
+  };
+}
+
+/**
  * 주의 시작일 (월요일) 계산
  * @param {string} date - 기준 날짜 (YYYY-MM-DD)
  * @returns {string} 월요일 날짜 (YYYY-MM-DD)

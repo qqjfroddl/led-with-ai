@@ -2,7 +2,7 @@ import { toast } from '../utils/toast.js';
 import { confirmDialog } from '../utils/confirm.js';
 import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
-import { getToday } from '../utils/date.js';
+import { getToday, getDDay } from '../utils/date.js';
 
 // 동기화 플래그 (무한 루프 방지)
 let syncingTodo = false;
@@ -426,20 +426,43 @@ async function renderProjectDetail(project, profile) {
 function renderProjectTask(task, projectCategory) {
   const isEditing = editingProjectTaskId === task.id;
   
-  // 날짜 표시 로직 개선
-  let dateDisplay = '';
-  let dateText = ''; // PC용 텍스트만 추출
+  /*
+   * 날짜 표시 — 마감일을 앞세운다.
+   *
+   * ⭐ 할일에서 행동을 부르는 값은 「언제 시작했나」가 아니라 「언제까지인가」다.
+   *    그래서 기간을 그대로 적던 것에 더해 마감일 기준 D-day를 함께 낸다.
+   * ⚠️ end_date만 있는 할일은 종전에 **아무 날짜도 표시되지 않았다** —
+   *    분기가 (start+end) / (start) / (due) 셋뿐이라 end 단독이 어디에도 안 걸렸다.
+   *    아래 endOnly 분기가 그 구멍을 막는다.
+   * ⚠️ due_date는 구(舊) 필드다. 표기는 종전대로 (구)를 유지하되,
+   *    의미상 마감일이 맞으므로 D-day 계산에는 end_date 다음 순위로 쓴다.
+   */
+  const deadline = task.end_date || task.due_date || null;
+  const dday = task.is_done ? null : getDDay(deadline); // 끝난 할일에 D+ 경고를 띄우지 않는다
+
+  let dateLabel = '';
   if (task.start_date && task.end_date) {
-    dateDisplay = `<span class="fz-0_75rem c-muted">📅 ${task.start_date} ~ ${task.end_date}</span>`;
-    dateText = `📅 ${task.start_date} ~ ${task.end_date}`;
+    dateLabel = `📅 ${task.start_date} ~ ${task.end_date}`;
+  } else if (task.end_date) {
+    dateLabel = `📅 ~${task.end_date}`; // 마감일만 — 시작일이 없다는 뜻을 물결로 드러낸다
   } else if (task.start_date) {
-    dateDisplay = `<span class="fz-0_75rem c-muted">📅 ${task.start_date}</span>`;
-    dateText = `📅 ${task.start_date}`;
+    dateLabel = `📅 ${task.start_date}`;
   } else if (task.due_date) {
-    dateDisplay = `<span class="fz-0_75rem c-muted2">📅 ${task.due_date} (구)</span>`;
-    dateText = `📅 ${task.due_date} (구)`;
+    dateLabel = `📅 ${task.due_date} (구)`;
   }
-  
+
+  // 지난 마감은 색으로 가른다 — 숫자만으로는 지났다는 사실이 눈에 안 들어온다
+  const ddayBadge = dday
+    ? `<span class="fz-0_7rem p-0_15rem-0_4rem br-4px fwt-600 fs-0 ws-nowrap ${
+        dday.overdue ? 'bg-danger-soft c-danger' : 'bg-accent-soft c-accent'
+      }">${dday.label}</span>`
+    : '';
+
+  const dateText = dateLabel;
+  const dateDisplay = dateLabel
+    ? `<span class="fz-0_75rem ${task.due_date && !task.end_date && !task.start_date ? 'c-muted2' : 'c-muted'}">${dateLabel}</span>`
+    : '';
+
   return `
     <div class="project-task-item bg-surface br-8px p-0_75rem mb-0_5rem sh-0-2px-4px-rgba42_38_34_0_05" data-task-id="${task.id}">
       <!-- 첫 번째 줄: 체크박스 + 제목 + 날짜(PC용) + 버튼들 -->
@@ -450,6 +473,7 @@ function renderProjectTask(task, projectCategory) {
         ` : `
           <span class="project-task-title fx-1 minw-0 wb-break-word ow-break-word ${task.is_done ? 'td-line-through c-muted2' : 'c-text cur-pointer'}" data-task-id="${task.id}">${task.title}</span>
           ${dateText ? `<span class="project-task-date-pc fz-0_75rem c-muted ws-nowrap fs-0 ml-0_5rem">${dateText}</span>` : ''}
+          ${ddayBadge ? `<span class="project-task-dday-pc fs-0 ml-0_5rem">${ddayBadge}</span>` : ''}
         `}
         ${!isEditing ? `
           <button class="project-task-dates-btn bg-transparent bd-none c-accent cur-pointer p-0_25rem fs-0" data-task-id="${task.id}" title="시작일/종료일 설정">
@@ -473,8 +497,9 @@ function renderProjectTask(task, projectCategory) {
       
       <!-- 두 번째 줄: 날짜 표시 (모바일용) -->
       ${dateDisplay ? `
-        <div class="project-task-date-mobile mt-0_5rem pl-2_45rem">
+        <div class="project-task-date-mobile mt-0_5rem pl-2_45rem d-flex ai-center gap-0_5rem">
           ${dateDisplay}
+          ${ddayBadge}
         </div>
       ` : ''}
     </div>
@@ -971,7 +996,7 @@ async function updateProjectTaskDate(taskId, dueDate, profile) {
 }
 
 // 시작일/종료일 범위 선택 모달
-function openProjectTaskDateRangePicker(taskId, profile) {
+async function openProjectTaskDateRangePicker(taskId, profile) {
   // 모달 HTML 생성 (처음 호출 시만)
   if (!document.getElementById('project-task-daterange-overlay')) {
     const modalHTML = `
@@ -1011,8 +1036,30 @@ function openProjectTaskDateRangePicker(taskId, profile) {
   if (!overlay || !startDateInput || !endDateInput || !window.flatpickr) return;
 
   let currentTaskId = taskId;
+
+  /*
+   * 이미 설정된 날짜를 먼저 불러와 채운다.
+   * ⚠️ 이게 없으면 저장이 화면에서 고른 값으로 두 칸을 통째로 덮어쓴다 —
+   *    마감일만 고치려던 사용자가 시작일을 모르는 사이에 지우게 된다.
+   *    (마감일 단독 저장을 허용하면서 같이 필요해진 장치다)
+   */
   let selectedStartDate = null;
   let selectedEndDate = null;
+  try {
+    const { data: current, error } = await supabase
+      .from('project_tasks')
+      .select('start_date, end_date')
+      .eq('id', taskId)
+      .single();
+    if (error) throw error;
+    if (current) {
+      selectedStartDate = current.start_date || null;
+      selectedEndDate = current.end_date || null;
+    }
+  } catch (error) {
+    // 못 불러와도 모달은 연다. 다만 빈 칸으로 열리므로 덮어쓰기 위험은 종전과 같다
+    console.error('Error loading project task dates:', error);
+  }
 
   const closeOverlay = () => {
     if (overlay) {
@@ -1042,10 +1089,15 @@ function openProjectTaskDateRangePicker(taskId, profile) {
     endDateInput._fp = null;
   }
 
+  // 불러온 값을 입력칸에 먼저 채운다 (달력에는 defaultDate로 넘긴다)
+  startDateInput.value = selectedStartDate || '';
+  endDateInput.value = selectedEndDate || '';
+
   // 시작일 선택
   startDateInput._fp = window.flatpickr(startDateInput, {
     locale: window.flatpickr.l10ns?.ko,
     dateFormat: 'Y-m-d',
+    defaultDate: selectedStartDate || null,
     onChange: (dates, dateStr) => {
       selectedStartDate = dateStr;
       
@@ -1070,6 +1122,7 @@ function openProjectTaskDateRangePicker(taskId, profile) {
   endDateInput._fp = window.flatpickr(endDateInput, {
     locale: window.flatpickr.l10ns?.ko,
     dateFormat: 'Y-m-d',
+    defaultDate: selectedEndDate || null,
     onChange: (dates, dateStr) => {
       selectedEndDate = dateStr;
     }
@@ -1081,15 +1134,17 @@ function openProjectTaskDateRangePicker(taskId, profile) {
     const newBtn = saveBtn.cloneNode(true);
     saveBtn.parentNode.replaceChild(newBtn, saveBtn);
     newBtn.onclick = async () => {
-      if (!selectedStartDate) {
-        toast('시작일을 선택해주세요.');
+      /*
+       * ⭐ 시작일 없이 「마감일만」 저장할 수 있다.
+       *    종전에는 둘 다 필수였는데, 할일 대부분은 시작일이 의미 없고 마감일만 있다.
+       *    없는 시작일을 억지로 채우게 하면 결국 아무 날짜도 안 넣게 된다.
+       * ⚠️ 시작일만 넣는 경우는 종전 그대로 허용한다(자동으로 종료일이 같은 날로 채워진다).
+       */
+      if (!selectedStartDate && !selectedEndDate) {
+        toast('시작일 또는 마감일을 선택해주세요.');
         return;
       }
-      if (!selectedEndDate) {
-        toast('종료일을 선택해주세요.');
-        return;
-      }
-      if (selectedEndDate < selectedStartDate) {
+      if (selectedStartDate && selectedEndDate && selectedEndDate < selectedStartDate) {
         toast('종료일은 시작일보다 이후여야 합니다.');
         return;
       }
@@ -1370,6 +1425,17 @@ async function registerProjectTasksToTodos(projectId, profile) {
             taskDateMap.set(task.start_date, []);
           }
           taskDateMap.get(task.start_date).push(task.id);
+        }
+      }
+      // 마감일만 있으면 마감일 당일에 등록 (오늘 이후만)
+      // ⚠️ 이 분기가 없으면 「마감일만」 지정한 할일이 어느 날짜에도 안 잡혀 오늘 화면에 영영 안 뜬다
+      else if (task.end_date) {
+        if (task.end_date >= today) {
+          datesToCheck.push(task.end_date);
+          if (!taskDateMap.has(task.end_date)) {
+            taskDateMap.set(task.end_date, []);
+          }
+          taskDateMap.get(task.end_date).push(task.id);
         }
       }
       // due_date가 있으면 그 날짜만 (하위 호환성, 오늘 이후만)
