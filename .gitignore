@@ -49,3 +49,7 @@ coverage/
 # 골든 테스트 임시 파일
 .golden-tmp/
 src/components/__golden/
+
+# 외부 API 토큰 원문 (저장소가 공개이므로 절대 커밋 금지)
+*.token
+led-api-token

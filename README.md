@@ -90,6 +90,65 @@ npm run build
 - **테스트는 하나씩, 종료코드로 판단한다** — `| tail`로 묶으면 실패가 묻힌다: `confirm.test` · `period-chart.test` · `golden-period-components` · `golden-reflection-markdown` · `golden-selector-binding`.
 - **남은 것**: 상태값 인라인 63곳.
 
+## 외부 API와 MCP (2026-09-23)
+
+소장님 **본인 계정** 기록을 클로드 코드·디스코드 봇에서 조회·추가·수정하는 통로다.
+앱 화면과 같은 규칙(루틴 요일 판정·프로젝트 할일 동기화·이월)을 서버에서 재현한다.
+
+```
+클로드 코드 / 디스코드 봇
+   └─ mcp/server.js (stdio, 도구 12개)
+        └─ HTTPS + Bearer 토큰 → /api/v1/* (Vercel 함수)
+             └─ PostgREST (서버 비밀키, user_id 필터 강제) → Supabase
+```
+
+| 경로 | 하는 일 |
+|---|---|
+| `GET /api/v1/day?date=` | 하루의 할일(영역별)·해당 루틴·일일 성찰 |
+| `GET /api/v1/todos?from=&to=&status=open|done|all&q=` | 할일 찾기 (최대 200건) |
+| `POST /api/v1/todos` | 할일 추가 `{title, category, date?, memo?, due_date?}` |
+| `PATCH /api/v1/todos/:id` | 제목·메모·영역·마감일·고정·완료 |
+| `POST /api/v1/todos/:id/carry-over` | 이월 `{to_date?}` |
+| `POST /api/v1/todos/:id/skip` | 포기 |
+| `GET /api/v1/routines?date=` | 루틴 목록 |
+| `POST /api/v1/routines/:id/check` | 루틴 체크 `{date?, checked}` |
+| `PUT /api/v1/reflections/:date` | 성찰 저장 (보낸 칸만) |
+| `GET /api/v1/projects` | 프로젝트와 하위 할일 |
+| `GET /api/v1/week?start=` | 7일 요약 (기본 이번 주 월요일) |
+| `GET /api/health` | 설정 점검 (인증 없음, 값은 싣지 않음) |
+
+**환경변수 (Vercel, 서버 전용)**
+
+| 이름 | 값 |
+|---|---|
+| `SUPABASE_URL` · `SUPABASE_SECRET_KEY` | 신청자 알림과 공용 (이미 있음) |
+| `LED_API_TOKEN_SHA256` | `scripts/led-api/new-token.mjs`가 보여주는 64자리 해시 — **토큰 원문 아님** |
+| `LED_API_USER_EMAIL` | 조작할 앱 계정의 로그인 이메일 |
+
+바꾼 뒤에는 **재배포해야 반영된다.** 토큰 원문은 각 기기 `~/.secrets/led-api-token`에만 둔다.
+
+**기술 결정과 이유**
+
+- **토큰 테이블 대신 환경변수 해시** — 사용자가 소장님 한 분이라 DB 스키마를 바꿀 이유가 없다.
+  여러 사용자에게 열 때는 토큰 테이블로 옮긴다.
+- **서버 비밀키 + user_id 강제 필터** — RLS를 우회하는 키이므로, PostgREST 호출을
+  `api/_lib/led-store.js` 한 곳에 모으고 모든 요청에 `user_id=eq.<소유자>`를 붙인다.
+  `tests/led-api.test.js`의 `assertAllScoped`가 필터 누락을 잡는다. **이 파일 밖에서 DB를 부르지 않는다.**
+- **삭제 API 없음** — 되돌릴 수 없는 조작은 앱 화면에서만.
+- **토큰은 헤더로만** — 쿼리스트링 토큰은 로그·히스토리에 남는다.
+- **업무 규칙 이중화 주의** — `api/_lib/led-rules.js`와 `src/pages/today.js`는 같은 규칙을 따로 갖고 있다.
+  루틴 판정·이월 규칙을 바꾸면 **둘 다** 고친다.
+
+**MCP 설치 (기기마다)**
+
+```bash
+cd mcp && npm install
+node ../scripts/led-api/new-token.mjs      # 첫 기기에서만. 다른 기기는 토큰 파일을 복사
+claude mcp add led --scope user -- node <이 저장소 경로>/mcp/server.js
+```
+
+테스트: 루트에서 `npm test` (API 단위 + MCP 끝단). `mcp/e2e.test.js`는 `mcp/node_modules`가 있어야 돈다.
+
 ## 기술 스택
 
 - **프론트엔드**: HTML, CSS, JavaScript (Vite)
