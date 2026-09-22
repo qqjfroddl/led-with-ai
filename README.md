@@ -139,6 +139,8 @@ npm run build
 - **업무 규칙 이중화 주의** — `api/_lib/led-rules.js`와 `src/pages/today.js`는 같은 규칙을 따로 갖고 있다.
   루틴 판정·이월 규칙을 바꾸면 **둘 다** 고친다.
 
+소장님 직접 작업(환경변수 입력·재배포)은 [`docs/led-api-연결하기.md`](docs/led-api-연결하기.md).
+
 **MCP 설치 (기기마다)**
 
 ```bash
