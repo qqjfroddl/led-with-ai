@@ -53,7 +53,7 @@ server.registerTool('led_get_day', {
 
 server.registerTool('led_list_todos', {
   title: '할일 찾기',
-  description: '기간·상태·제목 검색으로 할일을 찾는다 (최대 200건). 미완료 할일 모아보기, 특정 할일 id 찾기에 쓴다.',
+  description: '기간·상태·제목 검색으로 할일을 찾는다 (최신순, 최대 200건). 기간을 안 주면 오늘까지만 본다 — 반복 할일이 먼 미래까지 미리 만들어져 있으니 앞으로의 할일은 from을 준다. 미완료 할일 모아보기, 특정 할일 id 찾기에 쓴다.',
   inputSchema: {
     from: DATE.optional().describe('시작일 (포함)'),
     to: DATE.optional().describe('종료일 (포함)'),

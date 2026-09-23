@@ -74,9 +74,11 @@ const ROUTES = [
   ['GET', 'todos', async (store, { query }) => {
     const status = query.status ?? 'all';
     if (!['all', 'open', 'done'].includes(status)) throw new ApiError(400, 'status는 all, open, done 중 하나입니다.');
+    // 기간을 안 주면 오늘까지만 — 반복 할일이 2037년까지 미리 만들어져 있어 최신순 200건이 미래로 채워진다
+    const noRange = !query.from && !query.to;
     const todos = await store.listTodos({
       from: query.from ? assertDate(query.from, 'from') : undefined,
-      to: query.to ? assertDate(query.to, 'to') : undefined,
+      to: query.to ? assertDate(query.to, 'to') : noRange ? getKstToday() : undefined,
       status,
       query: query.q ? String(query.q).slice(0, 100) : undefined
     });

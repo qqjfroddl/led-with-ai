@@ -111,6 +111,20 @@ test('할일 검색·기간·상태 필터', async () => {
   assertAllScoped(db);
 });
 
+test('기간 없는 할일 검색은 오늘까지·최신순 (미래 반복 할일에 200건이 잠식되지 않게)', async () => {
+  const { getKstToday } = await import('../api/_lib/led-rules.js');
+  const db = createFakeDb(baseSeed());
+  await call(db, 'GET', 'todos', { query: {} });
+  const { params } = db.calls.find((c) => c.table === 'todos');
+  assert.equal(params.and, `(date.lte.${getKstToday()})`);
+  assert.match(params.order, /^date\.desc/);
+
+  // 기간을 하나라도 주면 그대로 둔다 — 앞으로의 할일은 from으로 본다
+  const db2 = createFakeDb(baseSeed());
+  await call(db2, 'GET', 'todos', { query: { from: '2026-10-01' } });
+  assert.equal(db2.calls.find((c) => c.table === 'todos').params.and, '(date.gte.2026-10-01)');
+});
+
 // ── 쓰기 ──
 test('할일 추가는 소유자 id로 들어간다 (본문에 다른 user_id를 넣어도)', async () => {
   const db = createFakeDb(baseSeed());
