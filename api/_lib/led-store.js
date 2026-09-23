@@ -104,7 +104,8 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
       const params = {
         deleted_at: 'is.null',
         select: TODO_SELECT,
-        order: 'date.asc,category.asc,created_at.asc',
+        // 최신순: 한도(200)에 걸릴 때 오래된 기록이 아니라 최근 기록이 남도록
+        order: 'date.desc,category.asc,created_at.asc',
         limit: '200'
       };
       const range = [];
