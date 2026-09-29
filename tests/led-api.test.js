@@ -271,3 +271,27 @@ test('health: 누락·오입력이면 503과 이름·원인', async () => {
   assert.match(response.body.problems.LED_API_TOKEN_SHA256, /해시/);
   assert.ok(!JSON.stringify(response.body).includes('raw-token'));
 });
+
+// ── 순서 정하기 (2026-09-30) ──
+test('할일 순서: 준 순서대로 display_order 10 단위, 내 것만', async () => {
+  const db = createFakeDb(baseSeed());
+  const response = await call(db, 'POST', 'todos/reorder', { body: { ids: [id(2), id(1)] } });
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body.todos.map((t) => [t.id, t.display_order]), [[id(2), 10], [id(1), 20]]);
+  assertAllScoped(db);
+});
+
+test('할일 순서: 날짜가 섞이면 400, 아무것도 안 바꾼다', async () => {
+  const db = createFakeDb(baseSeed());
+  const response = await call(db, 'POST', 'todos/reorder', { body: { ids: [id(1), id(3)] } });
+  assert.equal(response.statusCode, 400);
+  assert.ok(db.calls.every(({ method }) => method !== 'PATCH'));
+});
+
+test('할일 순서: 남의 할일·중복·빈 배열은 거절', async () => {
+  const db = createFakeDb(baseSeed());
+  assert.equal((await call(db, 'POST', 'todos/reorder', { body: { ids: [id(1), id(4)] } })).statusCode, 404);
+  assert.equal((await call(db, 'POST', 'todos/reorder', { body: { ids: [id(1), id(1)] } })).statusCode, 400);
+  assert.equal((await call(db, 'POST', 'todos/reorder', { body: { ids: [] } })).statusCode, 400);
+  assert.ok(db.calls.every(({ method }) => method !== 'PATCH'));
+});

@@ -64,9 +64,9 @@ const call = async (name, args = {}) => {
   return { ...result, text: result.content.map((part) => part.text).join('\n') };
 };
 
-test('도구 12개가 등록되고 읽기/쓰기 표시가 붙어 있다', async () => {
+test('도구 13개가 등록되고 읽기/쓰기 표시가 붙어 있다', async () => {
   const { tools } = await client.listTools();
-  assert.equal(tools.length, 12);
+  assert.equal(tools.length, 13);
   assert.ok(tools.every((tool) => tool.name.startsWith('led_')));
   assert.equal(tools.find((tool) => tool.name === 'led_get_day').annotations.readOnlyHint, true);
   assert.equal(tools.find((tool) => tool.name === 'led_add_todo').annotations.readOnlyHint, false);

@@ -101,6 +101,17 @@ const ROUTES = [
     return { todo: summarizeTodo(todo) };
   }],
 
+  ['POST', 'todos/reorder', async (store, { body }) => {
+    const ids = body.ids;
+    if (!Array.isArray(ids) || ids.length === 0 || ids.length > 200) {
+      throw new ApiError(400, 'ids는 할일 id 배열(1~200개)이어야 합니다.');
+    }
+    const checked = ids.map((value) => assertId(value));
+    if (new Set(checked).size !== checked.length) throw new ApiError(400, 'ids에 같은 id가 두 번 있습니다.');
+    const todos = await store.reorderTodos(checked);
+    return { todos: todos.map(summarizeTodo) };
+  }],
+
   ['POST', 'todos/:id/carry-over', async (store, { params, body }) => {
     const result = await store.carryOverTodo(assertId(params[0]), dateParam(body.to_date));
     return {

@@ -167,6 +167,7 @@ export function summarizeTodo(todo) {
     status,
     due_date: todo.due_date ?? null,
     pinned: Boolean(todo.pinned),
+    display_order: todo.display_order ?? null,
     project: todo.project_task?.project?.name ?? null,
     recurring: Boolean(todo.recurring_task_id)
   };

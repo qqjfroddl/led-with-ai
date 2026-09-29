@@ -97,6 +97,13 @@ server.registerTool('led_update_todo', {
   annotations: WRITE_IDEMPOTENT
 }, tool(async ({ id, ...patch }) => json(await client()('PATCH', `todos/${id}`, { body: patch }))));
 
+server.registerTool('led_reorder_todos', {
+  title: '할일 순서 정하기',
+  description: '한 날짜의 할일 순서를 정한다. ids에 위에서 아래로 보일 순서대로 id를 넣는다(앱 화면의 드래그 정렬과 같다). 화면은 영역별로 묶이고 완료 건은 아래로 가므로, 한 영역의 미완료 할일 전체를 원하는 순서로 넣는다.',
+  inputSchema: { ids: z.array(ID).min(1).max(200) },
+  annotations: WRITE_IDEMPOTENT
+}, tool(async ({ ids }) => json(await client()('POST', 'todos/reorder', { body: { ids } }))));
+
 server.registerTool('led_carry_over_todo', {
   title: '할일 이월',
   description: '미완료 할일을 뒤 날짜로 넘긴다 (앱의 「이어가기」와 같음: 새 날짜에 복제, 원본은 이월 표시). to_date 생략 시 오늘.',

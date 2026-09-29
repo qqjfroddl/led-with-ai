@@ -149,6 +149,21 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
       return updated;
     },
 
+    // today.js 드래그 정렬과 같은 규칙: 준 순서대로 display_order를 10 단위로 다시 매긴다.
+    // 전부 한 날짜의 내 할일이어야 한다 — 다른 날짜가 섞이면 화면 순서가 엉킨다.
+    async reorderTodos(ids) {
+      const todos = [];
+      for (const todoId of ids) todos.push(await getTodo(todoId));
+      const dates = new Set(todos.map((t) => t.date));
+      if (dates.size > 1) throw new ApiError(400, '한 날짜의 할일만 한 번에 정렬할 수 있습니다.');
+      const updated = [];
+      for (const [index, todoId] of ids.entries()) {
+        const [row] = await scoped.update('todos', { id: `eq.${todoId}` }, { display_order: (index + 1) * 10 });
+        updated.push(row);
+      }
+      return updated;
+    },
+
     // today.js carryOverTodo와 같은 규칙: 대상 날짜로 복제하고 원본에 carried_over_at을 남긴다.
     // 프로젝트·반복업무 할일은 대상 날짜에 이미 같은 할일이 있으면 복제하지 않는다.
     async carryOverTodo(id, toDate) {

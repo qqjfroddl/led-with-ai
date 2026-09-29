@@ -97,7 +97,7 @@ npm run build
 
 ```
 클로드 코드 / 디스코드 봇
-   └─ mcp/server.js (stdio, 도구 12개)
+   └─ mcp/server.js (stdio, 도구 13개)
         └─ HTTPS + Bearer 토큰 → /api/v1/* (Vercel 함수)
              └─ PostgREST (서버 비밀키, user_id 필터 강제) → Supabase
 ```
