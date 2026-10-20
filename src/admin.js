@@ -19,7 +19,7 @@ let selectedChallengeIds = new Set(); // 챌린지 참가자 선택 관리
 let selectedExpiredIds = new Set(); // 기한 만료 사용자 선택 관리
 let userStatsCache = new Map(); // 사용자별 통계 캐시 (userId -> stats)
 let selectedWeekOffset = 0; // 선택된 주차 오프셋 (0: 이번 주, -1: 지난 주, 1: 다음 주)
-let activeTab = 'pending'; // 현재 활성화된 탭 (기본값: pending)
+let activeTab = 'requests'; // 현재 활성화된 탭 (기본값: 맨 왼쪽 '사용 신청' — 흐름의 시작)
 let accessRequests = []; // 사용 신청서(/apply) 목록
 let accessRequestsError = null; // 신청 목록을 못 읽었을 때 화면에 보일 문구
 
@@ -441,6 +441,10 @@ function render() {
 
       <!-- 탭 -->
       <div class="tabs" id="admin-tabs">
+        <!-- 흐름 순서: 사용 신청 → (구글 로그인) 승인 대기 → 승인된 사용자 -->
+        <button class="tab ${activeTab === 'requests' ? 'active' : ''}" onclick="showTab('requests')">
+          사용 신청 (${accessRequests.length})
+        </button>
         <button class="tab ${activeTab === 'pending' ? 'active' : ''}" onclick="showTab('pending')">
           승인 대기 (${pendingUsers.length})
         </button>
@@ -452,9 +456,6 @@ function render() {
         </button>
         <button class="tab ${activeTab === 'expired' ? 'active' : ''} c-danger" onclick="showTab('expired')">
           기한 만료 (${expiredUsers.length})
-        </button>
-        <button class="tab ${activeTab === 'requests' ? 'active' : ''}" onclick="showTab('requests')">
-          사용 신청 (${accessRequests.length})
         </button>
       </div>
 
