@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>인생관리AI앱 사용 신청</title>
+
+  <!-- 카톡·노션에 이 주소를 붙여 나눠 주므로 미리보기를 신청서 기준으로 둔다 -->
+  <meta name="description" content="이름·구글 이메일·신청 동기만 적으면 됩니다. 박소장 승인 후 인생관리AI앱을 쓸 수 있습니다.">
+  <meta property="og:title" content="인생관리AI앱 사용 신청">
+  <meta property="og:description" content="이름·구글 이메일·신청 동기만 적으면 됩니다. 박소장 승인 후 사용할 수 있습니다.">
+  <meta property="og:image" content="https://led-with-ai.vercel.app/og.jpg">
+  <meta property="og:url" content="https://led-with-ai.vercel.app/apply">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="인생관리">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Lucide clipboard-pen-line (신청서) 파비콘, 종이저널 포인트색 -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2323506B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='8' height='4' x='8' y='2' rx='1'/><path d='M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h.5'/><path d='M16 4h2a2 2 0 0 1 1.73 1'/><path d='M8 18h1'/><path d='M21.38 12.63a1 1 0 0 0-3-3l-5.01 5.01a2 2 0 0 0-.51.86l-.84 2.87a.5.5 0 0 0 .62.62l2.87-.84a2 2 0 0 0 .86-.51z'/></svg>">
+
+  <meta name="theme-color" content="#F8F4EC">
+  <!-- 신청자는 대부분 처음 오는 사람이라 저장된 테마가 없다. 있으면 따른다. 규칙은 src/theme.js와 같아야 한다 -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('led-theme');
+        if (!/^(paper|warm|white|night|auto)$/.test(t || '')) t = 'paper';
+        var d = document.documentElement;
+        d.setAttribute('data-theme', t);
+        var dark = t === 'night' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) d.classList.add('is-dark');
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preload" href="/fonts/Paperlogy-5Medium.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Paperlogy-7Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <link rel="stylesheet" href="/src/styles/paper.css">
+  <link rel="stylesheet" href="/src/styles/apply.css">
+</head>
+<body>
+  <main class="apply-page">
+    <section class="apply-card" id="apply-form-view">
+      <p class="apply-eyebrow">인생관리AI앱</p>
+      <h1 class="apply-title">사용 신청</h1>
+      <p class="apply-lead">세 칸만 적어 주세요. 박소장이 확인한 뒤 승인해 드립니다.</p>
+
+      <form id="apply-form" novalidate>
+        <div class="apply-field">
+          <label for="f-name">이름</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" maxlength="50" required placeholder="홍길동">
+          <p class="apply-error" data-error-for="name" role="alert"></p>
+        </div>
+
+        <div class="apply-field">
+          <label for="f-email">구글 이메일</label>
+          <p class="apply-help">인생관리AI앱은 구글 계정으로 가입합니다. 가입할 때 쓸 구글 이메일을 적어 주세요.</p>
+          <input id="f-email" name="google_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" required placeholder="hong@gmail.com">
+          <p class="apply-hint" id="email-hint" hidden>지메일이 아니네요. 회사 메일이 구글 계정이라면 그대로 두셔도 됩니다.</p>
+          <p class="apply-error" data-error-for="google_email" role="alert"></p>
+        </div>
+
+        <div class="apply-field">
+          <label for="f-motivation">신청 동기·배경</label>
+          <textarea id="f-motivation" name="motivation" rows="4" maxlength="1000" required placeholder="예) 교육 참석 때 듣고, 직접 써 보고 싶어서 신청합니다."></textarea>
+          <p class="apply-error" data-error-for="motivation" role="alert"></p>
+        </div>
+
+        <!-- 자동 입력 봇 거르기. 사람에게는 보이지 않는다 -->
+        <div class="apply-trap" aria-hidden="true">
+          <label for="f-website">웹사이트</label>
+          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+        <p class="apply-error apply-error--form" id="form-error" role="alert"></p>
+        <button type="submit" class="apply-submit" id="apply-submit">신청하기</button>
+      </form>
+    </section>
+
+    <section class="apply-card apply-done" id="apply-done-view" hidden tabindex="-1">
+      <div class="apply-done-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h1 class="apply-title">신청이 접수되었습니다</h1>
+      <p class="apply-done-message">
+        박소장이 승인하면<br>
+        <strong>‘인생관리AI앱’</strong>을 사용할 수 있습니다.
+      </p>
+
+      <div class="apply-next">
+        <p class="apply-next-label">기다리시는 동안</p>
+        <p class="apply-next-text">아래 안내 페이지에서 접속 방법과 사용법 영상을 미리 보실 수 있습니다.</p>
+        <a class="apply-submit apply-link" id="notion-link" target="_blank" rel="noopener">사용법 안내 보기 (노션)</a>
+      </div>
+
+      <p class="apply-footnote">
+        신청한 구글 이메일: <span id="done-email"></span><br>
+        문의 <a href="mailto:ledhelper@daum.net">ledhelper@daum.net</a>
+      </p>
+    </section>
+  </main>
+
+  <script type="module" src="/src/apply.js"></script>
+</body>
+</html>

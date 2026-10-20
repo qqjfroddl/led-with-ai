@@ -90,6 +90,22 @@ npm run build
 - **테스트는 하나씩, 종료코드로 판단한다** — `| tail`로 묶으면 실패가 묻힌다: `confirm.test` · `period-chart.test` · `golden-period-components` · `golden-reflection-markdown` · `golden-selector-binding`.
 - **남은 것**: 상태값 인라인 63곳.
 
+## 사용 신청서 /apply (2026-10-20)
+
+가입 전에 받는 간단한 신청서다. 주소: `https://led-with-ai.vercel.app/apply`
+
+- **입력**: 이름 · 구글 이메일(가입에 쓸 계정) · 신청 동기·배경
+- **제출 후**: "박소장이 승인하면 '인생관리AI앱'을 사용할 수 있습니다" 안내와 노션 사용법 링크(`src/utils/accessRequest.js`의 `NOTION_GUIDE_URL`)를 보여준다
+- **관리자**: `admin.html` → **사용 신청** 탭. 신청 이메일을 `profiles.email`과 맞춰 '가입 전 / 가입·승인 대기 / 승인됨'을 함께 보여준다. 승인 자체는 기존대로 **승인 대기** 탭에서 한다
+- **DB**: `supabase/create_access_requests.sql` (테이블 `access_requests`)
+
+기술 결정과 이유:
+
+- **신청서와 가입을 분리했다.** 승인은 `profiles.status`로 이미 돌고 있어 그 흐름을 바꾸지 않았다. 신청서는 "누가 왜 쓰려는지"를 남기는 별도 기록이고, 이메일로 두 기록을 잇는다
+- **API 함수 없이 브라우저에서 바로 INSERT한다.** RLS가 익명에게 INSERT만 허용하고 SELECT는 관리자(`is_admin()`)만 되므로, 공개 키로는 남의 신청을 읽을 수 없다. 길이·이메일 형식은 DB CHECK 제약이 최종 방어선이고, 브라우저 검사는 편의다
+- **신청자에게 메일을 보내지 않는다.** 현재 Resend 발신 주소(`onboarding@resend.dev`)는 계정 주인에게만 보낼 수 있어, 안내는 제출 직후 화면으로 전달한다. 도메인 인증 뒤에는 메일 발송을 붙일 수 있다
+- 봇 거르기: 사람에게 안 보이는 칸(`website`)이 채워지면 저장하지 않고 접수된 것처럼 보인다
+
 ## 외부 API와 MCP (2026-09-23)
 
 소장님 **본인 계정** 기록을 클로드 코드·디스코드 봇에서 조회·추가·수정하는 통로다.

@@ -5,6 +5,7 @@ import { supabase, getSupabase } from './config/supabase.js';
 import { getCurrentProfile, isAdmin, signOut } from './utils/auth.js';
 import { getTodosStats, getRoutinesStats, getReflectionsStats } from './utils/weeklyStats.js';
 import { getWeekStart, getWeekEnd, getToday } from './utils/date.js';
+import { signupStatusOf } from './utils/accessRequest.js';
 
 let currentProfile = null;
 let pendingUsers = [];
@@ -19,6 +20,10 @@ let selectedExpiredIds = new Set(); // 기한 만료 사용자 선택 관리
 let userStatsCache = new Map(); // 사용자별 통계 캐시 (userId -> stats)
 let selectedWeekOffset = 0; // 선택된 주차 오프셋 (0: 이번 주, -1: 지난 주, 1: 다음 주)
 let activeTab = 'pending'; // 현재 활성화된 탭 (기본값: pending)
+let accessRequests = []; // 사용 신청서(/apply) 목록
+let accessRequestsError = null; // 신청 목록을 못 읽었을 때 화면에 보일 문구
+
+const APPLY_URL = 'https://led-with-ai.vercel.app/apply';
 
 // 초기화
 async function init() {
@@ -235,7 +240,126 @@ async function loadUsers() {
   selectedApprovedIds = new Set(approvedUsers.filter(u => selectedApprovedIds.has(u.id)).map(u => u.id));
   selectedChallengeIds = new Set(challengeParticipants.filter(u => selectedChallengeIds.has(u.id)).map(u => u.id));
   selectedExpiredIds = new Set(expiredUsers.filter(u => selectedExpiredIds.has(u.id)).map(u => u.id));
+
+  await loadAccessRequests();
 }
+
+// 사용 신청 목록 로드 — 실패해도 사용자 승인 화면은 그대로 쓸 수 있게, 오류는 신청 탭 안에만 보인다
+async function loadAccessRequests() {
+  const { data, error } = await supabase
+    .from('access_requests')
+    .select('id, name, google_email, motivation, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[Admin] Error loading access requests:', error);
+    accessRequests = [];
+    accessRequestsError = error.code === 'PGRST205'
+      ? '신청서 테이블이 아직 없습니다. supabase/create_access_requests.sql을 먼저 실행해야 합니다.'
+      : `신청 목록을 불러오지 못했습니다: ${error.message}`;
+    return;
+  }
+  accessRequests = data || [];
+  accessRequestsError = null;
+}
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function formatRequestedAt(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(date);
+}
+
+function renderAccessRequests() {
+  if (accessRequestsError) {
+    return `
+      <div class="card request-error">
+        <p class="c-danger m-0">${escapeHtml(accessRequestsError)}</p>
+      </div>
+    `;
+  }
+  if (accessRequests.length === 0) {
+    return `
+      <div class="card ta-center p-3rem">
+        <p class="c-var--text-secondary fz-1_1rem">아직 들어온 신청이 없습니다.</p>
+        <p class="c-var--text-secondary fz-0_9rem mt-0_5rem">위의 신청 링크를 교육 자료·단톡방에 공유해 보세요.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card p-0 ovx-auto">
+      <table class="admin-table request-table">
+        <thead>
+          <tr>
+            <th>신청일</th>
+            <th>이름</th>
+            <th>구글 이메일</th>
+            <th>신청 동기·배경</th>
+            <th>가입 상태</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${accessRequests.map((r) => {
+            const signup = signupStatusOf(r.google_email, allUsers);
+            return `
+              <tr>
+                <td class="request-nowrap">${formatRequestedAt(r.created_at)}</td>
+                <td class="request-nowrap"><strong>${escapeHtml(r.name)}</strong></td>
+                <td>${escapeHtml(r.google_email)}</td>
+                <td class="request-motivation">${escapeHtml(r.motivation)}</td>
+                <td class="request-nowrap"><span class="status-badge request-signup-${signup.key}">${escapeHtml(signup.label)}</span></td>
+                <td class="request-nowrap">
+                  <button class="btn btn-secondary btn-sm" onclick="deleteAccessRequest('${r.id}')">삭제</button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+window.copyApplyLink = async function() {
+  try {
+    await navigator.clipboard.writeText(APPLY_URL);
+    toast('신청 링크를 복사했습니다.', 'success');
+  } catch {
+    toast(`복사하지 못했습니다. 직접 복사해 주세요: ${APPLY_URL}`);
+  }
+};
+
+window.deleteAccessRequest = async function(id) {
+  const request = accessRequests.find((r) => r.id === id);
+  if (!request) return;
+  const ok = await confirmDialog(
+    `${request.name}(${request.google_email}) 님의 신청서를 삭제할까요? 신청서만 지워지고, 가입한 계정에는 영향이 없습니다.`,
+    { confirmText: '삭제', danger: true }
+  );
+  if (!ok) return;
+
+  const { error } = await supabase.from('access_requests').delete().eq('id', id);
+  if (error) {
+    console.error('[Admin] Error deleting access request:', error);
+    toast(`삭제하지 못했습니다: ${error.message}`);
+    return;
+  }
+  accessRequests = accessRequests.filter((r) => r.id !== id);
+  render();
+  toast('신청서를 삭제했습니다.', 'success');
+};
 
 // 렌더링
 function render() {
@@ -329,6 +453,9 @@ function render() {
         <button class="tab ${activeTab === 'expired' ? 'active' : ''} c-danger" onclick="showTab('expired')">
           기한 만료 (${expiredUsers.length})
         </button>
+        <button class="tab ${activeTab === 'requests' ? 'active' : ''}" onclick="showTab('requests')">
+          사용 신청 (${accessRequests.length})
+        </button>
       </div>
 
       <!-- 승인 대기 목록 -->
@@ -413,6 +540,23 @@ function render() {
           </p>
         </div>
         ${renderUserTable(expiredUsers, 'expired')}
+      </div>
+
+      <!-- 사용 신청서(/apply) 목록 -->
+      <div id="requests-section" class="tab-content" style="display: ${activeTab === 'requests' ? 'block' : 'none'};">
+        <div class="d-flex jc-space-between ai-center mb-1rem fwrap-wrap gap-1rem">
+          <h2><i class="w-20px h-20px mr-6px" data-lucide="clipboard-list"></i>사용 신청</h2>
+          <div class="d-flex ai-center gap-0_5rem fwrap-wrap">
+            <button onclick="copyApplyLink()" class="btn btn-secondary btn-sm">신청 링크 복사</button>
+            <a href="/apply" target="_blank" rel="noopener" class="btn btn-secondary btn-sm request-open">신청서 열기</a>
+            <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
+          </div>
+        </div>
+        <div class="request-guide">
+          신청서를 낸 분이 그 구글 이메일로 앱에 로그인하면 <strong>승인 대기</strong> 탭에 나타납니다.
+          '가입 상태'가 <strong>가입 전</strong>이면 아직 로그인하지 않은 분입니다.
+        </div>
+        ${renderAccessRequests()}
       </div>
 
       <!-- 재신청 대기 목록 (rejected 상태) -->
@@ -634,6 +778,8 @@ window.showTab = function(tab) {
   const challengeSection = document.getElementById('challenge-section');
   const expiredSection = document.getElementById('expired-section');
   
+  const requestsSection = document.getElementById('requests-section');
+  if (requestsSection) requestsSection.style.display = 'none';
   if (pendingSection) pendingSection.style.display = 'none';
   if (approvedSection) approvedSection.style.display = 'none';
   if (challengeSection) challengeSection.style.display = 'none';
@@ -678,6 +824,8 @@ window.showTab = function(tab) {
     }
   } else if (tab === 'expired' && expiredSection) {
     expiredSection.style.display = 'block';
+  } else if (tab === 'requests' && requestsSection) {
+    requestsSection.style.display = 'block';
   }
   
   // 활성 탭 표시
@@ -686,6 +834,7 @@ window.showTab = function(tab) {
     if (tab === 'approved') return t.textContent.includes('승인된 사용자');
     if (tab === 'challenge') return t.textContent.includes('챌린지 참가자');
     if (tab === 'expired') return t.textContent.includes('기한 만료');
+    if (tab === 'requests') return t.textContent.includes('사용 신청');
     return false;
   });
   if (activeTabElement) activeTabElement.classList.add('active');

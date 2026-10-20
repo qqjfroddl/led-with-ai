@@ -132,6 +132,37 @@
   flex-wrap: wrap;
 }
 
+/* 사용 신청(/apply) 탭 */
+.request-guide {
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--t-text2);
+  background: var(--t-bg2);
+  border-radius: 0.5rem;
+  word-break: keep-all;
+}
+.request-error {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--t-danger-line);
+}
+.request-open { text-decoration: none; }
+.request-table td { vertical-align: top; }
+.request-nowrap { white-space: nowrap; }
+.request-motivation {
+  min-width: 240px;
+  max-width: 480px;
+  line-height: 1.6;
+  white-space: pre-wrap; /* 신청자가 넣은 줄바꿈을 살린다 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.request-signup-none { background: var(--t-line); color: var(--t-text2); }
+.request-signup-pending { background: var(--t-warn-soft); color: var(--t-warn); }
+.request-signup-approved { background: var(--t-success-soft); color: var(--t-success); }
+.request-signup-other { background: var(--t-danger-soft); color: var(--t-danger); }
+
 
 
 
