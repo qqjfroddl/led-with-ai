@@ -22,6 +22,7 @@ let selectedWeekOffset = 0; // 선택된 주차 오프셋 (0: 이번 주, -1: �
 let activeTab = 'requests'; // 현재 활성화된 탭 (기본값: 맨 왼쪽 '사용 신청' — 흐름의 시작)
 let accessRequests = []; // 사용 신청서(/apply) 목록
 let accessRequestsError = null; // 신청 목록을 못 읽었을 때 화면에 보일 문구
+let selectedRequestIds = new Set(); // 일괄 삭제용 선택
 
 const APPLY_URL = 'https://led-with-ai.vercel.app/apply';
 
@@ -261,6 +262,9 @@ async function loadAccessRequests() {
   }
   accessRequests = data || [];
   accessRequestsError = null;
+  // 새로고침 사이에 지워진 신청은 선택에서도 뺀다
+  const ids = new Set(accessRequests.map((r) => r.id));
+  selectedRequestIds = new Set([...selectedRequestIds].filter((id) => ids.has(id)));
 }
 
 function escapeHtml(value = '') {
@@ -302,6 +306,10 @@ function renderAccessRequests() {
       <table class="admin-table request-table">
         <thead>
           <tr>
+            <th class="w-40px ta-center">
+              <input type="checkbox" aria-label="전체 선택" onchange="toggleAllRequests(this.checked)"
+                ${accessRequests.every((r) => selectedRequestIds.has(r.id)) ? 'checked' : ''}>
+            </th>
             <th>신청일</th>
             <th>이름</th>
             <th>구글 이메일</th>
@@ -314,7 +322,11 @@ function renderAccessRequests() {
           ${accessRequests.map((r) => {
             const signup = signupStatusOf(r.google_email, allUsers);
             return `
-              <tr>
+              <tr class="${selectedRequestIds.has(r.id) ? 'is-selected' : ''}">
+                <td class="ta-center">
+                  <input type="checkbox" class="request-select" aria-label="${escapeHtml(r.name)} 선택"
+                    onchange="toggleRequestSelect('${r.id}', this.checked)" ${selectedRequestIds.has(r.id) ? 'checked' : ''}>
+                </td>
                 <td class="request-nowrap">${formatRequestedAt(r.created_at)}</td>
                 <td class="request-nowrap"><strong>${escapeHtml(r.name)}</strong></td>
                 <td>${escapeHtml(r.google_email)}</td>
@@ -357,8 +369,79 @@ window.deleteAccessRequest = async function(id) {
     return;
   }
   accessRequests = accessRequests.filter((r) => r.id !== id);
+  selectedRequestIds.delete(id);
   render();
   toast('신청서를 삭제했습니다.', 'success');
+};
+
+// 일괄 선택 — 다시 그리지 않고 행 표시와 버튼만 바꾼다.
+// (render()를 부르면 기존 MutationObserver가 다른 탭 이벤트를 또 붙인다)
+function syncRequestSelectionUI() {
+  const button = document.getElementById('bulk-delete-requests');
+  if (button) {
+    button.disabled = selectedRequestIds.size === 0;
+    button.textContent = selectedRequestIds.size > 0 ? `선택 삭제 (${selectedRequestIds.size})` : '선택 삭제';
+  }
+  document.querySelectorAll('.request-select').forEach((cb) => {
+    cb.closest('tr')?.classList.toggle('is-selected', cb.checked);
+  });
+  const all = document.querySelector('.request-table thead input[type="checkbox"]');
+  if (all) {
+    all.checked = accessRequests.length > 0 && accessRequests.every((r) => selectedRequestIds.has(r.id));
+    all.indeterminate = selectedRequestIds.size > 0 && !all.checked;
+  }
+}
+
+window.toggleRequestSelect = function(id, checked) {
+  if (checked) selectedRequestIds.add(id);
+  else selectedRequestIds.delete(id);
+  syncRequestSelectionUI();
+};
+
+window.toggleAllRequests = function(checked) {
+  selectedRequestIds = checked ? new Set(accessRequests.map((r) => r.id)) : new Set();
+  document.querySelectorAll('.request-select').forEach((cb) => { cb.checked = checked; });
+  syncRequestSelectionUI();
+};
+
+window.deleteSelectedRequests = async function() {
+  const targets = accessRequests.filter((r) => selectedRequestIds.has(r.id));
+  if (targets.length === 0) return;
+
+  const preview = targets.slice(0, 5).map((r) => `· ${r.name} (${r.google_email})`).join('\n');
+  const more = targets.length > 5 ? `\n· 외 ${targets.length - 5}건` : '';
+  const ok = await confirmDialog(
+    `신청서 ${targets.length}건을 삭제할까요?\n\n${preview}${more}\n\n신청서만 지워지고, 가입한 계정에는 영향이 없습니다.`,
+    { confirmText: `${targets.length}건 삭제`, danger: true }
+  );
+  if (!ok) return;
+
+  const button = document.getElementById('bulk-delete-requests');
+  if (button) { button.disabled = true; button.textContent = '삭제 중…'; }
+
+  // 실제로 지워진 행을 돌려받아, 요청한 건수와 다르면 숨기지 않고 알린다
+  const { data, error } = await supabase
+    .from('access_requests')
+    .delete()
+    .in('id', targets.map((r) => r.id))
+    .select('id');
+
+  if (error) {
+    console.error('[Admin] Error bulk deleting access requests:', error);
+    toast(`삭제하지 못했습니다: ${error.message}`);
+    syncRequestSelectionUI();
+    return;
+  }
+
+  const deleted = new Set((data || []).map((r) => r.id));
+  accessRequests = accessRequests.filter((r) => !deleted.has(r.id));
+  selectedRequestIds = new Set([...selectedRequestIds].filter((id) => !deleted.has(id)));
+  render();
+  if (deleted.size === targets.length) {
+    toast(`신청서 ${deleted.size}건을 삭제했습니다.`, 'success');
+  } else {
+    toast(`${targets.length}건 중 ${deleted.size}건만 삭제됐습니다. 새로고침 후 다시 확인해 주세요.`);
+  }
 };
 
 // 렌더링
@@ -548,6 +631,9 @@ function render() {
         <div class="d-flex jc-space-between ai-center mb-1rem fwrap-wrap gap-1rem">
           <h2><i class="w-20px h-20px mr-6px" data-lucide="clipboard-list"></i>사용 신청</h2>
           <div class="d-flex ai-center gap-0_5rem fwrap-wrap">
+            <button id="bulk-delete-requests" onclick="deleteSelectedRequests()" class="btn btn-danger btn-sm" ${selectedRequestIds.size === 0 ? 'disabled' : ''}>
+              ${selectedRequestIds.size > 0 ? `선택 삭제 (${selectedRequestIds.size})` : '선택 삭제'}
+            </button>
             <button onclick="copyApplyLink()" class="btn btn-secondary btn-sm">신청 링크 복사</button>
             <a href="/apply" target="_blank" rel="noopener" class="btn btn-secondary btn-sm request-open">신청서 열기</a>
             <button onclick="refreshUsers()" class="btn btn-primary btn-sm">새로고침</button>
