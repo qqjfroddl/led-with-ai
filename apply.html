@@ -39,65 +39,106 @@
   <link rel="stylesheet" href="/src/styles/apply.css">
 </head>
 <body>
+  <header class="apply-topbar">
+    <div class="apply-topbar-inner">
+      <svg class="apply-topbar-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .963L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4M22 5h-4M4 17v2M5 18H3"/></svg>
+      <span>인생관리시스템연구소</span>
+    </div>
+  </header>
+
   <main class="apply-page">
-    <section class="apply-card" id="apply-form-view">
-      <p class="apply-eyebrow">인생관리AI앱</p>
-      <h1 class="apply-title">사용 신청</h1>
-      <p class="apply-lead">세 칸만 적어 주세요. 박소장이 확인한 뒤 승인해 드립니다.</p>
+    <div class="apply-stack" id="apply-form-view">
+      <!-- 히어로: 브랜드 로고가 이 페이지의 '얼굴'이다. 로그인 첫 화면과 같은 로고라 신청 → 가입이 한 경험으로 이어진다 -->
+      <section class="apply-hero">
+        <span class="apply-chip">인생관리AI앱 사용 신청</span>
+        <img class="apply-hero-logo" src="/logo.webp" width="1200" height="634" alt="미루는 습관을 이기는 인생관리시스템" fetchpriority="high">
+        <p class="apply-hero-lead">할일·루틴·성찰을 한 곳에서 기록하고,<br>AI와 함께 한 주를 돌아봅니다.</p>
+        <ul class="apply-pillars" aria-label="앱으로 하는 일">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            <span><b>계획</b>목표·루틴</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span><b>실행</b>오늘 할일</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+            <span><b>리뷰</b>성찰·AI 리포트</span>
+          </li>
+        </ul>
+      </section>
 
-      <form id="apply-form" novalidate>
-        <div class="apply-field">
-          <label for="f-name">이름</label>
-          <input id="f-name" name="name" type="text" autocomplete="name" maxlength="50" required placeholder="홍길동">
-          <p class="apply-error" data-error-for="name" role="alert"></p>
+      <!-- 신청 뒤 무슨 일이 일어나는지 먼저 보여준다. 처음 온 사람이 가장 궁금한 것 -->
+      <ol class="apply-steps" aria-label="사용까지의 순서">
+        <li class="is-now"><span class="apply-step-num">1</span><span>신청서 작성</span></li>
+        <li><span class="apply-step-num">2</span><span>박소장 승인</span></li>
+        <li><span class="apply-step-num">3</span><span>구글로 로그인</span></li>
+      </ol>
+
+      <section class="apply-card">
+        <form id="apply-form" novalidate>
+          <div class="apply-field">
+            <label for="f-name">이름</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" maxlength="50" required placeholder="홍길동">
+            <p class="apply-error" data-error-for="name" role="alert"></p>
+          </div>
+
+          <div class="apply-field">
+            <label for="f-email">구글 이메일</label>
+            <input id="f-email" name="google_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" required placeholder="hong@gmail.com" aria-describedby="email-help">
+            <p class="apply-help" id="email-help">인생관리AI앱은 구글 계정으로 가입합니다. 가입할 때 쓸 이메일을 적어 주세요.</p>
+            <p class="apply-hint" id="email-hint" hidden>지메일이 아니네요. 회사 메일이 구글 계정이라면 그대로 두셔도 됩니다.</p>
+            <p class="apply-error" data-error-for="google_email" role="alert"></p>
+          </div>
+
+          <div class="apply-field">
+            <label for="f-motivation">신청 동기·배경</label>
+            <textarea id="f-motivation" name="motivation" rows="3" maxlength="1000" required placeholder="예) 교육 참석 때 듣고, 직접 써 보고 싶어서 신청합니다."></textarea>
+            <p class="apply-error" data-error-for="motivation" role="alert"></p>
+          </div>
+
+          <!-- 자동 입력 봇 거르기. 사람에게는 보이지 않는다 -->
+          <div class="apply-trap" aria-hidden="true">
+            <label for="f-website">웹사이트</label>
+            <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <p class="apply-error apply-error--form" id="form-error" role="alert"></p>
+          <button type="submit" class="apply-submit" id="apply-submit">신청하기</button>
+        </form>
+      </section>
+
+      <p class="apply-footnote">문의 <a href="mailto:ledhelper@daum.net">ledhelper@daum.net</a></p>
+    </div>
+
+    <div class="apply-stack" id="apply-done-view" hidden tabindex="-1">
+      <section class="apply-hero apply-hero--done">
+        <div class="apply-done-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         </div>
+        <h1 class="apply-done-title">신청이 접수되었습니다</h1>
+        <p class="apply-done-message">
+          박소장이 승인하면<br>
+          <strong>‘인생관리AI앱’</strong>을 사용할 수 있습니다.
+        </p>
+      </section>
 
-        <div class="apply-field">
-          <label for="f-email">구글 이메일</label>
-          <p class="apply-help">인생관리AI앱은 구글 계정으로 가입합니다. 가입할 때 쓸 구글 이메일을 적어 주세요.</p>
-          <input id="f-email" name="google_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" required placeholder="hong@gmail.com">
-          <p class="apply-hint" id="email-hint" hidden>지메일이 아니네요. 회사 메일이 구글 계정이라면 그대로 두셔도 됩니다.</p>
-          <p class="apply-error" data-error-for="google_email" role="alert"></p>
-        </div>
+      <ol class="apply-steps" aria-label="사용까지의 순서">
+        <li class="is-done"><span class="apply-step-num">✓</span><span>신청서 작성</span></li>
+        <li class="is-now"><span class="apply-step-num">2</span><span>박소장 승인</span></li>
+        <li><span class="apply-step-num">3</span><span>구글로 로그인</span></li>
+      </ol>
 
-        <div class="apply-field">
-          <label for="f-motivation">신청 동기·배경</label>
-          <textarea id="f-motivation" name="motivation" rows="4" maxlength="1000" required placeholder="예) 교육 참석 때 듣고, 직접 써 보고 싶어서 신청합니다."></textarea>
-          <p class="apply-error" data-error-for="motivation" role="alert"></p>
-        </div>
-
-        <!-- 자동 입력 봇 거르기. 사람에게는 보이지 않는다 -->
-        <div class="apply-trap" aria-hidden="true">
-          <label for="f-website">웹사이트</label>
-          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
-        </div>
-
-        <p class="apply-error apply-error--form" id="form-error" role="alert"></p>
-        <button type="submit" class="apply-submit" id="apply-submit">신청하기</button>
-      </form>
-    </section>
-
-    <section class="apply-card apply-done" id="apply-done-view" hidden tabindex="-1">
-      <div class="apply-done-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-      </div>
-      <h1 class="apply-title">신청이 접수되었습니다</h1>
-      <p class="apply-done-message">
-        박소장이 승인하면<br>
-        <strong>‘인생관리AI앱’</strong>을 사용할 수 있습니다.
-      </p>
-
-      <div class="apply-next">
+      <section class="apply-card">
         <p class="apply-next-label">기다리시는 동안</p>
-        <p class="apply-next-text">아래 안내 페이지에서 접속 방법과 사용법 영상을 미리 보실 수 있습니다.</p>
+        <p class="apply-next-text">접속 방법과 사용법 영상을 노션 안내 페이지에서 미리 보실 수 있습니다.</p>
         <a class="apply-submit apply-link" id="notion-link" target="_blank" rel="noopener">사용법 안내 보기 (노션)</a>
-      </div>
+        <p class="apply-done-email">신청한 구글 이메일 <span id="done-email"></span></p>
+      </section>
 
-      <p class="apply-footnote">
-        신청한 구글 이메일: <span id="done-email"></span><br>
-        문의 <a href="mailto:ledhelper@daum.net">ledhelper@daum.net</a>
-      </p>
-    </section>
+      <p class="apply-footnote">문의 <a href="mailto:ledhelper@daum.net">ledhelper@daum.net</a></p>
+    </div>
   </main>
 
   <script type="module" src="/src/apply.js"></script>
