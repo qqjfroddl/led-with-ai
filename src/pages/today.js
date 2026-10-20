@@ -5,6 +5,7 @@ import { supabase } from '../config/supabase.js';
 import { getCurrentProfile } from '../utils/auth.js';
 import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
 import { getToday, getDDay } from '../utils/date.js';
+import { topDisplayOrder } from '../utils/todoOrder.js';
 import { router } from '../router.js';
 
 export async function renderToday() {
@@ -1238,6 +1239,19 @@ function setupEventHandlers(date, profile, timezone) {
       const currentDate = getSelectedDate(timezone);
 
       try {
+        // 새 할일은 같은 날짜·영역의 맨 위에 둔다 (2026-10-21 소장님 지시)
+        const { data: siblings, error: orderError } = await supabase
+          .from('todos')
+          .select('display_order')
+          .eq('user_id', profile.id)
+          .eq('date', currentDate)
+          .eq('category', category)
+          .is('deleted_at', null)
+          .not('display_order', 'is', null)
+          .order('display_order', { ascending: true })
+          .limit(1);
+        if (orderError) throw orderError;
+
         const { error } = await supabase
           .from('todos')
           .insert({
@@ -1248,7 +1262,8 @@ function setupEventHandlers(date, profile, timezone) {
             memo: null,
             due_date: null,
             priority: null,
-            pinned: false
+            pinned: false,
+            display_order: topDisplayOrder(siblings.map((row) => row.display_order))
           });
 
         if (error) throw error;
