@@ -95,7 +95,7 @@ npm run build
 가입 전에 받는 간단한 신청서다. 주소: `https://led-with-ai.vercel.app/apply`
 
 - **입력**: 이름 · 구글 이메일(가입에 쓸 계정) · 신청 동기·배경
-- **제출 후**: "박소장이 승인하면 '인생관리AI앱'을 사용할 수 있습니다" 안내와 노션 사용법 링크(`src/utils/accessRequest.js`의 `NOTION_GUIDE_URL`)를 보여준다
+- **제출 후**: "박소장이 승인하면 '인생관리AI앱'을 사용할 수 있습니다" 안내, 다음 할 일(신청한 구글 계정으로 로그인 → 승인 대기 명단에 오름) 버튼, 노션 사용법 링크(`src/utils/accessRequest.js`의 `NOTION_GUIDE_URL`)를 보여준다
 - **관리자**: `admin.html` → **사용 신청** 탭. 신청 이메일을 `profiles.email`과 맞춰 '가입 전 / 가입·승인 대기 / 승인됨'을 함께 보여준다. 승인 자체는 기존대로 **승인 대기** 탭에서 한다
 - **DB**: `supabase/create_access_requests.sql` (테이블 `access_requests`)
 

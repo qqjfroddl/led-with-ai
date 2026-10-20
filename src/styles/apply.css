@@ -305,6 +305,23 @@ body { background: var(--t-bg); }
   line-height: 1.6;
   color: var(--t-text2);
 }
+.apply-next-text b { color: var(--t-text); }
+/* 보조 행동(노션 안내) — 주 버튼(로그인)보다 한 단계 낮게 */
+.apply-secondary {
+  display: block;
+  margin-top: 10px;
+  padding: 13px 16px;
+  text-align: center;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--t-accent);
+  background: var(--t-surface);
+  border: 1px solid var(--t-accent-line);
+  border-radius: 12px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.apply-secondary:hover { background: var(--t-accent-soft); border-color: var(--t-accent); }
+.apply-secondary:focus-visible { outline: 3px solid var(--t-accent-line); outline-offset: 2px; }
 .apply-done-email {
   margin: 14px 0 0;
   text-align: center;

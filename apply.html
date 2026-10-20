@@ -69,11 +69,12 @@
         </ul>
       </section>
 
-      <!-- 신청 뒤 무슨 일이 일어나는지 먼저 보여준다. 처음 온 사람이 가장 궁금한 것 -->
+      <!-- 신청 뒤 무슨 일이 일어나는지 먼저 보여준다. 처음 온 사람이 가장 궁금한 것.
+           순서 주의: 구글 로그인을 해야 profiles에 '승인 대기'로 올라가고, 그걸 박소장이 승인한다 -->
       <ol class="apply-steps" aria-label="사용까지의 순서">
         <li class="is-now"><span class="apply-step-num">1</span><span>신청서 작성</span></li>
-        <li><span class="apply-step-num">2</span><span>박소장 승인</span></li>
-        <li><span class="apply-step-num">3</span><span>구글로 로그인</span></li>
+        <li><span class="apply-step-num">2</span><span>구글로 로그인</span></li>
+        <li><span class="apply-step-num">3</span><span>박소장 승인</span></li>
       </ol>
 
       <section class="apply-card">
@@ -126,14 +127,15 @@
 
       <ol class="apply-steps" aria-label="사용까지의 순서">
         <li class="is-done"><span class="apply-step-num">✓</span><span>신청서 작성</span></li>
-        <li class="is-now"><span class="apply-step-num">2</span><span>박소장 승인</span></li>
-        <li><span class="apply-step-num">3</span><span>구글로 로그인</span></li>
+        <li class="is-now"><span class="apply-step-num">2</span><span>구글로 로그인</span></li>
+        <li><span class="apply-step-num">3</span><span>박소장 승인</span></li>
       </ol>
 
       <section class="apply-card">
-        <p class="apply-next-label">기다리시는 동안</p>
-        <p class="apply-next-text">접속 방법과 사용법 영상을 노션 안내 페이지에서 미리 보실 수 있습니다.</p>
-        <a class="apply-submit apply-link" id="notion-link" target="_blank" rel="noopener">사용법 안내 보기 (노션)</a>
+        <p class="apply-next-label">다음 할 일</p>
+        <p class="apply-next-text">아래 버튼으로 앱에 들어가 <b>신청한 구글 계정</b>으로 로그인해 주세요. 로그인하면 승인 대기 명단에 올라갑니다.</p>
+        <a class="apply-submit apply-link" href="/" target="_blank" rel="noopener">구글로 로그인하기</a>
+        <a class="apply-secondary" id="notion-link" target="_blank" rel="noopener">접속 방법·사용법 안내 보기 (노션)</a>
         <p class="apply-done-email">신청한 구글 이메일 <span id="done-email"></span></p>
       </section>
 
