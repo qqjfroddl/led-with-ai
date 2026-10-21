@@ -1,4 +1,24 @@
-# 승인 대기 신청자 일일 메일 알림
+# 신청자 메일 알림 (즉시 + 일일)
+
+알림은 두 가지입니다. 둘 다 `matt@deeptactlearning.com`으로만 갑니다.
+
+| 언제 | 대상 | 경로 |
+|---|---|---|
+| 사용 신청서(/apply) 제출 즉시 | `access_requests` 새 행 1건 | `POST /api/access-request-alert` |
+| 매일 오전 9시(KST) | `profiles.status = 'pending'` 전체 | `GET /api/daily-applicant-alert` (Cron) |
+
+## 즉시 알림 (/apply)
+
+신청서 화면이 id를 미리 만들어 저장한 뒤, 그 id만 알림 경로에 넘깁니다.
+익명 사용자는 RLS 때문에 저장한 행을 다시 읽을 수 없어서 id를 화면에서 만듭니다.
+
+- 메일 내용은 서버 키로 DB에서 다시 읽은 값만 씁니다. 화면이 보낸 이름·내용은 쓰지 않습니다.
+- 생성 10분이 지난 신청서로는 보내지 않습니다(`sent: false, reason: stale`).
+- 같은 신청서는 Resend 멱등키 `life-ai-access-request-<id>`로 한 번만 보냅니다.
+- 알림이 실패해도 신청은 이미 저장된 상태라 신청자 화면에는 영향이 없습니다.
+- 필요한 환경변수는 아래 일일 알림과 같고, `CRON_SECRET`은 쓰지 않습니다.
+
+## 일일 알림 (승인 대기)
 
 매일 오전 9시(KST)에 `profiles.status = 'pending'`인 신청자를 확인합니다.
 대기자가 있을 때만 `matt@deeptactlearning.com`으로 한 통의 요약 메일을 보냅니다.
