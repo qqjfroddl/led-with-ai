@@ -203,7 +203,9 @@ export {
   ALERT_RECIPIENT,
   DEFAULT_ALERT_FROM,
   buildEmail,
+  escapeHtml,
   fetchPendingApplicants,
+  formatKstDateTime,
   getKstDate,
   requireConfig,
   sendApplicantEmail

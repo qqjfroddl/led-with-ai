@@ -41,6 +41,16 @@ function showDone(email) {
   window.scrollTo({ top: 0 });
 }
 
+// 소장님 알림 메일. 실패해도 신청은 이미 저장됐으므로 신청자 화면에는 영향을 주지 않는다
+function notifyOwner(id) {
+  fetch('/api/access-request-alert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+    keepalive: true
+  }).catch((error) => console.warn('[Apply] 알림 요청 실패:', error));
+}
+
 emailInput.addEventListener('blur', () => {
   const email = emailInput.value.trim().toLowerCase();
   emailHint.hidden = !email || !email.includes('@') || isLikelyGoogleEmail(email);
@@ -78,8 +88,13 @@ form.addEventListener('submit', async (event) => {
   try {
     const supabase = await getSupabase();
     if (!supabase) throw new Error('supabase_unavailable');
-    const { error } = await supabase.from('access_requests').insert(request);
+    // 익명은 저장한 행을 다시 읽을 수 없으므로(RLS) id를 여기서 만들어 알림 경로에 넘긴다
+    const id = globalThis.crypto?.randomUUID?.();
+    const { error } = await supabase
+      .from('access_requests')
+      .insert(id ? { ...request, id } : request);
     if (error) throw error;
+    if (id) notifyOwner(id);
     showDone(request.google_email);
   } catch (error) {
     console.error('[Apply] 신청 저장 실패:', error);
