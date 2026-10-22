@@ -95,7 +95,7 @@ npm run build
 가입 전에 받는 간단한 신청서다. 주소: `https://led-with-ai.vercel.app/apply`
 
 - **입력**: 이름 · 구글 이메일(가입에 쓸 계정) · 신청 동기·배경
-- **제출 후**: "박소장이 승인하면 '인생관리AI앱'을 사용할 수 있습니다" 안내, 다음 할 일(신청한 구글 계정으로 로그인 → 승인 대기 명단에 오름) 버튼, 노션 사용법 링크(`src/utils/accessRequest.js`의 `NOTION_GUIDE_URL`)를 보여준다
+- **제출 후**: "박소장이 승인하면 '인생관리AI앱'을 사용할 수 있습니다" 안내, 같은 링크를 메일로 보냈다는 안내(아래 「신청자 안내 메일」), 다음 할 일(신청한 구글 계정으로 로그인 → 승인 대기 명단에 오름) 버튼, 노션 사용법 링크(`src/utils/accessRequest.js`의 `NOTION_GUIDE_URL`)를 보여준다
 - **관리자**: `admin.html` → **사용 신청** 탭. 신청 이메일을 `profiles.email`과 맞춰 '가입 전 / 가입·승인 대기 / 승인됨'을 함께 보여준다. 승인 자체는 기존대로 **승인 대기** 탭에서 한다
 - **DB**: `supabase/create_access_requests.sql` (테이블 `access_requests`)
 
@@ -103,8 +103,29 @@ npm run build
 
 - **신청서와 가입을 분리했다.** 승인은 `profiles.status`로 이미 돌고 있어 그 흐름을 바꾸지 않았다. 신청서는 "누가 왜 쓰려는지"를 남기는 별도 기록이고, 이메일로 두 기록을 잇는다
 - **API 함수 없이 브라우저에서 바로 INSERT한다.** RLS가 익명에게 INSERT만 허용하고 SELECT는 관리자(`is_admin()`)만 되므로, 공개 키로는 남의 신청을 읽을 수 없다. 길이·이메일 형식은 DB CHECK 제약이 최종 방어선이고, 브라우저 검사는 편의다
-- **신청자에게 메일을 보내지 않는다.** 현재 Resend 발신 주소(`onboarding@resend.dev`)는 계정 주인에게만 보낼 수 있어, 안내는 제출 직후 화면으로 전달한다. 도메인 인증 뒤에는 메일 발송을 붙일 수 있다
 - 봇 거르기: 사람에게 안 보이는 칸(`website`)이 채워지면 저장하지 않고 접수된 것처럼 보인다
+
+### 신청자 안내 메일 (2026-10-22)
+
+신청 완료 화면은 한 번 지나가면 다시 찾을 수 없다. 그래서 제출 즉시 신청자가 적은 구글 메일로
+바로가기·사용법·노션 페이지·바인더 속지 링크 4개를 보낸다. 링크 목록은 `api/_lib/applicant-guide-mail.js`의 `GUIDE_LINKS` 한 곳에 있다.
+
+- **흐름**: `/apply` 제출 → `POST /api/access-request-alert` → 소장님 알림(Resend)과 신청자 안내(Gmail)를 **따로** 보낸다. 한쪽이 실패해도 다른 쪽은 나간다
+- **발신**: `matt@deeptactlearning.com` Gmail SMTP + 앱 비밀번호. 보낸편지함에 남고, 답장은 소장님 받은편지함으로 온다
+- **중복 방지**: `access_requests.guide_sent_at`이 비어 있을 때만 채우는 조건부 UPDATE로 신청서당 한 통. 같은 주소로는 24시간에 한 통(로그인 없는 신청서가 남의 주소 반복 발송 통로가 되지 않게). 발송이 실패하면 표시를 되돌린다
+- **앱 비밀번호가 없으면** 안내 메일만 꺼지고 소장님 알림은 그대로 간다(Vercel 로그 `GMAIL_APP_PASSWORD missing`)
+- **DB**: `supabase/add_access_request_guide_sent_at.sql`
+- **기존 신청자 소급 발송**: `scripts/send-applicant-guide-backfill.mjs` (사용법은 파일 머리말). 기본은 명단만 보여주고 `--send`를 붙여야 보낸다
+- **앱 비밀번호 발급·재발급**: [`docs/setup-gmail-app-password.md`](docs/setup-gmail-app-password.md)
+
+| 환경변수 | 값 |
+|---|---|
+| `GMAIL_APP_PASSWORD` | matt 계정 앱 비밀번호 16자리 (띄어쓰기는 무시) |
+| `GMAIL_SENDER` | 선택. 기본 `matt@deeptactlearning.com` |
+
+왜 Resend가 아니라 Gmail인가: Resend로 신청자에게 보내려면 deeptactlearning.com 도메인을 Cloudflare DNS로 인증해야 하고,
+회사 메일 전체가 걸린 DNS를 건드리게 된다. Gmail은 DNS를 건드리지 않고, 실제 발신 계정이라 스팸함에 덜 빠진다(2026-10-22 소장님 결정).
+대신 앱 비밀번호는 계정 메일 발송 권한이므로 이 앱 전용으로 발급하고 Vercel sensitive 변수에만 둔다.
 
 ## 외부 API와 MCP (2026-09-23)
 

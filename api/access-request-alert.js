@@ -2,6 +2,11 @@
 // 화면은 신청서 id만 넘긴다. 메일 내용은 서버 키로 DB에서 다시 읽은 값만 쓴다 —
 // 화면이 보낸 값을 믿으면 누구나 이 경로로 임의 메일을 보낼 수 있다.
 // 같은 신청서는 Resend 중복 방지 키로 한 번만 보내고, 오래된 신청서로는 보내지 않는다.
+// 같은 자리에서 신청자에게도 안내 메일(바로가기·사용법)을 보낸다. 두 메일은 서로의 실패에 영향받지 않는다.
+import {
+  readGuideMailConfig,
+  sendGuideEmail
+} from './_lib/applicant-guide-mail.js';
 import {
   ALERT_RECIPIENT,
   DEFAULT_ALERT_FROM,
@@ -13,6 +18,9 @@ const ADMIN_URL = 'https://led-with-ai.vercel.app/admin.html';
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 // 신청 직후 화면이 부르는 경로이므로 넉넉히 10분. 이보다 오래된 신청서는 재알림하지 않는다
 const FRESH_WINDOW_MS = 10 * 60 * 1000;
+// 신청서는 로그인 없이 누구나 낼 수 있다. 남의 주소로 안내 메일을 되풀이해 보내는 통로가 되지 않게
+// 같은 주소에는 하루 한 통만 보낸다
+const GUIDE_PER_EMAIL_WINDOW_MS = 24 * 60 * 60 * 1000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function sendJson(response, status, body) {
@@ -37,7 +45,8 @@ function readConfig(environment) {
     supabaseUrl: supabaseUrl?.replace(/\/$/, ''),
     supabaseSecretKey,
     resendApiKey,
-    from: environment.APPLICANT_ALERT_FROM || DEFAULT_ALERT_FROM
+    from: environment.APPLICANT_ALERT_FROM || DEFAULT_ALERT_FROM,
+    guide: readGuideMailConfig(environment)
   };
 }
 
@@ -61,12 +70,7 @@ async function fetchAccessRequest(config, id, fetchImplementation) {
   });
   const response = await fetchImplementation(
     `${config.supabaseUrl}/rest/v1/access_requests?${query.toString()}`,
-    {
-      headers: {
-        apikey: config.supabaseSecretKey,
-        Authorization: `Bearer ${config.supabaseSecretKey}`
-      }
-    }
+    { headers: supabaseHeaders(config) }
   );
   if (!response.ok) {
     const detail = await response.text();
@@ -74,6 +78,77 @@ async function fetchAccessRequest(config, id, fetchImplementation) {
   }
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] ?? null : null;
+}
+
+function supabaseHeaders(config, extra = {}) {
+  return {
+    apikey: config.supabaseSecretKey,
+    Authorization: `Bearer ${config.supabaseSecretKey}`,
+    ...extra
+  };
+}
+
+// 같은 주소로 최근 24시간 안에 안내 메일이 나갔는지
+async function guideSentRecently(config, row, now, fetchImplementation) {
+  const query = new URLSearchParams({
+    select: 'id',
+    google_email: `eq.${row.google_email}`,
+    id: `neq.${row.id}`,
+    guide_sent_at: `gte.${new Date(now.getTime() - GUIDE_PER_EMAIL_WINDOW_MS).toISOString()}`,
+    limit: '1'
+  });
+  const response = await fetchImplementation(
+    `${config.supabaseUrl}/rest/v1/access_requests?${query.toString()}`,
+    { headers: supabaseHeaders(config) }
+  );
+  if (!response.ok) {
+    throw new Error(`Supabase guide history lookup failed (${response.status}): ${await response.text()}`);
+  }
+  const rows = await response.json();
+  return Array.isArray(rows) && rows.length > 0;
+}
+
+// guide_sent_at이 비어 있을 때만 채운다. 동시에 두 번 불려도 한쪽만 행을 돌려받으므로 한 통만 나간다
+async function setGuideSentAt(config, id, value, fetchImplementation, { onlyIfEmpty }) {
+  const query = new URLSearchParams({ id: `eq.${id}` });
+  if (onlyIfEmpty) query.set('guide_sent_at', 'is.null');
+  const response = await fetchImplementation(
+    `${config.supabaseUrl}/rest/v1/access_requests?${query.toString()}`,
+    {
+      method: 'PATCH',
+      headers: supabaseHeaders(config, {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      }),
+      body: JSON.stringify({ guide_sent_at: value })
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Supabase guide claim failed (${response.status}): ${await response.text()}`);
+  }
+  const rows = await response.json();
+  return Array.isArray(rows) && rows.length > 0;
+}
+
+async function deliverGuide(config, row, now, { fetchImplementation, guideTransport }) {
+  if (!config.guide.enabled) return 'disabled';
+  if (await guideSentRecently(config, row, now, fetchImplementation)) return 'skipped_recent';
+
+  const claimed = await setGuideSentAt(config, row.id, now.toISOString(), fetchImplementation, {
+    onlyIfEmpty: true
+  });
+  if (!claimed) return 'skipped_already_sent';
+
+  try {
+    await sendGuideEmail(config.guide, row, guideTransport ?? undefined);
+  } catch (error) {
+    // 못 보냈으면 표시를 되돌려 소급 발송 대상에 다시 잡히게 한다
+    await setGuideSentAt(config, row.id, null, fetchImplementation, { onlyIfEmpty: false }).catch(
+      (releaseError) => console.error('[access-request-alert] Guide claim release failed:', releaseError)
+    );
+    throw error;
+  }
+  return 'sent';
 }
 
 function isFresh(createdAt, now) {
@@ -134,7 +209,11 @@ async function sendAccessRequestEmail(config, row, fetchImplementation) {
   return response.json();
 }
 
-export default async function handler(request, response) {
+// 테스트에서 fetch·SMTP를 바꿔 끼울 수 있게 본체를 따로 둔다
+async function handleAccessRequestAlert(request, response, deps = {}) {
+  const fetchImplementation = deps.fetchImplementation ?? fetch;
+  const now = deps.now ?? new Date();
+
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return sendJson(response, 405, { ok: false, error: 'method_not_allowed' });
@@ -148,21 +227,44 @@ export default async function handler(request, response) {
     console.error('[access-request-alert] Missing configuration:', config.missing.join(', '));
     return sendJson(response, 500, { ok: false, error: 'configuration_missing' });
   }
+  if (!config.guide.enabled) {
+    console.warn('[access-request-alert] GMAIL_APP_PASSWORD missing or not 16 chars — applicant guide disabled');
+  }
 
+  let row;
   try {
-    const row = await fetchAccessRequest(config, id, fetch);
-    if (!row) return sendJson(response, 404, { ok: false, error: 'not_found' });
-    if (!isFresh(row.created_at, new Date())) {
-      return sendJson(response, 200, { ok: true, sent: false, reason: 'stale' });
-    }
-
-    const result = await sendAccessRequestEmail(config, row, fetch);
-    console.info('[access-request-alert] Sent alert for access request', id);
-    return sendJson(response, 200, { ok: true, sent: true, messageId: result.id });
+    row = await fetchAccessRequest(config, id, fetchImplementation);
   } catch (error) {
     console.error('[access-request-alert] Failed:', error);
     return sendJson(response, 502, { ok: false, error: 'notification_failed' });
   }
+  if (!row) return sendJson(response, 404, { ok: false, error: 'not_found' });
+  if (!isFresh(row.created_at, now)) {
+    return sendJson(response, 200, { ok: true, sent: false, guide: 'stale', reason: 'stale' });
+  }
+
+  const [ownerResult, guideResult] = await Promise.allSettled([
+    sendAccessRequestEmail(config, row, fetchImplementation),
+    deliverGuide(config, row, now, { fetchImplementation, guideTransport: deps.guideTransport })
+  ]);
+
+  const guide = guideResult.status === 'fulfilled' ? guideResult.value : 'failed';
+  if (guideResult.status === 'rejected') {
+    console.error('[access-request-alert] Guide mail failed:', guideResult.reason);
+  } else {
+    console.info('[access-request-alert] Guide mail', guide, id);
+  }
+
+  if (ownerResult.status === 'rejected') {
+    console.error('[access-request-alert] Failed:', ownerResult.reason);
+    return sendJson(response, 502, { ok: false, error: 'notification_failed', guide });
+  }
+  console.info('[access-request-alert] Sent alert for access request', id);
+  return sendJson(response, 200, { ok: true, sent: true, messageId: ownerResult.value.id, guide });
 }
 
-export { buildAccessRequestEmail, isFresh, readId };
+export default function handler(request, response) {
+  return handleAccessRequestAlert(request, response);
+}
+
+export { buildAccessRequestEmail, handleAccessRequestAlert, isFresh, readId };
