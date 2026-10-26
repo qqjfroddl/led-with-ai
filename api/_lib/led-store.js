@@ -3,7 +3,7 @@
 // ⛔ 이 파일 밖에서 PostgREST를 부르지 않는다. 모든 요청은 scoped()를 거쳐
 //    user_id=eq.<소유자> 필터가 붙는다 (tests/led-api.test.js가 이를 검사한다).
 
-import { ApiError, addDays, isRoutineDue, parseSchedule } from './led-rules.js';
+import { ApiError, addDays, isRoutineDue, memberSafeCategory, parseSchedule } from './led-rules.js';
 
 const TODO_SELECT = '*,project_task:project_tasks(id,project:projects(id,name))';
 
@@ -137,6 +137,11 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
     async updateTodo(id, patch) {
       const todo = await getTodo(id);
       const change = { ...patch };
+      // 제목이나 영역을 바꿀 때만 멤버 할일 규칙을 건다 — 완료·메모만 고치는 요청은 영역을 건드리지 않는다
+      if ('title' in change || 'category' in change) {
+        const category = memberSafeCategory(change.title ?? todo.title, change.category ?? todo.category);
+        if (category !== todo.category || 'category' in change) change.category = category;
+      }
       if ('is_done' in change) change.done_at = change.is_done ? new Date().toISOString() : null;
       const [updated] = await scoped.update('todos', { id: `eq.${id}` }, change);
 
@@ -196,7 +201,7 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
 
       const [copy] = await scoped.insert('todos', {
         date: toDate,
-        category: original.category,
+        category: memberSafeCategory(original.title, original.category),
         title: original.title,
         memo: original.memo,
         due_date: original.due_date,

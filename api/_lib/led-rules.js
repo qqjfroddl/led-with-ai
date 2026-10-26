@@ -73,6 +73,15 @@ export function assertCategory(value) {
   return value;
 }
 
+// 멤버 할일(제목이 [이름]으로 시작)은 Work에 두지 않는다 — Work는 소장님 본인 할일 전용 (2026-10-22 소장님 지시).
+// 거부하면 등록이 통째로 빠지므로 job으로 고쳐 저장한다. Work → Job 한 방향만 고치고 다른 영역은 손대지 않는다.
+// 이름 목록을 두지 않는다 — 새 멤버가 늘어도 고칠 곳이 없게. 판정은 led-todo-sort의 owner_of와 같다.
+const MEMBER_TITLE = /^\s*\[[^\]]+\]/;
+
+export function memberSafeCategory(title, category) {
+  return category === 'work' && MEMBER_TITLE.test(title ?? '') ? 'job' : category;
+}
+
 export function assertTitle(value) {
   const title = typeof value === 'string' ? value.trim() : '';
   if (!title) throw new ApiError(400, 'title이 비어 있습니다.');

@@ -138,6 +138,36 @@ test('할일 추가는 소유자 id로 들어간다 (본문에 다른 user_id를
   assertAllScoped(db);
 });
 
+test('멤버 할일([이름]으로 시작)은 work로 보내도 job으로 저장한다 — 소장님 할일·다른 영역은 그대로', async () => {
+  const db = createFakeDb(baseSeed());
+  const member = await call(db, 'POST', 'todos', { body: { title: ' [테스트] 시험 할일', category: 'work', date: '2026-09-24' } });
+  assert.equal(member.statusCode, 201);
+  assert.equal(member.body.todo.category, 'job');
+  assert.equal(db.tables.todos.at(-1).category, 'job');
+  // 소장님 할일은 [ ] 가 중간에 있어도 work 그대로, 멤버라도 work 아닌 영역은 손대지 않는다
+  assert.equal((await call(db, 'POST', 'todos', { body: { title: '원고 [2장]', category: 'work' } })).body.todo.category, 'work');
+  assert.equal((await call(db, 'POST', 'todos', { body: { title: '[테스트] 독서', category: 'self_dev' } })).body.todo.category, 'self_dev');
+  assert.equal((await call(db, 'POST', 'todos', { body: { title: '[] 빈 괄호', category: 'work' } })).body.todo.category, 'work');
+  assertAllScoped(db);
+});
+
+test('멤버 할일 규칙은 수정·이월에도 걸린다 (완료·메모만 고칠 땐 영역을 건드리지 않는다)', async () => {
+  const db = createFakeDb(baseSeed());
+  // id(1)은 소장님 work 할일 — 메모만 고치면 그대로
+  await call(db, 'PATCH', `todos/${id(1)}`, { body: { memo: '메모' } });
+  assert.equal(db.tables.todos.find((t) => t.id === id(1)).category, 'work');
+  // 제목에 [이름]을 붙이면 job으로
+  const renamed = await call(db, 'PATCH', `todos/${id(1)}`, { body: { title: '[테스트] 원고 3장' } });
+  assert.equal(renamed.body.todo.category, 'job');
+  // 멤버 할일을 work로 옮기려 해도 job
+  assert.equal((await call(db, 'PATCH', `todos/${id(1)}`, { body: { category: 'work' } })).body.todo.category, 'job');
+  // 이월 복제본도 job (원본이 화면에서 work로 옮겨져 있었어도)
+  db.tables.todos.find((t) => t.id === id(1)).category = 'work';
+  const carried = await call(db, 'POST', `todos/${id(1)}/carry-over`, { body: { to_date: '2026-09-24' } });
+  assert.equal(carried.body.todo.category, 'job');
+  assertAllScoped(db);
+});
+
 test('잘못된 카테고리·빈 제목·없는 날짜는 400', async () => {
   const db = createFakeDb(baseSeed());
   assert.equal((await call(db, 'POST', 'todos', { body: { title: 'x', category: 'growth' } })).statusCode, 400);

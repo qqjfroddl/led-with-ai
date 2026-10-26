@@ -14,6 +14,7 @@ import {
   assertTitle,
   getKstToday,
   groupTodos,
+  memberSafeCategory,
   mondayOf,
   pickReflection,
   pickTodoPatch,
@@ -86,10 +87,11 @@ const ROUTES = [
   }],
 
   ['POST', 'todos', async (store, { body }) => {
+    const title = assertTitle(body.title);
     const todo = await store.addTodo({
       date: dateParam(body.date),
-      category: assertCategory(body.category),
-      title: assertTitle(body.title),
+      category: memberSafeCategory(title, assertCategory(body.category)),
+      title,
       memo: body.memo ? String(body.memo) : null,
       due_date: body.due_date ? assertDate(body.due_date, 'due_date') : null
     });
