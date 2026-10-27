@@ -86,7 +86,8 @@ test('설정이 빠지면 503', async () => {
 test('없는 경로는 404, 메서드가 틀리면 405', async () => {
   const db = createFakeDb(baseSeed());
   assert.equal((await call(db, 'GET', 'nothing')).statusCode, 404);
-  assert.equal((await call(db, 'DELETE', `todos/${id(1)}`)).statusCode, 405);
+  // DELETE todos/:id는 2026-10-28 소장님 지시로 열었다(soft delete) — 405 확인은 PUT으로
+  assert.equal((await call(db, 'PUT', `todos/${id(1)}`)).statusCode, 405);
 });
 
 // ── 조회 ──
@@ -210,6 +211,16 @@ test('포기: skipped_at 기록, 완료한 할일은 409', async () => {
   const db = createFakeDb(baseSeed());
   assert.equal((await call(db, 'POST', `todos/${id(1)}/skip`)).body.todo.status, 'skipped');
   assert.equal((await call(db, 'POST', `todos/${id(2)}/skip`)).statusCode, 409);
+});
+
+test('삭제: deleted_at 기록 후 다시 지우면 404', async () => {
+  const db = createFakeDb(baseSeed());
+  const response = await call(db, 'DELETE', `todos/${id(1)}`);
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.deleted, true);
+  assert.ok(db.tables.todos.find((t) => t.id === id(1)).deleted_at);
+  assert.equal((await call(db, 'DELETE', `todos/${id(1)}`)).statusCode, 404);
+  assertAllScoped(db);
 });
 
 test('루틴 체크: 해당 날짜 루틴만, 기존 기록은 덮어쓴다', async () => {

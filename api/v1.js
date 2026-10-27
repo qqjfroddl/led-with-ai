@@ -126,6 +126,11 @@ const ROUTES = [
     return { todo: summarizeTodo(await store.skipTodo(assertId(params[0]))) };
   }],
 
+  ['DELETE', 'todos/:id', async (store, { params }) => {
+    const todo = await store.deleteTodo(assertId(params[0]));
+    return { deleted: true, id: todo.id, title: todo.title, date: todo.date };
+  }],
+
   ['GET', 'routines', async (store, { query }) => {
     return { routines: await store.listRoutines(dateParam(query.date)) };
   }],

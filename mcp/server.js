@@ -118,6 +118,13 @@ server.registerTool('led_skip_todo', {
   annotations: WRITE
 }, tool(async ({ id }) => json(await client()('POST', `todos/${id}/skip`))));
 
+server.registerTool('led_delete_todo', {
+  title: '할일 삭제',
+  description: '할일을 삭제한다 (앱의 삭제와 같은 soft delete — 목록에서 사라지고 DB에는 deleted_at으로 남아 되살릴 수 있다). 중복 등록 정리용. 프로젝트 하위 할일은 거절된다.',
+  inputSchema: { id: ID },
+  annotations: { ...WRITE, destructiveHint: true, idempotentHint: true }
+}, tool(async ({ id }) => json(await client()('DELETE', `todos/${id}`))));
+
 server.registerTool('led_list_routines', {
   title: '루틴 목록',
   description: '활성 루틴 목록과 주기, 그 날짜에 해당하는지(due_on_date)를 보여준다.',

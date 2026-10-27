@@ -239,6 +239,15 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
       return updated;
     },
 
+    // 앱 정책(FR-B3)과 같은 soft delete: deleted_at만 남긴다 — 목록에서 사라지고 DB에서 되살릴 수 있다.
+    // 프로젝트 하위 할일은 프로젝트 쪽 정합이 걸려 있어 여기서 지우지 않는다.
+    async deleteTodo(id) {
+      const todo = await getTodo(id);
+      if (todo.project_task_id) throw new ApiError(409, '프로젝트 하위 할일은 앱 프로젝트 화면에서 지워야 합니다.');
+      const [deleted] = await scoped.update('todos', { id: `eq.${id}` }, { deleted_at: new Date().toISOString() });
+      return deleted;
+    },
+
     async listRoutines(date) {
       const routines = await scoped.select('routines', { select: '*', order: 'created_at.asc' });
       return routines

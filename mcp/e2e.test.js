@@ -64,13 +64,15 @@ const call = async (name, args = {}) => {
   return { ...result, text: result.content.map((part) => part.text).join('\n') };
 };
 
-test('도구 13개가 등록되고 읽기/쓰기 표시가 붙어 있다', async () => {
+test('도구 14개가 등록되고 읽기/쓰기 표시가 붙어 있다', async () => {
   const { tools } = await client.listTools();
-  assert.equal(tools.length, 13);
+  assert.equal(tools.length, 14);
   assert.ok(tools.every((tool) => tool.name.startsWith('led_')));
   assert.equal(tools.find((tool) => tool.name === 'led_get_day').annotations.readOnlyHint, true);
   assert.equal(tools.find((tool) => tool.name === 'led_add_todo').annotations.readOnlyHint, false);
-  assert.ok(tools.every((tool) => tool.annotations.destructiveHint === false));
+  // 삭제만 destructive 표시 (2026-10-28 소장님 지시로 추가, soft delete)
+  assert.equal(tools.find((tool) => tool.name === 'led_delete_todo').annotations.destructiveHint, true);
+  assert.ok(tools.filter((tool) => tool.name !== 'led_delete_todo').every((tool) => tool.annotations.destructiveHint === false));
 });
 
 test('하루 보기 → 할일 추가 → 완료 → 성찰 → 주간 요약', async () => {
