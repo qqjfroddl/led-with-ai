@@ -2816,6 +2816,36 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
       return;
     }
 
+    // 원본을 먼저 선점한다 — carried_over_at이 비어 있을 때만 기록되므로 한 번만 성공한다.
+    // 폰·PC에서 이월 창을 동시에 처리하거나 API 이월과 겹쳐도 복제는 한 번만 생긴다
+    // (2026-10-28 할일 29건 이중 이월 사고).
+    const { data: claimed, error: claimError } = await supabase
+      .from('todos')
+      .update({ carried_over_at: new Date().toISOString() })
+      .eq('id', todoId)
+      .is('carried_over_at', null)
+      .is('skipped_at', null)
+      .select('id');
+
+    if (claimError) throw claimError;
+    if (!claimed || claimed.length === 0) {
+      const todoItem = document.querySelector(`.carryover-todo-item[data-todo-id="${todoId}"]`);
+      if (todoItem) {
+        todoItem.setAttribute('data-processed', 'true');
+        todoItem.style.opacity = '0.5';
+        todoItem.style.pointerEvents = 'none';
+        const carryBtn = todoItem.querySelector('.carryover-carry-btn');
+        const skipBtn = todoItem.querySelector('.carryover-skip-btn');
+        if (carryBtn) {
+          carryBtn.textContent = '이미 처리됨';
+          carryBtn.disabled = true;
+        }
+        if (skipBtn) skipBtn.style.display = 'none';
+      }
+      await loadTodos(today, profile, timezone);
+      return;
+    }
+
     // 프로젝트 할일인 경우: 오늘 날짜에 이미 등록된 할일이 있는지 확인
     if (originalTodo.project_task_id) {
       const { data: existingTodo } = await supabase
@@ -2945,7 +2975,11 @@ async function carryOverTodo(todoId, profile, timezone = 'Asia/Seoul') {
       .select()
       .single();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      // 복제가 실패하면 선점을 풀어 다음에 다시 이월할 수 있게 한다
+      await supabase.from('todos').update({ carried_over_at: null }).eq('id', todoId);
+      throw insertError;
+    }
 
     // 프로젝트 할일인 경우: end_date를 오늘로 연장
     if (originalTodo.project_task_id) {

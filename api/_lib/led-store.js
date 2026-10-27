@@ -180,6 +180,14 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
       if (toDate <= original.date) throw new ApiError(400, 'to_date는 원래 날짜보다 뒤여야 합니다.');
 
       const now = new Date().toISOString();
+      // 원본을 먼저 선점한다 — 앱 이월 창과 동시에 돌아도 복제는 한 번만 (2026-10-28 이중 이월 사고)
+      const claimed = await scoped.update(
+        'todos',
+        { id: `eq.${id}`, carried_over_at: 'is.null', skipped_at: 'is.null' },
+        { carried_over_at: now }
+      );
+      if (!claimed?.length) throw new ApiError(409, '이미 이월했거나 포기한 할일입니다.');
+
       const linkKey = original.project_task_id
         ? ['project_task_id', original.project_task_id]
         : original.recurring_task_id
@@ -193,13 +201,12 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
           deleted_at: 'is.null',
           select: 'id'
         });
-        if (existing.length) {
-          await scoped.update('todos', { id: `eq.${id}` }, { carried_over_at: now });
-          return { todo: null, already_exists: existing[0].id };
-        }
+        if (existing.length) return { todo: null, already_exists: existing[0].id };
       }
 
-      const [copy] = await scoped.insert('todos', {
+      let copy;
+      try {
+        [copy] = await scoped.insert('todos', {
         date: toDate,
         category: memberSafeCategory(original.title, original.category),
         title: original.title,
@@ -212,8 +219,12 @@ export function createStore({ supabaseUrl, secretKey, userId, fetchImpl = fetch 
         display_order: null,
         project_task_id: original.project_task_id || null,
         recurring_task_id: original.recurring_task_id || null
-      });
-      await scoped.update('todos', { id: `eq.${id}` }, { carried_over_at: now });
+        });
+      } catch (error) {
+        // 복제가 실패하면 선점을 풀어 다시 이월할 수 있게 한다
+        await scoped.update('todos', { id: `eq.${id}` }, { carried_over_at: null });
+        throw error;
+      }
 
       // 프로젝트 할일은 기간이 지났으면 대상 날짜까지 늘린다 (end_date 우선, 없으면 옛 due_date)
       if (original.project_task_id) {

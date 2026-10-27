@@ -207,6 +207,18 @@ test('이월: 다음 날로 복제, 원본 표시, 지난 프로젝트 기간 �
   assertAllScoped(db);
 });
 
+test('이월 동시 실행: 복제는 한 번만 생긴다 (2026-10-28 이중 이월 사고)', async () => {
+  const db = createFakeDb(baseSeed());
+  const before = db.tables.todos.length;
+  const results = await Promise.all([
+    call(db, 'POST', `todos/${id(1)}/carry-over`, { body: { to_date: '2026-09-24' } }),
+    call(db, 'POST', `todos/${id(1)}/carry-over`, { body: { to_date: '2026-09-24' } })
+  ]);
+  assert.deepEqual(results.map((r) => r.statusCode).sort(), [200, 409]);
+  assert.equal(db.tables.todos.length, before + 1);
+  assertAllScoped(db);
+});
+
 test('포기: skipped_at 기록, 완료한 할일은 409', async () => {
   const db = createFakeDb(baseSeed());
   assert.equal((await call(db, 'POST', `todos/${id(1)}/skip`)).body.todo.status, 'skipped');
