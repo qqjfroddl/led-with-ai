@@ -6,6 +6,7 @@ import { getCurrentProfile } from '../utils/auth.js';
 import { getSelectedDate, formatSelectedDate, shiftSelectedDate, resetSelectedDate, setSelectedDate } from '../state/dateState.js';
 import { getToday, getDDay } from '../utils/date.js';
 import { topDisplayOrder } from '../utils/todoOrder.js';
+import { loadCategoryOrder, saveCategoryOrder, normalizeCategoryOrder } from '../utils/categoryOrder.js';
 import { router } from '../router.js';
 
 export async function renderToday() {
@@ -153,6 +154,7 @@ export async function renderToday() {
           <div class="d-flex ai-center gap-0_5rem mb-1rem">
             <i class="w-20px h-20px c-cat-work" data-lucide="briefcase"></i>
             <h4 class="c-cat-work fwt-600 m-0 fz-1_1rem">Work</h4>
+            ${categoryOrderHandleHtml('work', 'Work')}
           </div>
           <div class="d-flex fd-column gap-0_75rem" id="todos-work-list"></div>
           <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-work-empty">
@@ -165,6 +167,7 @@ export async function renderToday() {
           <div class="d-flex ai-center gap-0_5rem mb-1rem">
             <i class="w-20px h-20px c-cat-job" data-lucide="clipboard-list"></i>
             <h4 class="c-cat-job fwt-600 m-0 fz-1_1rem">Job</h4>
+            ${categoryOrderHandleHtml('job', 'Job')}
           </div>
           <div class="d-flex fd-column gap-0_75rem" id="todos-job-list"></div>
           <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-job-empty">
@@ -177,6 +180,7 @@ export async function renderToday() {
           <div class="d-flex ai-center gap-0_5rem mb-1rem">
             <i class="w-20px h-20px c-accent2" data-lucide="book-open"></i>
             <h4 class="c-accent2 fwt-600 m-0 fz-1_1rem">Growth</h4>
+            ${categoryOrderHandleHtml('self_dev', 'Growth')}
           </div>
           <div class="d-flex fd-column gap-0_75rem" id="todos-self_dev-list"></div>
           <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-self_dev-empty">
@@ -189,6 +193,7 @@ export async function renderToday() {
           <div class="d-flex ai-center gap-0_5rem mb-1rem">
             <i class="w-20px h-20px c-cat-personal" data-lucide="home"></i>
             <h4 class="c-cat-personal fwt-600 m-0 fz-1_1rem">Personal</h4>
+            ${categoryOrderHandleHtml('personal', 'Personal')}
           </div>
           <div class="d-flex fd-column gap-0_75rem" id="todos-personal-list"></div>
           <div class="ta-center p-1rem c-muted2 fz-0_9rem d-none" id="todos-personal-empty">
@@ -996,6 +1001,10 @@ function setupEventHandlers(date, profile, timezone) {
   // 첫 번째 탭 활성화
   document.querySelector('.category-tab[data-category="work"]')?.classList.add('active');
 
+  // 영역 보기 순서 — 저장된 순서로 섹션·탭을 다시 놓고, 섹션 손잡이 드래그를 연결한다
+  applyCategoryOrder(loadCategoryOrder());
+  setupCategoryOrderDrag();
+
   // 날짜 이동 바 이벤트 핸들러 (별도 모달 사용으로 충돌 방지)
   const setupTodoDateNav = () => {
     const todoDatePrevBtn = document.getElementById('todo-date-prev');
@@ -1440,6 +1449,161 @@ function bindTodoEvents(date, profile, timezone) {
     setupDragAndDrop(date, profile, timezone);
     dragAndDropInitialized = true;
   }
+}
+
+/*
+ * ── 영역(Work·Job·Growth·Personal) 보기 순서 드래그 ─────────────────────
+ * 2026-11-16 소장님 지시. 섹션 머리 오른쪽 손잡이(⋮⋮)를 잡고 위아래로 끈다.
+ * - 할일 줄 드래그(mousedown 기반, PC 전용)와 별개로 pointer 이벤트를 써서 휴대폰 터치에서도 된다.
+ * - 끄는 동안에는 모든 섹션을 머리만 남기고 접는다 — 할일이 많은 섹션은 화면보다 길어서
+ *   펼친 채로는 어디에 놓을지 보이지 않는다.
+ * - 키보드: 손잡이에 초점을 두고 ↑/↓.
+ * - 저장은 이 기기(localStorage). 위쪽 카테고리 탭 순서도 같이 맞춘다.
+ */
+function categoryOrderHandleHtml(category, label) {
+  return `<button type="button" class="category-order-handle" data-category-order-handle="${category}" title="끌어서 영역 순서 바꾸기" aria-label="${label} 영역 순서 바꾸기 (끌거나 위·아래 화살표 키)"><i data-lucide="grip-vertical"></i></button>`;
+}
+
+function readCategoryDomOrder() {
+  const content = document.getElementById('todos-content');
+  if (!content) return loadCategoryOrder();
+  const ids = [...content.querySelectorAll(':scope > .category-section')]
+    .map((section) => section.id.replace(/^category-/, '').replace(/-section$/, ''));
+  return normalizeCategoryOrder(ids);
+}
+
+function applyCategoryOrder(order) {
+  const content = document.getElementById('todos-content');
+  if (content) {
+    order.forEach((category) => {
+      const section = getCategorySectionElement(category);
+      if (section) content.appendChild(section);
+    });
+  }
+  const tabs = document.getElementById('category-tabs');
+  if (tabs) {
+    order.forEach((category) => {
+      const tab = tabs.querySelector(`.category-tab[data-category="${category}"]`);
+      if (tab) tabs.appendChild(tab);
+    });
+  }
+}
+
+function isSectionVisible(section) {
+  return section.getClientRects().length > 0;
+}
+
+function persistCategoryOrder(before) {
+  const order = readCategoryDomOrder();
+  applyCategoryOrder(order); // 탭 순서 맞추기
+  if (order.join() === before.join()) return;
+  if (!saveCategoryOrder(order)) {
+    toast('이 브라우저에서는 순서를 저장할 수 없어 새로고침하면 원래대로 돌아갑니다.');
+  }
+}
+
+function setupCategoryOrderDrag() {
+  const content = document.getElementById('todos-content');
+  if (!content || content.dataset.categoryOrderBound === '1') return;
+  content.dataset.categoryOrderBound = '1';
+
+  let drag = null;
+  const EDGE = 64; // 화면 위·아래 끝 이 거리 안에서는 자동 스크롤
+
+  /*
+   * ⚠️ 이동·종료는 document에서 받고 setPointerCapture는 쓰지 않는다 —
+   *    끄는 도중 섹션을 DOM에서 옮기면 캡처가 풀려(lostpointercapture) 한 칸 만에 드래그가 끝났다(2026-11-16 실측).
+   */
+  const finish = (e) => {
+    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+    const { section, moved, before } = drag;
+    drag = null;
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', finish);
+    document.removeEventListener('pointercancel', finish);
+    section.classList.remove('is-ordering');
+    if (moved) {
+      // 접은 상태를 풀 때 놓은 섹션이 손가락 아래에 남도록 위치를 보정한다
+      const top = section.getBoundingClientRect().top;
+      content.style.paddingTop = '';
+      document.body.classList.remove('is-category-ordering');
+      window.scrollBy(0, section.getBoundingClientRect().top - top);
+      persistCategoryOrder(before);
+    }
+  };
+
+  const onMove = (e) => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const { section } = drag;
+
+    if (!drag.moved) {
+      if (Math.abs(e.clientY - drag.startY) < 5) return; // 단순 클릭과 구분
+      drag.moved = true;
+      // 섹션들을 머리만 남기고 접되, 잡은 섹션의 머리는 손가락 아래에 그대로 둔다.
+      // 페이지가 짧아져 스크롤로 다 못 메우면(아래쪽 섹션을 잡은 경우) 남는 만큼 위쪽 여백을 임시로 준다.
+      const top = section.getBoundingClientRect().top;
+      document.body.classList.add('is-category-ordering');
+      section.classList.add('is-ordering');
+      window.scrollBy(0, section.getBoundingClientRect().top - top);
+      const gap = top - section.getBoundingClientRect().top;
+      if (gap > 0) content.style.paddingTop = `${gap}px`;
+    }
+    e.preventDefault();
+
+    if (e.clientY < EDGE) window.scrollBy(0, -12);
+    else if (e.clientY > window.innerHeight - EDGE) window.scrollBy(0, 12);
+
+    const others = [...content.querySelectorAll(':scope > .category-section')]
+      .filter((s) => s !== section && isSectionVisible(s));
+    if (others.length === 0) return;
+
+    const target = others.find((s) => {
+      const rect = s.getBoundingClientRect();
+      return e.clientY < rect.top + rect.height / 2;
+    });
+    if (target) {
+      if (section.nextElementSibling !== target) content.insertBefore(section, target);
+    } else {
+      const last = others[others.length - 1];
+      if (last.nextElementSibling !== section) last.after(section);
+    }
+  };
+
+  content.addEventListener('pointerdown', (e) => {
+    const handle = e.target.closest('[data-category-order-handle]');
+    if (!handle || drag || e.button > 0) return;
+    if (window._dragDropState?.isDragging) return; // 할일 줄을 끄는 중이면 무시
+    const section = handle.closest('.category-section');
+    if (!section) return;
+    drag = {
+      section,
+      pointerId: e.pointerId,
+      startY: e.clientY,
+      moved: false,
+      before: readCategoryDomOrder()
+    };
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup', finish);
+    document.addEventListener('pointercancel', finish);
+    e.preventDefault();
+  });
+
+  // 키보드로 한 칸씩 — 보이는 섹션 기준으로 옮긴다(빈 영역은 숨겨져 있으니 건너뛴다)
+  content.addEventListener('keydown', (e) => {
+    const handle = e.target.closest?.('[data-category-order-handle]');
+    if (!handle || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    e.preventDefault();
+    const section = handle.closest('.category-section');
+    const before = readCategoryDomOrder();
+    const visible = [...content.querySelectorAll(':scope > .category-section')].filter(isSectionVisible);
+    const index = visible.indexOf(section);
+    if (e.key === 'ArrowUp' && index > 0) content.insertBefore(section, visible[index - 1]);
+    else if (e.key === 'ArrowDown' && index > -1 && index < visible.length - 1) visible[index + 1].after(section);
+    else return;
+    persistCategoryOrder(before);
+    handle.focus(); // DOM 이동으로 풀린 초점을 되돌린다
+    handle.scrollIntoView({ block: 'nearest' });
+  });
 }
 
 // 드래그 앤 드롭 설정 함수 (mousedown/mousemove/mouseup 기반 커스텀 구현)

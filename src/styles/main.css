@@ -1818,3 +1818,38 @@ html.is-dark .confirm::backdrop { background: rgba(0,0,0,.6); }
 .date-today-btn-pc.is-hidden,
 .date-today-btn-mobile.is-hidden { display: none; }
 } /* @layer overrides */
+
+/* ── 오늘 할일: 영역 보기 순서 손잡이 (2026-11-16) ──────────────────────
+   섹션 머리 오른쪽 끝. 잡고 끌면 영역 순서가 바뀐다.
+   #todos-content를 붙인 이유: paper.css의 섹션 머리 아이콘 규칙(영역색·18px)보다 앞서야 한다 */
+#todos-content .category-order-handle {
+  margin-left: auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0;
+  background: transparent; border: 0; border-radius: 6px;
+  color: var(--t-muted2);
+  cursor: grab;
+  touch-action: none; /* 휴대폰에서 끌 때 화면이 같이 스크롤되지 않게 */
+  -webkit-user-select: none; user-select: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+#todos-content .category-order-handle svg { width: 16px; height: 16px; color: currentColor; }
+#todos-content .category-order-handle:hover { color: var(--t-accent); background: var(--t-accent-soft); }
+#todos-content .category-order-handle:active { cursor: grabbing; }
+#todos-content .category-order-handle:focus-visible { outline: 2px solid var(--t-accent-line); outline-offset: 1px; color: var(--t-accent); }
+
+/* 끄는 동안: 모든 섹션을 머리만 남기고 접는다(할일 목록은 인라인 display라 !important) */
+body.is-category-ordering { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+body.is-category-ordering #todos-content .category-section > [id$="-list"],
+body.is-category-ordering #todos-content .category-section > [id$="-empty"] { display: none !important; }
+body.is-category-ordering #todos-content .category-section > div:first-child { margin-bottom: 0 !important; }
+body.is-category-ordering #todos-content .category-section { transition: background-color 0.15s ease; }
+#todos-content .category-section.is-ordering {
+  background: var(--t-accent-soft);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(42, 38, 34, 0.14);
+}
+@media (prefers-reduced-motion: reduce) {
+  #todos-content .category-order-handle,
+  body.is-category-ordering #todos-content .category-section { transition: none; }
+}
