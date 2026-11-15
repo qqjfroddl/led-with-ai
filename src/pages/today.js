@@ -136,10 +136,10 @@ export async function renderToday() {
             <button class="todo-filter-tab p-0_5rem-1rem fz-0_9rem bd-2px-solid-line bg-bg c-muted fwt-600 cur-pointer" data-filter="past">지난</button>
           </div>
           <div class="d-flex gap-0_5rem" id="category-tabs">
-            <button class="category-tab" data-category="work">Work</button>
-            <button class="category-tab" data-category="job">Job</button>
-            <button class="category-tab" data-category="self_dev">Growth</button>
-            <button class="category-tab" data-category="personal">Personal</button>
+            <button class="category-tab" data-category="work" title="눌러서 입력할 영역 선택 · 좌우로 끌어서 영역 순서 바꾸기">Work</button>
+            <button class="category-tab" data-category="job" title="눌러서 입력할 영역 선택 · 좌우로 끌어서 영역 순서 바꾸기">Job</button>
+            <button class="category-tab" data-category="self_dev" title="눌러서 입력할 영역 선택 · 좌우로 끌어서 영역 순서 바꾸기">Growth</button>
+            <button class="category-tab" data-category="personal" title="눌러서 입력할 영역 선택 · 좌우로 끌어서 영역 순서 바꾸기">Personal</button>
           </div>
         </div>
       </div>
@@ -1001,9 +1001,10 @@ function setupEventHandlers(date, profile, timezone) {
   // 첫 번째 탭 활성화
   document.querySelector('.category-tab[data-category="work"]')?.classList.add('active');
 
-  // 영역 보기 순서 — 저장된 순서로 섹션·탭을 다시 놓고, 섹션 손잡이 드래그를 연결한다
+  // 영역 보기 순서 — 저장된 순서로 섹션·탭을 다시 놓고, 섹션 손잡이·위쪽 탭 드래그를 연결한다
   applyCategoryOrder(loadCategoryOrder());
   setupCategoryOrderDrag();
+  setupCategoryTabOrderDrag();
 
   // 날짜 이동 바 이벤트 핸들러 (별도 모달 사용으로 충돌 방지)
   const setupTodoDateNav = () => {
@@ -1603,6 +1604,99 @@ function setupCategoryOrderDrag() {
     persistCategoryOrder(before);
     handle.focus(); // DOM 이동으로 풀린 초점을 되돌린다
     handle.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+/*
+ * 위쪽 카테고리 탭(Work·Job·Growth·Personal)을 좌우로 끌어도 영역 순서가 바뀐다 (2026-11-16 소장님 요청 —
+ * 섹션 손잡이보다 탭이 한눈에 보여 더 쉽다). 놓으면 아래 섹션 순서도 탭과 같게 맞춘다.
+ * - 5px 미만 움직임은 기존대로 「탭 선택(입력 영역 바꾸기)」 클릭으로 둔다.
+ * - 끈 뒤에 따라오는 click은 캡처 단계에서 막아 탭 선택이 바뀌지 않게 한다.
+ * - 터치는 touch-action: pan-y(CSS)라 탭 위에서 세로 스크롤은 그대로 되고 가로로 끌 때만 순서를 바꾼다.
+ * - 섹션 손잡이 드래그와 같은 이유로 document에서 이동을 받는다(DOM 이동 시 포인터 캡처 풀림).
+ */
+function setupCategoryTabOrderDrag() {
+  const tabs = document.getElementById('category-tabs');
+  if (!tabs || tabs.dataset.categoryOrderBound === '1') return;
+  tabs.dataset.categoryOrderBound = '1';
+
+  let drag = null;
+
+  const readTabOrder = () => normalizeCategoryOrder(
+    [...tabs.querySelectorAll('.category-tab')].map((tab) => tab.dataset.category)
+  );
+
+  const swallowClick = (e) => {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+  };
+
+  const finish = (e) => {
+    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+    const { tab, moved, before } = drag;
+    drag = null;
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', finish);
+    document.removeEventListener('pointercancel', finish);
+    tab.classList.remove('is-ordering');
+    document.body.classList.remove('is-category-tab-ordering');
+    if (!moved) return;
+
+    // 끈 직후의 click 한 번은 탭 선택으로 쓰지 않는다
+    tabs.addEventListener('click', swallowClick, { capture: true, once: true });
+    setTimeout(() => tabs.removeEventListener('click', swallowClick, { capture: true }), 0);
+
+    const order = readTabOrder();
+    applyCategoryOrder(order); // 아래 섹션 순서를 탭에 맞춘다
+    if (order.join() === before.join()) return;
+    if (!saveCategoryOrder(order)) {
+      toast('이 브라우저에서는 순서를 저장할 수 없어 새로고침하면 원래대로 돌아갑니다.');
+    }
+  };
+
+  const onMove = (e) => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const { tab } = drag;
+
+    if (!drag.moved) {
+      const dx = Math.abs(e.clientX - drag.startX);
+      const dy = Math.abs(e.clientY - drag.startY);
+      if (dx < 5) {
+        if (dy >= 10) finish(); // 세로로 움직이면 끌기가 아니다
+        return;
+      }
+      drag.moved = true;
+      tab.classList.add('is-ordering');
+      document.body.classList.add('is-category-tab-ordering');
+    }
+    e.preventDefault();
+
+    const others = [...tabs.querySelectorAll('.category-tab')].filter((t) => t !== tab);
+    const target = others.find((t) => {
+      const rect = t.getBoundingClientRect();
+      return e.clientX < rect.left + rect.width / 2;
+    });
+    if (target) {
+      if (tab.nextElementSibling !== target) tabs.insertBefore(tab, target);
+    } else if (tabs.lastElementChild !== tab) {
+      tabs.appendChild(tab);
+    }
+  };
+
+  tabs.addEventListener('pointerdown', (e) => {
+    const tab = e.target.closest('.category-tab');
+    if (!tab || drag || e.button > 0) return;
+    drag = {
+      tab,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      moved: false,
+      before: readTabOrder()
+    };
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup', finish);
+    document.addEventListener('pointercancel', finish);
   });
 }
 
